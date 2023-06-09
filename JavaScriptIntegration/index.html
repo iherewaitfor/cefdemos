@@ -10,7 +10,9 @@
   <body>
     JavaScript接口测试
     <button onclick="clickPlay();">test.myval</button>
-	<button onclick="clickWindowBindValue();">window.myval</button><br/>
+	<button onclick="clickWindowBindValue();">window.myval</button>
+	<button onclick="clickWindowBindObject();">myObject.myval</button>
+	<br/>
 	显示文本<div id="showTextDiv"><div>
     <script>
       function clickPlay(){
@@ -20,6 +22,11 @@
 	  function clickWindowBindValue(){
 		const showTextDiv = document.getElementById("showTextDiv");
 		showTextDiv.textContent = window.myval;
+      }
+	  
+	  function clickWindowBindObject(){
+		const showTextDiv = document.getElementById("showTextDiv");
+		showTextDiv.textContent = myObjcet.myval;
       }
     </script>
   </body>
