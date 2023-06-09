@@ -46,3 +46,16 @@ void SimpleAppRender::OnWebKitInitialized() {
     // Register the extension.
     CefRegisterExtension("v8/test", extensionCode, handler);
 }
+void SimpleAppRender::OnContextCreated(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefRefPtr<CefV8Context> context) {
+    // Retrieve the context's window object.
+    CefRefPtr<CefV8Value> object = context->GetGlobal();
+
+    // Create a new V8 string value. See the "Basic JS Types" section below.
+    CefRefPtr<CefV8Value> str = CefV8Value::CreateString("My Value in window!");
+
+    // Add the string to the window object as "window.myval". See the "JS Objects" section below.
+    object->SetValue("myval", str, V8_PROPERTY_ATTRIBUTE_NONE);
+}

@@ -18,7 +18,7 @@ class SimpleAppRender : public CefApp, public CefRenderProcessHandler {
 
   virtual void OnContextCreated(CefRefPtr<CefBrowser> browser,
       CefRefPtr<CefFrame> frame,
-      CefRefPtr<CefV8Context> context) {}
+      CefRefPtr<CefV8Context> context);
   virtual void OnContextReleased(CefRefPtr<CefBrowser> browser,
       CefRefPtr<CefFrame> frame,
       CefRefPtr<CefV8Context> context) {}
