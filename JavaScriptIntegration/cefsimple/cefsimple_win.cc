@@ -7,6 +7,7 @@
 #include "include/cef_command_line.h"
 #include "include/cef_sandbox_win.h"
 #include "simple_app.h"
+#include "simple_app_render.h"
 
 // When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 // automatically if using the required compiler version. Pass -DUSE_SANDBOX=OFF
@@ -40,24 +41,34 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
   sandbox_info = scoped_sandbox.sandbox_info();
 #endif
 
+  // Parse command-line arguments for use in this method.
+  CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
+  command_line->InitFromString(::GetCommandLineW());
+
   // Provide CEF with command-line arguments.
   CefMainArgs main_args(hInstance);
-
   // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
   // that share the same executable. This function checks the command-line and,
   // if this is a sub-process, executes the appropriate logic.
-  int exit_code = CefExecuteProcess(main_args, nullptr, sandbox_info);
+  int exit_code = 0;
+  if (command_line->HasSwitch("type") && command_line->GetSwitchValue("type").ToString() == "renderer") {
+      CefRefPtr<SimpleAppRender> renderapp(new SimpleAppRender);
+      exit_code = CefExecuteProcess(main_args, renderapp, sandbox_info);
+  }
+  else {
+      exit_code = CefExecuteProcess(main_args, nullptr, sandbox_info);
+  }
+      
   if (exit_code >= 0) {
     // The sub-process has completed so return here.
     return exit_code;
   }
 
-  // Parse command-line arguments for use in this method.
-  CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
-  command_line->InitFromString(::GetCommandLineW());
-
   // Specify CEF global settings here.
   CefSettings settings;
+  //设置调试端口
+  //y调试方法：在chrome中打开http://localhost:8765
+  settings.remote_debugging_port = 8765;
 
   if (command_line->HasSwitch("enable-chrome-runtime")) {
     // Enable experimental Chrome runtime. See issue #2969 for details.

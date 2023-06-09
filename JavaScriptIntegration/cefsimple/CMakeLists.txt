@@ -5,37 +5,14 @@
 #
 # Source files.
 #
-
-# cefsimple sources.
-set(CEFSIMPLE_SRCS
-  simple_app.cc
-  simple_app.h
-  simple_handler.cc
-  simple_handler.h
-  )
-set(CEFSIMPLE_SRCS_WINDOWS
-  cefsimple.rc
-  cefsimple_win.cc
-  resource.h
-  simple_handler_win.cc
-  )
-APPEND_PLATFORM_SOURCES(CEFSIMPLE_SRCS)
-source_group(cefsimple FILES ${CEFSIMPLE_SRCS})
-
-set(CEFSIMPLE_SRCS
-  ${CEFSIMPLE_SRCS}
-  )
-  
-APPEND_PLATFORM_SOURCES(CEFSIMPLE_HELPER_SRCS)
-source_group(cefsimple FILES ${CEFSIMPLE_HELPER_SRCS})
-
-# cefsimple resources.
-
+aux_source_directory(. DIR_SRCS)
+list(APPEND DIR_SRCS ./cefsimple.rc)
+# message(NOTICE "DIR_SRCS is ${DIR_SRCS}")
 
 #
 # Shared configuration.
 #
-
+project(cefsimple)
 # Target executable names.
 set(CEF_TARGET "cefsimple")
 
@@ -50,7 +27,7 @@ SET_CEF_TARGET_OUT_DIR()
 
 if(OS_WINDOWS)
   # Executable target.
-  add_executable(${CEF_TARGET} WIN32 ${CEFSIMPLE_SRCS})
+  add_executable(${CEF_TARGET} WIN32 ${DIR_SRCS})
   add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
   
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
