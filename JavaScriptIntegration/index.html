@@ -11,7 +11,7 @@
     JavaScript接口测试
     <button onclick="clickPlay();">test.myval</button>
 	<button onclick="clickWindowBindValue();">window.myval</button>
-	<button onclick="clickWindowBindObject();">myObject.myval</button>
+	<button onclick="clickWindowBindObject();">myObject.myval+ myObject.myfunc()</button>
 	<br/>
 	显示文本<div id="showTextDiv"><div>
     <script>
@@ -26,7 +26,7 @@
 	  
 	  function clickWindowBindObject(){
 		const showTextDiv = document.getElementById("showTextDiv");
-		showTextDiv.textContent = myObjcet.myval;
+		showTextDiv.textContent = myObjcet.myval +" myfunc():" + myObjcet.myfunc();
       }
     </script>
   </body>

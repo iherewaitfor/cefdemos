@@ -26,8 +26,14 @@ public:
         const CefV8ValueList& arguments,
         CefRefPtr<CefV8Value>& retval,
         CefString& exception) {
-        
-        return true;
+        if (name == "myfunc") {
+            // Return my string value.
+            retval = CefV8Value::CreateString("My Value!");
+            return true;
+        }
+
+        // Function does not exist.
+        return false;
     }
     IMPLEMENT_REFCOUNTING(MyCefV8Handler);
 };
@@ -78,7 +84,6 @@ public:
 };
 
 void SimpleAppRender::OnWebKitInitialized() {
-    CefRefPtr<CefV8Handler> handler = new MyCefV8Handler();
     ::MessageBox(0, 0, 0, 0);
     // Define the extension contents.
     std::string extensionCode =
@@ -90,7 +95,7 @@ void SimpleAppRender::OnWebKitInitialized() {
         "})();";
 
     // Register the extension.
-    CefRegisterExtension("v8/test", extensionCode, handler);
+    CefRegisterExtension("v8/test", extensionCode, nullptr);
 }
 void SimpleAppRender::OnContextCreated(
     CefRefPtr<CefBrowser> browser,
@@ -115,5 +120,12 @@ void SimpleAppRender::OnContextCreated(
         V8_PROPERTY_ATTRIBUTE_NONE);
     //¸øobjectÌí¼ÓÊôÐÔ
     obj->SetValue("myval", CefV8Value::CreateString("My Value in myObject!"), V8_PROPERTY_ATTRIBUTE_NONE);
+    CefRefPtr<CefV8Handler> handler = new MyCefV8Handler();
+    // Create the "myfunc" function.
+    CefRefPtr<CefV8Value> func = CefV8Value::CreateFunction("myfunc", handler);
+
+    // Add the "myfunc" function to the "window" object.
+    obj->SetValue("myfunc", func, V8_PROPERTY_ATTRIBUTE_NONE);
+
     window->SetValue("myObjcet", obj, V8_PROPERTY_ATTRIBUTE_NONE);
 }
