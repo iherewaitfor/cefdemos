@@ -23,7 +23,7 @@ set(EXAMPLE_RESOURCES_SRCS
   resources/win/resource.h
   resources/win/resource.rc
   )
-source_group("message_router/resources" FILES ${MESSAGE_ROUTER_SRCS})
+source_group("message_router/resources" FILES ${EXAMPLE_RESOURCES_SRCS})
 
 set(MINIMAL_SRCS
     ../minimal/app_other_minimal.cc
