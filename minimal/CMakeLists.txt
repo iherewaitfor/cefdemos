@@ -9,7 +9,7 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release)
 project(cef_mininal)
 
 # Use folders in the resulting project files.
-#set_property(GLOBAL PROPERTY OS_FOLDERS ON)
+set_property(GLOBAL PROPERTY OS_FOLDERS ON)
 
 
 #
@@ -43,13 +43,6 @@ find_package(CEF REQUIRED)
 #
 
 if(OS_WINDOWS)
-  # Shared Windows resources (version information, icons).
-  set(SHARED_RESOURCES_SRCS
-    ./shared/resources/win/big.ico
-    ./shared/resources/win/resource.h
-    ./shared/resources/win/shared.rc
-    ./shared/resources/win/small.ico
-    )
 
   # Manifest files used for executables.
   set(SHARED_EXE_MANIFEST ./shared/resources/win/shared.exe.manifest)

@@ -15,18 +15,21 @@ set(EXAMPLE_SRCS
   app_other_minimal.cc
   app_renderer_minimal.cc
   )
+  
+# Shared Windows resources (version information, icons).
+set(SHARED_RESOURCES_SRCS
+../shared/resources/win/big.ico
+../shared/resources/win/resource.h
+../shared/resources/win/shared.rc
+../shared/resources/win/small.ico
+)
+source_group("shared/resources/win" FILES ${SHARED_RESOURCES_SRCS})
 
 #
 # Shared configuration.
 #
-
 # Target executable names.
 set(EXAMPLE_TARGET "minimal")
-if(OS_MAC)
-  set(EXAMPLE_HELPER_TARGET "minimal_Helper")
-  set(EXAMPLE_HELPER_OUTPUT_NAME "minimal Helper")
-endif()
-
 
 #
 # Windows configuration.
@@ -36,9 +39,8 @@ if(OS_WINDOWS)
     # Add resources to the sources variable for convenience.
   set(EXAMPLE_SRCS
     ${EXAMPLE_SRCS}
-    ${EXAMPLE_RESOURCES_SRCS}
+    ${SHARED_RESOURCES_SRCS}
     )
-
   # Executable target.
   add_executable(${EXAMPLE_TARGET} WIN32 ${EXAMPLE_SRCS})
   SET_EXAMPLE_EXECUTABLE_TARGET_PROPERTIES(${EXAMPLE_TARGET})
