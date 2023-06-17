@@ -23,8 +23,6 @@ add_executable(${CEF_TARGET} WIN32 ${EXAMPLE_SRCS} ${HEADERS})
 SET_EXAMPLE_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
 add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
 
-# 该cmake宏位于cef_macros.cmake
-SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
 target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 # 链接Qt库
 target_link_libraries(${CEF_TARGET} Qt5::Core)

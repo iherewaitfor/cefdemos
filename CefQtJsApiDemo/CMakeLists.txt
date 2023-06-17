@@ -76,13 +76,14 @@ endmacro()
 
 # Set properties on an example library target.
 macro(SET_EXAMPLE_LIBRARY_TARGET_PROPERTIES target)
-  #SET_LIBRARY_TARGET_PROPERTIES(${target})
+  SET_LIBRARY_TARGET_PROPERTIES(${target})
   SET_EXAMPLE_PROPERTIES(${target})
 endmacro()
 
 # Set properties on an example executable target.
 macro(SET_EXAMPLE_EXECUTABLE_TARGET_PROPERTIES target)
-  #SET_EXECUTABLE_TARGET_PROPERTIES(${target})
+  # 该cmake宏位于cef_macros.cmake
+  SET_EXECUTABLE_TARGET_PROPERTIES(${target})
   SET_EXAMPLE_PROPERTIES(${target})
 endmacro()
 
