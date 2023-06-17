@@ -96,7 +96,7 @@ endmacro()
 # directory.
 add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 #add_subdirectory(DemoApp)
-#add_subdirectory(QtCefBrowser)
+add_subdirectory(QtCefBrowser)
 add_subdirectory(QtCefRender)
 
 # Display configuration settings.
