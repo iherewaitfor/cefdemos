@@ -60,10 +60,31 @@ find_package(Qt5 COMPONENTS Core Widgets)
 # set(Qt5Core_DIR ${Qt5HOMEDIR}/lib/cmake/Qt5Core)
 # find_package(Qt5Core)
 
+include_directories(${CEF_ROOT})
 
 set(EXAMPLE_TARGET_OUT_DIR "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
 
+# Set properties common to all example targets.
+macro(SET_EXAMPLE_PROPERTIES target)
+  # Output all binaries to the configuration-specific build directory.
+  set_target_properties(${target} PROPERTIES
+                        ARCHIVE_OUTPUT_DIRECTORY "${EXAMPLE_TARGET_OUT_DIR}"
+                        RUNTIME_OUTPUT_DIRECTORY "${EXAMPLE_TARGET_OUT_DIR}"
+                        LIBRARY_OUTPUT_DIRECTORY "${EXAMPLE_TARGET_OUT_DIR}")
+endmacro()
+
+# Set properties on an example library target.
+macro(SET_EXAMPLE_LIBRARY_TARGET_PROPERTIES target)
+  #SET_LIBRARY_TARGET_PROPERTIES(${target})
+  SET_EXAMPLE_PROPERTIES(${target})
+endmacro()
+
+# Set properties on an example executable target.
+macro(SET_EXAMPLE_EXECUTABLE_TARGET_PROPERTIES target)
+  #SET_EXECUTABLE_TARGET_PROPERTIES(${target})
+  SET_EXAMPLE_PROPERTIES(${target})
+endmacro()
 
 
 #
@@ -73,8 +94,8 @@ set(EXAMPLE_TARGET_OUT_DIR "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # Comes from the libcef_dll/CMakeLists.txt file in the binary distribution
 # directory.
 add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
-add_subdirectory(DemoApp)
-add_subdirectory(QtCefBrowser)
+#add_subdirectory(DemoApp)
+#add_subdirectory(QtCefBrowser)
 add_subdirectory(QtCefRender)
 
 # Display configuration settings.
