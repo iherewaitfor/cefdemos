@@ -7,7 +7,7 @@
 #include "qcefbrowserglobal.h"
 
 // Client app implementation for the browser process.
-class QCEFBROWSER_DECL_EXPORT QCefBrowserApp : public CefApp, public CefBrowserProcessHandler {
+class QCefBrowserApp : public CefApp, public CefBrowserProcessHandler {
 public:
     // Interface for browser delegates. All Delegates must be returned via
     // CreateDelegates. Do not perform work in the Delegate

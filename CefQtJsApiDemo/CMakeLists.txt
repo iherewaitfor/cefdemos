@@ -42,7 +42,7 @@ find_package(CEF REQUIRED)
 
 # Qt
 # 设置moc rcc
-set(CMAKE_AUTOMOC ON)
+#set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 #选择64位还是32位的Qt
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)

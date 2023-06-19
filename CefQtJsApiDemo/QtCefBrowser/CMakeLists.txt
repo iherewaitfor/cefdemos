@@ -3,6 +3,8 @@ project(qcefbrowser)
 set(CEF_TARGET "qcefbrowser")
 ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
 
+set(CMAKE_AUTOMOC ON)
+
 #项目使用UNICODE版本。win中的各种API将使用UNICODE版本。
 add_definitions("-DUNICODE" "-D_UNICODE")
 

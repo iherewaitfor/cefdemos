@@ -33,5 +33,5 @@ void QCefClient::initCef()
     CefInitialize(*m_cefMainArgs, cefSettings, m_cefBrowserApp.get(), NULL);
 }
 void QCefClient::shutDownCef() {
-
+    CefShutdown();
 }

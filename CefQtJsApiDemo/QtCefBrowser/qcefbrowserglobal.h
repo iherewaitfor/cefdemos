@@ -7,4 +7,9 @@
 	#define QCEFBROWSER_DECL_EXPORT __declspec(dllimport)
 #endif 
 
+#define QCEFBROWSER_DECLARE_PRIVATE(Class)                                                                               \
+    Class##Private* d_ptr;                                                                                             \
+    Q_DECLARE_PRIVATE(Class);                                                                                          \
+    friend class Class##Private;
+
 #endif
