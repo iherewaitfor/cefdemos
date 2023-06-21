@@ -5,7 +5,7 @@ QCefBrowser::QCefBrowser(QString url)
     : QObject(NULL)
     , d_ptr(new QCefBrowserPrivate(this, url))
 {
-
+    d_ptr->createBrowser();
     qCefCoreAppPrivate()->addBrowser(this);
 }
 

@@ -6,6 +6,7 @@
 #include "include/cef_parser.h"
 #include <include/cef_app.h>
 #include <include/cef_browser.h>
+#include <QtCore>
 
 static int win_id_generator = 0;
 QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
@@ -20,15 +21,20 @@ QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
 QCefBrowserPrivate::~QCefBrowserPrivate()
 {
 }
-
-void QCefBrowserPrivate::createBrowser()
+void QCefBrowserPrivate::createBrowser() {
+    QMetaObject::invokeMethod(this, "createBroserInVoke", Qt::QueuedConnection);
+}
+#include "include/wrapper/cef_helpers.h"
+void QCefBrowserPrivate::createBroserInVoke()
 {
     CefRefPtr<SimpleHandler> clientHandler = new SimpleHandler(false);
     
     CefWindowInfo windowInfo;
     windowInfo.SetAsPopup(NULL, "test");
     CefBrowserSettings settings;
-    CefBrowserHost::CreateBrowser(windowInfo, clientHandler, m_url.toStdWString(), settings, nullptr, nullptr);
+    std::string str2 = "https://www.baidu.com";
+    CefString url = str2;
+    CefBrowserHost::CreateBrowser(windowInfo, clientHandler, url, settings, nullptr, nullptr);
 }
 
 void QCefBrowserPrivate::closeBroser()

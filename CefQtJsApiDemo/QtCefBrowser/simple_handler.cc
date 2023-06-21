@@ -70,11 +70,10 @@ void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
 
   // Add to the list of existing browsers.
-  browser_list_.push_back(browser);
+  //browser_list_.push_back(browser);
 
   if (m_browerPrivate)
       m_browerPrivate->OnAfterCreated(browser);
-  //qCefCoreAppPrivate()->addBrowser(browser);
 }
 
 bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
@@ -83,10 +82,10 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
   // Closing the main window requires special handling. See the DoClose()
   // documentation in the CEF header for a detailed destription of this
   // process.
-  if (browser_list_.size() == 1) {
-    // Set a flag to indicate that the window close should be allowed.
-    is_closing_ = true;
-  }
+  //if (browser_list_.size() == 1) {
+  //  // Set a flag to indicate that the window close should be allowed.
+  //  is_closing_ = true;
+  //}
 
   m_browerPrivate->OnClosing(browser);
   //qCefCoreAppPrivate()->removeBrowser(browser);
@@ -147,12 +146,12 @@ void SimpleHandler::CloseAllBrowsers(bool force_close) {
     return;
   }
 
-  if (browser_list_.empty())
-    return;
+  //if (browser_list_.empty())
+  //  return;
 
-  BrowserList::const_iterator it = browser_list_.begin();
-  for (; it != browser_list_.end(); ++it)
-    (*it)->GetHost()->CloseBrowser(force_close);
+  //BrowserList::const_iterator it = browser_list_.begin();
+  //for (; it != browser_list_.end(); ++it)
+  //  (*it)->GetHost()->CloseBrowser(force_close);
 }
 
 // static
