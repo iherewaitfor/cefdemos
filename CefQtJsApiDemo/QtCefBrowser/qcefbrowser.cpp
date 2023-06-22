@@ -6,13 +6,13 @@ QCefBrowser::QCefBrowser(QString url)
     , d_ptr(new QCefBrowserPrivate(this, url))
 {
     d_ptr->createBrowser();
-    qCefCoreAppPrivate()->addBrowser(this);
+    qCefCoreAppPrivate()->addBrowser(QPointer<QCefBrowser>(this));
 }
 
 QCefBrowser::~QCefBrowser()
 {
     
-    qCefCoreAppPrivate()->removeBrowser(this);
+    qCefCoreAppPrivate()->removeBrowser(QPointer<QCefBrowser>(this));
 
     d_ptr->q_ptr = NULL;
 }

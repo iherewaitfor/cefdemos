@@ -7,6 +7,9 @@ QCefCoreApp::QCefCoreApp() {
     d_ptr->AddRef();
     g_instance = this;
 
+    connect(d_ptr, SIGNAL(allclosed()), this, SLOT(allclosed()));
+    QTimer::singleShot(15000, this, SLOT(quit()));
+
 }
 QCefCoreApp::~QCefCoreApp() {
     d_ptr->Release();
@@ -18,10 +21,12 @@ QCefCoreApp* QCefCoreApp::getInstance()
     static QCefCoreApp app;
     return g_instance;
 }
-QSharedPointer<QCefBrowser> QCefCoreApp::createBrowser(const QString url) {
-    QSharedPointer<QCefBrowser> browser = QSharedPointer<QCefBrowser>(new QCefBrowser(url));
-    d_ptr->addPopupBrowser(browser);
-
+QPointer<QCefBrowser> QCefCoreApp::createBrowser(const QString url) {
+    QPointer<QCefBrowser> browser = QPointer<QCefBrowser>(new QCefBrowser(url));
+    d_ptr->addBrowser(browser);
     return browser;
-
+}
+void QCefCoreApp::quit() {
+    d_ptr->m_browsers.clear();
+    emit allClosed();
 }

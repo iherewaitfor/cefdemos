@@ -14,8 +14,11 @@ public:
 	QCefCoreApp();
 	virtual ~QCefCoreApp();
 	static QCefCoreApp* getInstance();
-	QSharedPointer<QCefBrowser> createBrowser(const QString url);
-	
+	QPointer<QCefBrowser> createBrowser(const QString url);
+public slots:
+	void quit();
+signals:
+	void allClosed();
 };
 
 #endif

@@ -6,9 +6,8 @@
 class QCefBrowser;
 
 class QCefBrowserPrivate
-    :  public QObject, public std::tr1::enable_shared_from_this<QCefBrowserPrivate>
+    : public std::tr1::enable_shared_from_this<QCefBrowserPrivate>
 {
-    Q_OBJECT;
 public:
     QCefBrowser* q_ptr;
 
@@ -22,11 +21,11 @@ public:
 public:
     QCefBrowserPrivate(QCefBrowser* q, QString url);
     ~QCefBrowserPrivate();
-    Q_INVOKABLE void createBroserInVoke();
 
     CefRefPtr<CefBrowserHost> browserHost();
     void createBrowser();
     void closeBroser();
     void OnAfterCreated(CefRefPtr<CefBrowser> browser);
+    void OnBeforeClose(CefRefPtr<CefBrowser> browser);
     void OnClosing(CefRefPtr<CefBrowser> browser);
 };

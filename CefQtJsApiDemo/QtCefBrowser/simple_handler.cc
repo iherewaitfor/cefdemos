@@ -21,8 +21,6 @@
 
 namespace {
 
-SimpleHandler* g_instance = nullptr;
-
 // Returns a data: URI with the specified contents.
 std::string GetDataURI(const std::string& data, const std::string& mime_type) {
   return "data:" + mime_type + ";base64," +
@@ -32,19 +30,11 @@ std::string GetDataURI(const std::string& data, const std::string& mime_type) {
 
 }  // namespace
 
-SimpleHandler::SimpleHandler(std::tr1::shared_ptr<QCefBrowserPrivate> browser)
-    :m_browerPrivate(browser), use_views_(false), is_closing_(false) {
-  DCHECK(!g_instance);
-  g_instance = this;
+SimpleHandler::SimpleHandler():use_views_(false){
+
 }
 
 SimpleHandler::~SimpleHandler() {
-  g_instance = nullptr;
-}
-
-// static
-SimpleHandler* SimpleHandler::GetInstance() {
-  return g_instance;
 }
 
 void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
@@ -69,48 +59,16 @@ void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
 void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
 
-  // Add to the list of existing browsers.
-  //browser_list_.push_back(browser);
-
-  if (m_browerPrivate)
-      m_browerPrivate->OnAfterCreated(browser);
 }
 
 bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
-
-  // Closing the main window requires special handling. See the DoClose()
-  // documentation in the CEF header for a detailed destription of this
-  // process.
-  //if (browser_list_.size() == 1) {
-  //  // Set a flag to indicate that the window close should be allowed.
-  //  is_closing_ = true;
-  //}
-
-  m_browerPrivate->OnClosing(browser);
-  //qCefCoreAppPrivate()->removeBrowser(browser);
-
-  // Allow the close. For windowed browsers this will result in the OS close
-  // event being sent.
   return false;
 }
 
 void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
 
-  // Remove from the list of existing browsers.
-  BrowserList::iterator bit = browser_list_.begin();
-  for (; bit != browser_list_.end(); ++bit) {
-    if ((*bit)->IsSame(browser)) {
-      browser_list_.erase(bit);
-      break;
-    }
-  }
-
-  if (browser_list_.empty()) {
-    // All browser windows have closed. Quit the application message loop.
-    //CefQuitMessageLoop();
-  }
 }
 
 void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
@@ -138,22 +96,6 @@ void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
   frame->LoadURL(GetDataURI(ss.str(), "text/html"));
 }
 
-void SimpleHandler::CloseAllBrowsers(bool force_close) {
-  if (!CefCurrentlyOn(TID_UI)) {
-    // Execute on the UI thread.
-    CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::CloseAllBrowsers, this,
-                                       force_close));
-    return;
-  }
-
-  //if (browser_list_.empty())
-  //  return;
-
-  //BrowserList::const_iterator it = browser_list_.begin();
-  //for (; it != browser_list_.end(); ++it)
-  //  (*it)->GetHost()->CloseBrowser(force_close);
-}
-
 // static
 bool SimpleHandler::IsChromeRuntimeEnabled() {
   static int value = -1;
@@ -163,4 +105,14 @@ bool SimpleHandler::IsChromeRuntimeEnabled() {
     value = command_line->HasSwitch("enable-chrome-runtime") ? 1 : 0;
   }
   return value == 1;
+}
+
+bool SimpleHandler::OnProcessMessageReceived(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefProcessId source_process,
+    CefRefPtr<CefProcessMessage> message) {
+    CEF_REQUIRE_UI_THREAD();
+
+    return false;
 }

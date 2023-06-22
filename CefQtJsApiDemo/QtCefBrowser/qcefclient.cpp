@@ -41,4 +41,5 @@ void QCefClient::initCef()
 }
 void QCefClient::shutDownCef() {
     CefShutdown();
+    emit shutdown();
 }

@@ -12,6 +12,8 @@ int main(int argc, char** argv )
     QCefClient cefClient;
     cefClient.initCef();
     QCefCoreApp::getInstance()->createBrowser("https://www.baidu.com");
+    QObject::connect(QCefCoreApp::getInstance(), SIGNAL(allClosed()), &cefClient, SLOT(shutDownCef()));
+    QObject::connect(&cefClient, SIGNAL(shutdown()), &app, SLOT(quit()));
 	
     app.exec();
     return 0;

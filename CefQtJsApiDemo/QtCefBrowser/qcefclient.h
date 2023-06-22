@@ -12,7 +12,10 @@ public:
     explicit QCefClient(QObject* parent = nullptr);
     ~QCefClient();
     void initCef();
+public slots:
     void shutDownCef();
+signals:
+    void shutdown();
 private:
     CefRefPtr<QCefBrowserApp> m_cefBrowserApp;
     std::unique_ptr<CefMainArgs> m_cefMainArgs;

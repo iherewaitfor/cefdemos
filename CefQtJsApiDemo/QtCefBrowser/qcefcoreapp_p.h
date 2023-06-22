@@ -3,21 +3,23 @@
 #pragma once
 #include "include/cef_app.h"
 
-#include "qcefcoreapp.h"
+
 #include <set>
 #include <map>
 #include <QtCore>
 #include "qcefbrowser.h"
+#include "qcefcoreapp.h"
 class QCefCoreApp;
 class QCefBrowser;
-class QCefCoreAppPrivate : public CefBaseRefCounted
+class QCefCoreAppPrivate : public QObject,  public CefBaseRefCounted
 {
     IMPLEMENT_REFCOUNTING(QCefCoreAppPrivate);
+    Q_OBJECT;
+signals:
+    void allClosed();
 public:
     QCefCoreApp* q_ptr;
-    std::set<QCefBrowser*> m_browsers;
-    std::map<int, QSharedPointer<QCefBrowser>> m_popupBrowsers;
-    std::list<CefRefPtr<CefBrowser>> m_cefbrowsers;
+    std::set<QPointer<QCefBrowser>> m_browsers;
 public:
 
     QCefCoreAppPrivate(QCefCoreApp* q)
@@ -30,41 +32,20 @@ public:
     {
     }
 
-    void addBrowser(QCefBrowser* v)
+    void addBrowser(QPointer<QCefBrowser> v)
     {
         m_browsers.insert(v);
     }
 
-    void removeBrowser(QCefBrowser* v)
+    void removeBrowser(QPointer<QCefBrowser> v)
     {
         m_browsers.erase(v);
-    }
 
-    void addPopupBrowser(QSharedPointer<QCefBrowser> browser)
-    {
-        m_popupBrowsers.insert(std::pair<int, QSharedPointer<QCefBrowser>>(browser->uniqueWindowId(), browser));
-    }
-
-    void removePopupBrowser(int uniqueWindowId)
-    {
-        m_popupBrowsers.erase(uniqueWindowId);
-    }
-    void removeBrowser(CefRefPtr<CefBrowser>& browser)
-    {
-        int id = browser->GetIdentifier();
-        std::list<CefRefPtr<CefBrowser>>::iterator it = m_cefbrowsers.begin();
-        for (; it != m_cefbrowsers.end(); ++it)
-        {
-            if ((*it)->GetIdentifier() == id)
-            {
-                m_cefbrowsers.erase(it);
-                break;
-            }
-        }
-
-        if (m_cefbrowsers.empty())
+        if (m_browsers.empty())
         {
             // to do quit
+            CefQuitMessageLoop();
+            emit allClosed();
         }
     }
 };

@@ -22,18 +22,13 @@ QCefBrowserPrivate::~QCefBrowserPrivate()
 {
 }
 void QCefBrowserPrivate::createBrowser() {
-    QMetaObject::invokeMethod(this, "createBroserInVoke", Qt::QueuedConnection);
-}
-#include "include/wrapper/cef_helpers.h"
-void QCefBrowserPrivate::createBroserInVoke()
-{
-    CefRefPtr<SimpleHandler> clientHandler = new SimpleHandler(false);
-    
+    CefRefPtr<SimpleHandler> clientHandler = new SimpleHandler();
+
     CefWindowInfo windowInfo;
     windowInfo.SetAsPopup(NULL, "test");
     CefBrowserSettings settings;
-    std::string str2 = "https://www.baidu.com";
-    CefString url = str2;
+
+    CefString url = m_url.toUtf8().constData();
     CefBrowserHost::CreateBrowser(windowInfo, clientHandler, url, settings, nullptr, nullptr);
 }
 
@@ -50,12 +45,13 @@ void QCefBrowserPrivate::closeBroser()
 void QCefBrowserPrivate::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
     m_browser = browser;
-    //if (!m_url.isEmpty())
-    //{
-    //    browser->GetMainFrame()->LoadURL(m_url.toStdWString());
-    //}
+    qCefCoreAppPrivate()->addBrowser(QPointer<QCefBrowser>(q_ptr));
 }
 
+void QCefBrowserPrivate::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+{
+
+}
 void QCefBrowserPrivate::OnClosing(CefRefPtr<CefBrowser> browser)
 {
     if (browser->IsSame(m_browser))
