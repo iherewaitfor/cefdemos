@@ -12,9 +12,8 @@ public:
     explicit QCefClient(QObject* parent = nullptr);
     ~QCefClient();
     void initCef();
-public slots:
+private slots:
     void shutDownCef();
-    void quit();
 signals:
     void shutdown();
 private:

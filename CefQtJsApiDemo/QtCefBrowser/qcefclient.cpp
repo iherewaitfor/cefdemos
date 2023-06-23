@@ -41,8 +41,5 @@ void QCefClient::initCef()
 }
 void QCefClient::shutDownCef() {
     CefShutdown();
-    QTimer::singleShot(1000, this, SLOT(quit()));
-}
-void QCefClient::quit() {
     emit shutdown();
 }
