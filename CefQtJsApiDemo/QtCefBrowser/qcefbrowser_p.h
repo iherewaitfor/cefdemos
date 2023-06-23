@@ -12,11 +12,8 @@ class QCefBrowserPrivate : public QObject,
     Q_OBJECT
 public:
     QCefBrowser* q_ptr;
-
     QString m_url;
-
     HWND m_parent;
-
     CefRefPtr<CefBrowser> m_browser;
     volatile unsigned long m_closing;
     int m_uniqueWindowId;
@@ -45,8 +42,4 @@ private slots:
     void OnClosingSlot(CefRefPtr<CefBrowser> browser);
     void afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser);
     void beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser);
-
-
-
-
 };

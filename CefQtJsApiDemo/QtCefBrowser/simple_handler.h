@@ -54,6 +54,8 @@ class SimpleHandler : public CefClient,
       CefRefPtr<CefProcessMessage> message) override;
 
 
+  void closeMainBrowser();
+  void closeBrowser();
   // Returns true if the Chrome runtime is enabled.
   static bool IsChromeRuntimeEnabled();
 
@@ -66,7 +68,9 @@ class SimpleHandler : public CefClient,
   const bool use_views_;
 
   std::tr1::shared_ptr<QCefBrowserPrivate> m_browerPrivate;
+  bool m_closing; //主页面将要关闭。
   int browserId;
+  CefRefPtr<CefBrowser> m_browser; //主页面。
   QList<CefRefPtr<CefBrowser>> m_popupBrowsers;
   // Include the default reference counting implementation.
   IMPLEMENT_REFCOUNTING(SimpleHandler);

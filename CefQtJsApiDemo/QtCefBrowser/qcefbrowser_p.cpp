@@ -53,7 +53,7 @@ void QCefBrowserPrivate::closeBrowser()
 
 void QCefBrowserPrivate::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
-    //m_browser = browser;
+    m_browser = browser;
     emit afterCreated(browser);
 }
 
@@ -70,13 +70,11 @@ void QCefBrowserPrivate::OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser) {
 
 }
 void QCefBrowserPrivate::OnBeforeCloseSlot() {
+    m_browser = nullptr;
     qCefCoreAppPrivate()->removeBrowser(q_ptr);
 }
 void QCefBrowserPrivate::OnClosingSlot(CefRefPtr<CefBrowser> browser) {
-    if (m_browser && browser->IsSame(m_browser))
-    {
-        InterlockedExchange(&m_closing, 1);
-    }
+    InterlockedExchange(&m_closing, 1);
 }
 
 

@@ -18,6 +18,7 @@
 #include "qcefbrowserapp.h"
 #include "qcefcoreapp_p.h"
 #include <QtCore>
+#include "include/base/cef_bind.h"
 
 namespace {
 
@@ -32,6 +33,8 @@ std::string GetDataURI(const std::string& data, const std::string& mime_type) {
 
 SimpleHandler::SimpleHandler(std::tr1::shared_ptr<QCefBrowserPrivate> qCefBrowserPrivate):
     m_browerPrivate(qCefBrowserPrivate)
+    , m_browser(nullptr)
+    , m_closing(false)
     , browserId(0)
     ,use_views_(false){
 
@@ -61,7 +64,8 @@ void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
 
 void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
-  if (browserId == 0) {
+  if (m_browser == nullptr) {
+      m_browser = browser;
       browserId = browser->GetIdentifier();
       m_browerPrivate->OnAfterCreated(browser);
   }
@@ -73,27 +77,47 @@ void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
 
 bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
-  m_browerPrivate->OnClosing(browser);
+  if(browserId == browser->GetIdentifier()) {
+      m_closing = true;
+      if (!m_popupBrowsers.isEmpty()) {
+          for (QList<CefRefPtr<CefBrowser>>::const_iterator it = m_popupBrowsers.begin();
+              it != m_popupBrowsers.end(); it++) {
+              (*it)->GetHost()->CloseBrowser(false);
+          }
+          m_browerPrivate->OnClosing(browser);
+          return true; //不关闭。先删除弹出页面。close popupbrowsers first.
+      }
+      else {
+          m_browerPrivate->OnClosing(browser);
+          m_browser = nullptr; //去掉引用计数，以便退出。
+          return false;//执行关闭。
+      }
+  }
   return false;
 }
 
 void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
-  CEF_REQUIRE_UI_THREAD();
-  if (browserId == browser->GetIdentifier()) {
-      for (QList<CefRefPtr<CefBrowser>>::const_iterator it = m_popupBrowsers.begin();
-          it != m_popupBrowsers.end(); it++) {
-          (*it)->GetHost()->CloseBrowser(true);
-      }
-      m_browerPrivate->OnBeforeClose();
-  }
+    CEF_REQUIRE_UI_THREAD();
+    if (browserId == browser->GetIdentifier()) {
+        m_browerPrivate->OnBeforeClose();
+    }
     else {
-      for (int i = 0; i < m_popupBrowsers.size(); i++) {
-          if (m_popupBrowsers.at(i)->GetIdentifier() == browser->GetIdentifier()) {
-              m_popupBrowsers.removeAt(i);
-              break;
-          }
-      }
+        bool isLastPopupBrowserDelete = false;
+        for (int i = 0; i < m_popupBrowsers.size(); i++) {
+            if (m_popupBrowsers.at(i)->GetIdentifier() == browser->GetIdentifier()) {
+                m_popupBrowsers.removeAt(i);
+                if (m_popupBrowsers.empty()) {
+                    isLastPopupBrowserDelete = true;
+                }
+                break;
+            }
+        }
         m_browerPrivate->OnBeforeClosePoppup(browser);
+        if (m_closing && isLastPopupBrowserDelete) {
+            if (m_browser) {
+                m_browser->GetHost()->CloseBrowser(false);
+            }
+        }
     }
   
 }
@@ -142,4 +166,16 @@ bool SimpleHandler::OnProcessMessageReceived(
     CEF_REQUIRE_UI_THREAD();
 
     return false;
+}
+void SimpleHandler::closeMainBrowser() {
+    CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::closeBrowser, this));
+}
+void SimpleHandler::closeBrowser() {
+    CEF_REQUIRE_UI_THREAD();
+    if (!CefCurrentlyOn(TID_UI)) {
+        return;
+    }
+    if (m_browser) {
+        m_browser->GetHost()->CloseBrowser(false);
+    }
 }
