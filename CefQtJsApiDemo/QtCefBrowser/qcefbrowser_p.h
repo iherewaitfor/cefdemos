@@ -3,11 +3,13 @@
 #include "qcefbrowser.h"
 #include "include/cef_app.h"
 #include "simple_handler.h"
+#include <QtCore>
 class QCefBrowser;
 
-class QCefBrowserPrivate
-    : public std::tr1::enable_shared_from_this<QCefBrowserPrivate>
+class QCefBrowserPrivate : public QObject,
+    public std::tr1::enable_shared_from_this<QCefBrowserPrivate>
 {
+    Q_OBJECT
 public:
     QCefBrowser* q_ptr;
 
@@ -16,7 +18,7 @@ public:
     HWND m_parent;
 
     CefRefPtr<CefBrowser> m_browser;
-    bool m_isClosing;
+    volatile unsigned long m_closing;
     int m_uniqueWindowId;
 public:
     QCefBrowserPrivate(QCefBrowser* q, QString url);
@@ -24,8 +26,20 @@ public:
 
     CefRefPtr<CefBrowserHost> browserHost();
     void createBrowser();
-    void closeBroser();
+    void closeBrowser();
     void OnAfterCreated(CefRefPtr<CefBrowser> browser);
-    void OnBeforeClose(CefRefPtr<CefBrowser> browser);
+    void OnBeforeClose();
     void OnClosing(CefRefPtr<CefBrowser> browser);
+signals:
+    void afterCreated(CefRefPtr<CefBrowser> browser);
+    void beforeClose();
+    void closing(CefRefPtr<CefBrowser> browser);
+private slots:
+    void OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser);
+    void OnBeforeCloseSlot();
+    void OnClosingSlot(CefRefPtr<CefBrowser> browser);
+
+
+
+
 };

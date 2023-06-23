@@ -11,12 +11,16 @@
 
 #include "qcefbrowser_p.h"
 
+class QCefBrowserPrivate;
+
 class SimpleHandler : public CefClient,
                       public CefDisplayHandler,
                       public CefLifeSpanHandler,
                       public CefLoadHandler {
  public:
-  SimpleHandler();
+     // Constructor may be called on any thread.
+// |delegate| must outlive this object or DetachDelegate() must be called.
+  SimpleHandler(std::tr1::shared_ptr<QCefBrowserPrivate> qCefBrowserPrivate);
   ~SimpleHandler();
 
   // CefClient methods:
@@ -61,6 +65,7 @@ class SimpleHandler : public CefClient,
   // True if the application is using the Views framework.
   const bool use_views_;
 
+  std::tr1::shared_ptr<QCefBrowserPrivate> m_browerPrivate;
   // Include the default reference counting implementation.
   IMPLEMENT_REFCOUNTING(SimpleHandler);
 };

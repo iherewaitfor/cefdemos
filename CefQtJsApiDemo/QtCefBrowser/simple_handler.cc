@@ -30,7 +30,9 @@ std::string GetDataURI(const std::string& data, const std::string& mime_type) {
 
 }  // namespace
 
-SimpleHandler::SimpleHandler():use_views_(false){
+SimpleHandler::SimpleHandler(std::tr1::shared_ptr<QCefBrowserPrivate> qCefBrowserPrivate):
+    m_browerPrivate(qCefBrowserPrivate),
+    use_views_(false){
 
 }
 
@@ -58,17 +60,18 @@ void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
 
 void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
-
+  m_browerPrivate->OnAfterCreated(browser);
 }
 
 bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
+  m_browerPrivate->OnClosing(browser);
   return false;
 }
 
 void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
-
+  m_browerPrivate->OnBeforeClose();
 }
 
 void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,

@@ -2,13 +2,12 @@
 #include "qcefcoreapp_p.h"
 #include "qcefbrowser.h"
 QCefCoreApp* g_instance = NULL;
-QCefCoreApp::QCefCoreApp() {
+QCefCoreApp::QCefCoreApp(): QObject(nullptr){
     d_ptr = new QCefCoreAppPrivate(this);
     d_ptr->AddRef();
     g_instance = this;
 
-    connect(d_ptr, SIGNAL(allclosed()), this, SLOT(allclosed()));
-    QTimer::singleShot(15000, this, SLOT(quit()));
+    connect(d_ptr, SIGNAL(allClosed()), this, SIGNAL(allClosed()));
 
 }
 QCefCoreApp::~QCefCoreApp() {
@@ -25,8 +24,4 @@ QPointer<QCefBrowser> QCefCoreApp::createBrowser(const QString url) {
     QPointer<QCefBrowser> browser = QPointer<QCefBrowser>(new QCefBrowser(url));
     d_ptr->addBrowser(browser);
     return browser;
-}
-void QCefCoreApp::quit() {
-    d_ptr->m_browsers.clear();
-    emit allClosed();
 }

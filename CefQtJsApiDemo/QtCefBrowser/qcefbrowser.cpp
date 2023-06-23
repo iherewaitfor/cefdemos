@@ -19,7 +19,7 @@ QCefBrowser::~QCefBrowser()
 
 void QCefBrowser::close()
 {
-    d_ptr->closeBroser();
+    d_ptr->closeBrowser();
 }
 
 QString QCefBrowser::url() const
