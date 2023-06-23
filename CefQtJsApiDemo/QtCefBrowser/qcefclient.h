@@ -14,6 +14,7 @@ public:
     void initCef();
 public slots:
     void shutDownCef();
+    void quit();
 signals:
     void shutdown();
 private:

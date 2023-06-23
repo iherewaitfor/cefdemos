@@ -31,8 +31,9 @@ std::string GetDataURI(const std::string& data, const std::string& mime_type) {
 }  // namespace
 
 SimpleHandler::SimpleHandler(std::tr1::shared_ptr<QCefBrowserPrivate> qCefBrowserPrivate):
-    m_browerPrivate(qCefBrowserPrivate),
-    use_views_(false){
+    m_browerPrivate(qCefBrowserPrivate)
+    , browserId(0)
+    ,use_views_(false){
 
 }
 
@@ -60,7 +61,14 @@ void SimpleHandler::OnTitleChange(CefRefPtr<CefBrowser> browser,
 
 void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
-  m_browerPrivate->OnAfterCreated(browser);
+  if (browserId == 0) {
+      browserId = browser->GetIdentifier();
+      m_browerPrivate->OnAfterCreated(browser);
+  }
+  else {
+      m_popupBrowsers.push_back(browser);
+      m_browerPrivate->OnAfterCreatedPoppup(browser);
+  }
 }
 
 bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
@@ -71,7 +79,23 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
 
 void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
-  m_browerPrivate->OnBeforeClose();
+  if (browserId == browser->GetIdentifier()) {
+      for (QList<CefRefPtr<CefBrowser>>::const_iterator it = m_popupBrowsers.begin();
+          it != m_popupBrowsers.end(); it++) {
+          (*it)->GetHost()->CloseBrowser(true);
+      }
+      m_browerPrivate->OnBeforeClose();
+  }
+    else {
+      for (int i = 0; i < m_popupBrowsers.size(); i++) {
+          if (m_popupBrowsers.at(i)->GetIdentifier() == browser->GetIdentifier()) {
+              m_popupBrowsers.removeAt(i);
+              break;
+          }
+      }
+        m_browerPrivate->OnBeforeClosePoppup(browser);
+    }
+  
 }
 
 void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,

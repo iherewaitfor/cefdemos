@@ -5,7 +5,7 @@
 #include "simple_handler.h"
 #include <QtCore>
 class QCefBrowser;
-
+class SimpleHandler;
 class QCefBrowserPrivate : public QObject,
     public std::tr1::enable_shared_from_this<QCefBrowserPrivate>
 {
@@ -30,14 +30,21 @@ public:
     void OnAfterCreated(CefRefPtr<CefBrowser> browser);
     void OnBeforeClose();
     void OnClosing(CefRefPtr<CefBrowser> browser);
+
+    void OnAfterCreatedPoppup(CefRefPtr<CefBrowser> browser);
+    void OnBeforeClosePoppup(CefRefPtr<CefBrowser> browser);
 signals:
     void afterCreated(CefRefPtr<CefBrowser> browser);
     void beforeClose();
     void closing(CefRefPtr<CefBrowser> browser);
+    void afterCreatedPoppup(CefRefPtr<CefBrowser> browser);
+    void beforeClosePoppup(CefRefPtr<CefBrowser> browser);
 private slots:
     void OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser);
     void OnBeforeCloseSlot();
     void OnClosingSlot(CefRefPtr<CefBrowser> browser);
+    void afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser);
+    void beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser);
 
 
 

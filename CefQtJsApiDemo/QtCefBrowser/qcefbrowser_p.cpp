@@ -21,6 +21,10 @@ QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
     connect(this, SIGNAL(afterCreated(CefRefPtr<CefBrowser>)), SLOT(OnAfterCreatedSlot(CefRefPtr<CefBrowser>)));
     connect(this, SIGNAL(beforeClose()), SLOT(OnBeforeCloseSlot()));
     connect(this, SIGNAL(closing(CefRefPtr<CefBrowser>)), SLOT(OnClosingSlot(CefRefPtr<CefBrowser>)));
+
+    connect(this, SIGNAL(afterCreatedPoppup(CefRefPtr<CefBrowser>)), SLOT(afterCreatedPoppupSlot(CefRefPtr<CefBrowser>)));
+    connect(this, SIGNAL(beforeClosePoppup(CefRefPtr<CefBrowser>)), SLOT(beforeClosePoppupSlot(CefRefPtr<CefBrowser>)));
+
 }
 
 QCefBrowserPrivate::~QCefBrowserPrivate()
@@ -49,6 +53,7 @@ void QCefBrowserPrivate::closeBrowser()
 
 void QCefBrowserPrivate::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
+    //m_browser = browser;
     emit afterCreated(browser);
 }
 
@@ -68,9 +73,22 @@ void QCefBrowserPrivate::OnBeforeCloseSlot() {
     qCefCoreAppPrivate()->removeBrowser(q_ptr);
 }
 void QCefBrowserPrivate::OnClosingSlot(CefRefPtr<CefBrowser> browser) {
-    if (browser->IsSame(m_browser))
+    if (m_browser && browser->IsSame(m_browser))
     {
         InterlockedExchange(&m_closing, 1);
     }
 }
 
+
+void QCefBrowserPrivate::OnAfterCreatedPoppup(CefRefPtr<CefBrowser> browser) {
+    emit afterCreatedPoppup(browser);
+}
+void QCefBrowserPrivate::OnBeforeClosePoppup(CefRefPtr<CefBrowser> browser) {
+    emit beforeClosePoppup(browser);
+}
+void QCefBrowserPrivate::afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser) {
+    qCefCoreAppPrivate()->addPopupBrowser(browser);
+}
+void QCefBrowserPrivate::beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser) {
+    qCefCoreAppPrivate()->removePopupBrowser(browser);
+}

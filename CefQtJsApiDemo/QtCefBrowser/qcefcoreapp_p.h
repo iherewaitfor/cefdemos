@@ -20,12 +20,13 @@ signals:
 public:
     QCefCoreApp* q_ptr;
     std::set<QPointer<QCefBrowser>> m_browsers;
+    QList<CefRefPtr<CefBrowser>> m_popupBrowsers;
 public:
 
     QCefCoreAppPrivate(QCefCoreApp* q)
         : q_ptr(q)
     {
-
+        qRegisterMetaType<CefRefPtr<CefBrowser>>("CefRefPtr<CefBrowser>");
     }
 
     ~QCefCoreAppPrivate()
@@ -41,12 +42,30 @@ public:
     {
         m_browsers.erase(v);
 
-        if (m_browsers.empty())
+        if (m_browsers.empty() && m_popupBrowsers.isEmpty())
         {
             // to do quit
-            CefQuitMessageLoop();
-            emit allClosed();
+            quit();
         }
+    }
+    void addPopupBrowser(CefRefPtr<CefBrowser> browser) {
+        m_popupBrowsers.push_back(browser);
+    }
+    void removePopupBrowser(CefRefPtr<CefBrowser> browser) {
+        for (int i = 0; i < m_popupBrowsers.size(); i++) {
+            if (m_popupBrowsers.at(i)->GetIdentifier() == browser->GetIdentifier()) {
+                m_popupBrowsers.removeAt(i);
+                break;
+            }
+        }
+        if (m_popupBrowsers.isEmpty() && m_browsers.empty()) {
+           quit();
+        }
+    }
+public slots:
+    void quit() {
+        CefQuitMessageLoop();
+        emit allClosed();
     }
 };
 #define  qCefCoreAppPrivate() \

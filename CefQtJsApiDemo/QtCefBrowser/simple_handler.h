@@ -7,7 +7,7 @@
 
 #include "include/cef_client.h"
 
-#include <list>
+#include <QList>
 
 #include "qcefbrowser_p.h"
 
@@ -66,6 +66,8 @@ class SimpleHandler : public CefClient,
   const bool use_views_;
 
   std::tr1::shared_ptr<QCefBrowserPrivate> m_browerPrivate;
+  int browserId;
+  QList<CefRefPtr<CefBrowser>> m_popupBrowsers;
   // Include the default reference counting implementation.
   IMPLEMENT_REFCOUNTING(SimpleHandler);
 };
