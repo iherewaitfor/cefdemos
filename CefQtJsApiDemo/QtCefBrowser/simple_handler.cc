@@ -20,6 +20,8 @@
 #include <QtCore>
 #include "include/base/cef_bind.h"
 
+#include "qcefipcprotocol.h"
+
 namespace {
 
 // Returns a data: URI with the specified contents.
@@ -183,6 +185,24 @@ bool SimpleHandler::OnProcessMessageReceived(
     CefProcessId source_process,
     CefRefPtr<CefProcessMessage> message) {
     CEF_REQUIRE_UI_THREAD();
+
+    std::string message_name = message->GetName();
+    if (message_name == cefv8bind_protcool::CefApiMetaDatasReq::message_name())
+    {
+        cefv8bind_protcool::CefApiMetaDatasReq req;
+        if (req.unPack(message->GetArgumentList()))
+        {
+            int bId = browser->GetIdentifier();
+            int fFrameId = frame->GetIdentifier();
+            int renderPid = req.render_pid;
+            renderPid;
+            bId;
+            fFrameId;
+
+
+        }
+        return true;
+    }
 
     return false;
 }

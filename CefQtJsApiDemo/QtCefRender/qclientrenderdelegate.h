@@ -12,8 +12,7 @@ public:
     void OnContextCreated(CefRefPtr<QCefRenderApp> app,
         CefRefPtr<CefBrowser> browser,
         CefRefPtr<CefFrame> frame,
-        CefRefPtr<CefV8Context> context) override {
-    }
+        CefRefPtr<CefV8Context> context) override;
 
     void OnContextReleased(CefRefPtr<QCefRenderApp> app,
         CefRefPtr<CefBrowser> browser,
@@ -32,9 +31,7 @@ public:
         CefRefPtr<CefBrowser> browser,
         CefRefPtr<CefFrame> frame,
         CefProcessId source_process,
-        CefRefPtr<CefProcessMessage> message) override {
-        return false;
-    }
+        CefRefPtr<CefProcessMessage> message) override;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(QClientRenderDelegate);

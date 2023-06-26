@@ -5,11 +5,6 @@
 #include "qcefvalue_qvar_convert.h"
 namespace cefv8bind_protcool
 {
-
-    #define MAKE_i64(hi, lo) ((LONGLONG(DWORD(hi) & 0xffffffff) << 32) | LONGLONG(DWORD(lo) & 0xffffffff))
-    #define LO_i64(l) ((LONG)(((LONGLONG)(l)) & 0xffffffff))
-    #define HI_i64(l) ((LONG)((((LONGLONG)(l)) >> 32) & 0xffffffff))
-
 	struct  CefMetaMethod
 	{
 		void pack(CefRefPtr<CefListValue> protocolMsg);
