@@ -25,3 +25,9 @@ QPointer<QCefBrowser> QCefCoreApp::createBrowser(const QString url) {
     d_ptr->addBrowser(browser);
     return browser;
 }
+void QCefCoreApp::setApiRoot(QPointer<QObject> qApiRootObject) {
+    d_ptr->setApiRoot(qApiRootObject);
+}
+QPointer<QObject> QCefCoreApp::getApitRootObject() {
+    return d_ptr->getApitRootObject();
+}

@@ -21,6 +21,7 @@ public:
     QCefCoreApp* q_ptr;
     std::set<QPointer<QCefBrowser>> m_browsers;
     QList<CefRefPtr<CefBrowser>> m_popupBrowsers;
+    QPointer<QObject> m_qApiRootObject;
 public:
 
     QCefCoreAppPrivate(QCefCoreApp* q)
@@ -61,6 +62,12 @@ public:
         if (m_popupBrowsers.isEmpty() && m_browsers.empty()) {
            quit();
         }
+    }
+    void setApiRoot(QPointer<QObject> qApiRootObject) {
+        m_qApiRootObject = qApiRootObject;
+    }
+    QPointer<QObject> getApitRootObject() {
+        return m_qApiRootObject;
     }
 public slots:
     void quit() {
