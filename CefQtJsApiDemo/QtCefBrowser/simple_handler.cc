@@ -198,9 +198,8 @@ bool SimpleHandler::OnProcessMessageReceived(
             renderPid;
             bId;
             fFrameId;
-
-
         }
+        m_browerPrivate->onCefMetaReq(browser, frame);
         return true;
     }
 

@@ -28,6 +28,7 @@ public:
         : q_ptr(q)
     {
         qRegisterMetaType<CefRefPtr<CefBrowser>>("CefRefPtr<CefBrowser>");
+        qRegisterMetaType<CefRefPtr<CefFrame>>("CefRefPtr<CefFrame>");
     }
 
     ~QCefCoreAppPrivate()

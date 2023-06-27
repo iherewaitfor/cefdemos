@@ -8,6 +8,9 @@
 #include <include/cef_browser.h>
 #include <QtCore>
 
+#include "qcefipcprotocol.h"
+#include "qcefv8objecthelper.h"
+
 static int win_id_generator = 0;
 QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
     : q_ptr(q)
@@ -24,6 +27,8 @@ QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
 
     connect(this, SIGNAL(afterCreatedPoppup(CefRefPtr<CefBrowser>)), SLOT(afterCreatedPoppupSlot(CefRefPtr<CefBrowser>)));
     connect(this, SIGNAL(beforeClosePoppup(CefRefPtr<CefBrowser>)), SLOT(beforeClosePoppupSlot(CefRefPtr<CefBrowser>)));
+    connect(this, SIGNAL(cefMetaReq(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>)),
+        SLOT(onCefMetaReqSlot(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>)));
 
 }
 
@@ -89,4 +94,17 @@ void QCefBrowserPrivate::afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser) {
 }
 void QCefBrowserPrivate::beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser) {
     qCefCoreAppPrivate()->removePopupBrowser(browser);
+}
+
+void QCefBrowserPrivate::onCefMetaReq(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) {
+    emit cefMetaReq(browser, frame);
+}
+
+void QCefBrowserPrivate::onCefMetaReqSlot(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) {
+    QList<cefv8bind_protcool::CefMetaObject>  cef_metaObjects;
+    QCefV8ObjectHelper objectHelper;
+    objectHelper.convertQObjectToCefObjects(qCefCoreAppPrivate()->getApitRootObject(), nullptr, cef_metaObjects);
+    cefv8bind_protcool::CefApiMetaDatasResponse response;
+    response.cef_metaObjects = cef_metaObjects;
+    frame->SendProcessMessage(PID_RENDERER, response.makeIPCMessage());
 }

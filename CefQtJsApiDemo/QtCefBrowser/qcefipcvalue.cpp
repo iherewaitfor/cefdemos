@@ -6,9 +6,9 @@ void cefv8bind_protcool::CefMetaMethod::pack(CefRefPtr<CefListValue> protocolMsg
 {
 	protocolMsg->SetInt(0, methodType);
 	protocolMsg->SetInt(1, methodIndex);
-	protocolMsg->SetString(2, methodName.toStdString());
+	protocolMsg->SetString(2, QCefValueConverter::to(methodName));
 	protocolMsg->SetValue(3, QCefValueConverter::to(parameterTypes)); 
-	protocolMsg->SetString(4, returnTypeName.toStdString());
+	protocolMsg->SetString(4, QCefValueConverter::to(returnTypeName));
 }
 
 bool cefv8bind_protcool::CefMetaMethod::unPack(const CefRefPtr<CefListValue> protocolMsg)
@@ -63,8 +63,8 @@ void cefv8bind_protcool::CefMetaObject::pack(CefRefPtr<CefListValue> protocolMsg
 		cef_metaPropertys->SetList(i, cef_propItem);
 	}
 
-	protocolMsg->SetString(0, objectName.toStdString());
-	protocolMsg->SetString(1, className.toStdString());
+	protocolMsg->SetString(0, QCefValueConverter::to(objectName));
+	protocolMsg->SetString(1, QCefValueConverter::to(className));
 	protocolMsg->SetInt(2, objectId);
 	protocolMsg->SetInt(3, parentId);
 	protocolMsg->SetList(4, cef_metaMethords);

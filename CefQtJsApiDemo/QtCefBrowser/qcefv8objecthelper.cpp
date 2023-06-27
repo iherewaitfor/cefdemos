@@ -56,7 +56,7 @@ void QCefV8ObjectHelper::convertQObjectToCefObjects(const QObject *itemObject, c
 		if (var.type() == QMetaType::QObjectStar && !var.isNull())
 		{
 			QObject*obj = var.value<QObject*>();
-			obj->setProperty(KV8ObjectName, QString::fromLatin1(propName));
+			//obj->setProperty(KV8ObjectName, QString::fromLatin1(propName));
 			lists << obj;
 		}
 	}
@@ -73,7 +73,8 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 	cefv8bind_protcool::CefMetaObject &cef_metaObject
 	)
 {
-	const QString objectName = itemObject->property(KV8ObjectName).toString();
+	//const QString objectName = itemObject->property(KV8ObjectName).toString();
+	const QString objectName = itemObject->objectName();
 
 	bool isNewValue = false;
 	int uniqueId = 0;
