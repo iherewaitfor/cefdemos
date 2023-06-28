@@ -98,6 +98,7 @@ add_subdirectory(${CEF_LIBCEF_DLL_WRAPPER_PATH} libcef_dll_wrapper)
 add_subdirectory(DemoApp)
 add_subdirectory(QtCefBrowser)
 add_subdirectory(QtCefRender)
+add_subdirectory(QCefV8Bind)
 
 # Display configuration settings.
 PRINT_CEF_CONFIG()
