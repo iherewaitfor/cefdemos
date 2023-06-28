@@ -1,6 +1,8 @@
 #include "qcefclient.h"
 #include "qcefbrowserapp.h"
 
+#include "render/qcefrenderapp.h"
+
 QCefClient::QCefClient(QObject* parent /*= nullptr*/)
     : QObject(parent)
 {
@@ -39,7 +41,30 @@ void QCefClient::initCef()
 
     CefInitialize(*m_cefMainArgs, cefSettings, m_cefBrowserApp.get(), NULL);
 }
+
 void QCefClient::shutDownCef() {
     CefShutdown();
     emit shutdown();
+}
+
+int QCefClient::initCefRender(){
+
+    CefMainArgs cefMainArgs(GetModuleHandle(NULL));
+    CefRefPtr<CefApp> app;
+    CefRefPtr<CefCommandLine>  commandLine = CefCommandLine::CreateCommandLine();
+    commandLine->InitFromString(::GetCommandLine());
+    if (!commandLine->HasSwitch("type"))
+    {
+    }
+    else
+    {
+        const std::string& process_type = commandLine->GetSwitchValue("type");
+        if (process_type == "renderer")
+        {
+            app = new QCefRenderApp();
+        }
+    }
+    int exit_code = CefExecuteProcess(cefMainArgs, app, nullptr);
+    return exit_code;
+    
 }

@@ -13,18 +13,29 @@ add_definitions("-DQCEFBROWSER_IMPL")
 
 aux_source_directory(. EXAMPLE_SRCS)
 #list(APPEND DIR_SRCS ./cefsimple.rc)
+aux_source_directory(./render SRCS_RENDER)
+include_directories(./render)
 file (GLOB HEADERS
 		"*.h")
+file (GLOB HEADERS_RENDER 
+		"render/*.h")
+		
+message(NOTICE "HEADERS_RENDER: ${HEADERS_RENDER}" )
+set(RENDERLIST
+ ${HEADERS_RENDER}
+ ${SRCS_RENDER}
+ )
+source_group("render" FILES ${RENDERLIST}) 
+		
 # 需要执行moc的头文件列表
-set(MOC_HEADERS ${HEADERS})
+set(MOC_HEADERS ${HEADERS} ${HEADERS_RENDER})
 # 可以排除某些头文件不执行moc
 # list(REMOVE_ITEM MOC_HEADERS ${PROJECT_SOURCE_DIR}/autosignalsemitter.h)
 
 # Executable target.
-add_library(${CEF_TARGET} SHARED ${EXAMPLE_SRCS} ${HEADERS})
+add_library(${CEF_TARGET} SHARED ${EXAMPLE_SRCS} ${HEADERS} ${SRCS_RENDER} ${HEADERS_RENDER})
 SET_EXAMPLE_LIBRARY_TARGET_PROPERTIES(${CEF_TARGET})
 add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
-add_dependencies(${CEF_TARGET} qcefrender)
 
 target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 # 链接Qt库

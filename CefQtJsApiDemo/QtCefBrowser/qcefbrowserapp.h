@@ -1,5 +1,5 @@
-#ifndef QCEFRENDERAPP_H
-#define QCEFRENDERAPP_H
+#ifndef QCEFBROWSERAPP_H
+#define QCEFBROWSERAPP_H
 #pragma once
 #include "include/cef_app.h"
 #include "include/cef_browser_process_handler.h"

@@ -13,15 +13,6 @@ add_definitions("-DUNICODE" "-D_UNICODE")
 aux_source_directory(. EXAMPLE_SRCS)
 #list(APPEND DIR_SRCS ./cefsimple.rc)
 
-list(APPEND EXAMPLE_SRCS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefipcvalue.cpp)
-list(APPEND EXAMPLE_SRCS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefvalue_qvar_convert.cpp)
-list(APPEND EXAMPLE_SRCS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefv8objecthelper.cpp)
-
-file (GLOB HEADERS
-		"*.h")
-list(APPEND HEADERS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefipcvalue.h)
-list(APPEND HEADERS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefvalue_qvar_convert.h)
-list(APPEND HEADERS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefv8objecthelper.h)
 
 # 需要执行moc的头文件列表
 set(MOC_HEADERS ${HEADERS})
@@ -48,6 +39,7 @@ add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
 target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 # 链接Qt库
 target_link_libraries(${CEF_TARGET} Qt5::Core)
+target_link_libraries(${CEF_TARGET} qcefbrowser)
 
 if(USE_SANDBOX)
   # Logical target used to link the cef_sandbox library.

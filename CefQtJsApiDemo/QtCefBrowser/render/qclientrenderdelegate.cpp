@@ -1,6 +1,6 @@
 #include "qclientrenderdelegate.h"
-#include "../QtCefBrowser/qcefipcprotocol.h"
-#include "../QtCefBrowser/qcefipcvalue.h"
+#include "../qcefipcprotocol.h"
+#include "../qcefipcvalue.h"
 QString getBrwoserFrameId(int64 browserId, int64 frameId) {
     return QString("%1_%2").arg(browserId).arg(frameId);
 }

@@ -1,8 +1,8 @@
 ﻿#include "qcefv8handler.h"
 #include "include/wrapper/cef_helpers.h"
-#include "../QtCefBrowser/qcefipcprotocol.h"
-#include "../QtCefBrowser/qcefipcvalue.h"
-#include "../QtCefBrowser/qcefv8objecthelper.h"
+#include "../qcefipcprotocol.h"
+#include "../qcefipcvalue.h"
+#include "../qcefv8objecthelper.h"
 
 using namespace cefv8bind_protcool;
 

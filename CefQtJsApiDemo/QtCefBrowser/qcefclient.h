@@ -12,6 +12,7 @@ public:
     explicit QCefClient(QObject* parent = nullptr);
     ~QCefClient();
     void initCef();
+    int initCefRender();
 private slots:
     void shutDownCef();
 signals:
