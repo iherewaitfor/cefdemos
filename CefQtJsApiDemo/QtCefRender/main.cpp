@@ -3,6 +3,7 @@
 #include "include/cef_app.h"
 
 #include "../QtCefBrowser/qcefclient.h"
+#include "../QCefV8Bind/qcefv8bindapp.h"
 
 int WINAPI wWinMain(HINSTANCE hInstance,
                       HINSTANCE hPrevInstance,
@@ -14,6 +15,7 @@ int WINAPI wWinMain(HINSTANCE hInstance,
       // Provide CEF with command-line arguments.
   CefMainArgs main_args(hInstance);
 
+  QCefV8BindApp::getInstance();
   QCefClient cefClient;
   int exitcode = cefClient.initCefRender();
   return exitcode;
