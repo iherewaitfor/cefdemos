@@ -137,4 +137,51 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 	}
 	return true;
 }
+CefRefPtr<CefV8Value> QCefV8ObjectHelper::getV8Object(quint32 objectId, CefRefPtr<CefV8Value> rootV8Object)
+{
+	if (objectId == 0)
+	{
+		return rootV8Object;
+	}
+
+	QStringList objectNames;
+	getObjectPathName(objectId, objectNames);
+
+	CefRefPtr<CefV8Value> parentV8Object = rootV8Object;
+	for (int i = 0; i < objectNames.size(); ++i)
+	{
+		QString objectName = objectNames.at(i);
+
+		CefRefPtr<CefV8Value> v8Object;
+		if (!parentV8Object->HasValue(objectName.toStdString()))
+		{
+			v8Object = CefV8Value::CreateObject(nullptr, nullptr);
+			const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
+			parentV8Object->SetValue(objectName.toStdString(), v8Object, attributes);
+		}
+		else
+		{
+			v8Object = parentV8Object->GetValue(objectName.toStdString());
+		}
+
+		parentV8Object = v8Object;
+	}
+
+	return parentV8Object;
+}
+void QCefV8ObjectHelper::getObjectPathName(quint32 objectId, QStringList& objNames)
+{
+	//to do 
+}
+
+CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8Object(const cefv8bind_protcool::CefMetaObject& cefMetaObject, CefRefPtr<CefV8Handler> v8Handler, CefRefPtr<CefV8Context> context
+)
+{
+	CefRefPtr<CefV8Value> rootV8Object = context->GetGlobal();
+
+	CefRefPtr<CefV8Value> v8Object = CefV8Value::CreateObject(nullptr, nullptr);
+	//to do 
+
+	return v8Object;
+}
 

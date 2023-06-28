@@ -12,8 +12,17 @@ add_definitions("-DUNICODE" "-D_UNICODE")
 
 aux_source_directory(. EXAMPLE_SRCS)
 #list(APPEND DIR_SRCS ./cefsimple.rc)
+
+list(APPEND EXAMPLE_SRCS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefipcvalue.cpp)
+list(APPEND EXAMPLE_SRCS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefvalue_qvar_convert.cpp)
+list(APPEND EXAMPLE_SRCS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefv8objecthelper.cpp)
+
 file (GLOB HEADERS
 		"*.h")
+list(APPEND HEADERS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefipcvalue.h)
+list(APPEND HEADERS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefvalue_qvar_convert.h)
+list(APPEND HEADERS ${PROJECT_SOURCE_DIR}/../QtCefBrowser/qcefv8objecthelper.h)
+
 # 需要执行moc的头文件列表
 set(MOC_HEADERS ${HEADERS})
 # 可以排除某些头文件不执行moc

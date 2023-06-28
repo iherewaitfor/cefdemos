@@ -194,7 +194,9 @@ bool SimpleHandler::OnProcessMessageReceived(
         {
             int bId = browser->GetIdentifier();
             int fFrameId = frame->GetIdentifier();
+            QString bfid = QString("%1_%2").arg(bId).arg(fFrameId);
             int renderPid = req.render_pid;
+            bfid;
             renderPid;
             bId;
             fFrameId;
