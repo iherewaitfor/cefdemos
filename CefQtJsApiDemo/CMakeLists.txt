@@ -12,7 +12,11 @@ project(cef)
 # Use folders in the resulting project files.
 #set_property(GLOBAL PROPERTY OS_FOLDERS ON)
 
-
+# 不使用沙箱
+option(USE_SANDBOX "disable use of the sandbox." OFF)
+#参考https://bitbucket.org/chromiumembedded/cef/wiki/LinkingDifferentRunTimeLibraries.md
+#本项目需要使用/MD。CEF的CMake配置文件默认使用/MT。若需要使用sandbox，则必须用/MT.
+set(CEF_RUNTIME_LIBRARY_FLAG "/MD")
 #
 # CEF_ROOT setup.
 # This variable must be set to locate the binary distribution.

@@ -39,17 +39,13 @@ void QCefV8BindBrowserDelegate::OnBrowserClosed(CefRefPtr<CefBrowser> browser, i
 bool QCefV8BindBrowserDelegate::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
 {
     //本回调运行在cef消息循环线程
-    CefString message_name = "123";
-    message;
-    //message->GetName();
-//    emit processMessageReceived(browser, frame, source_process, message);
-    //CefString message_name = message->GetName();
-//    if (message_name == cefv8bind_protcool::CefApiMetaDatasReq::message_name())
-//    {
-//        //通过Qt信号把数据切到主线程进行处理。也可以可能CefPostTask切换。
-////        emit processMessageReceived(browser, frame, source_process, message);
-//        return true;
-//    }
+    CefString message_name = message->GetName();
+    if (message_name == cefv8bind_protcool::CefApiMetaDatasReq::message_name())
+    {
+        //通过Qt信号把数据切到主线程进行处理。也可以使用CefPostTask切换。
+        emit processMessageReceived(browser, frame, source_process, message);
+        return true;
+    }
 	return false;
 }
 
