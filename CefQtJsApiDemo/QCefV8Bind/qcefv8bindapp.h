@@ -14,7 +14,7 @@ public:
     QCefV8BindApp();
     virtual ~QCefV8BindApp(void);
 
-    void setV8RootObject(QObject* o);
+    void setV8RootObject(QPointer<QObject> o);
 
     static QCefV8BindApp* getInstance();
 };

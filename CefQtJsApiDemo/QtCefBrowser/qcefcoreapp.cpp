@@ -31,3 +31,9 @@ void QCefCoreApp::setApiRoot(QPointer<QObject> qApiRootObject) {
 QPointer<QObject> QCefCoreApp::getApitRootObject() {
     return d_ptr->getApitRootObject();
 }
+void QCefCoreApp::regBrowserDelegate(client::BrowserDelegate* delegate) {
+    d_ptr->m_browserDelegates.insert(delegate);
+}
+void QCefCoreApp::unregBrowserDelegate(client::BrowserDelegate* delegate) {
+    d_ptr->m_browserDelegates.erase(delegate);
+}

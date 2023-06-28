@@ -30,6 +30,7 @@ target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD
 target_link_libraries(${CEF_TARGET} Qt5::Core)
 target_link_libraries(${CEF_TARGET} Qt5::Widgets)
 target_link_libraries(${CEF_TARGET} qcefbrowser)
+target_link_libraries(${CEF_TARGET} qcefv8bind)
 
 if(USE_SANDBOX)
   # Logical target used to link the cef_sandbox library.

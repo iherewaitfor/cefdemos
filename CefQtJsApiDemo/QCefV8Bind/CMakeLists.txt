@@ -24,11 +24,13 @@ set(MOC_HEADERS ${HEADERS})
 add_library(${CEF_TARGET} SHARED ${EXAMPLE_SRCS} ${HEADERS})
 SET_EXAMPLE_LIBRARY_TARGET_PROPERTIES(${CEF_TARGET})
 add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
+add_dependencies(${CEF_TARGET} qcefbrowser)
 
 
 target_link_libraries(${CEF_TARGET} libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 # 链接Qt库
 target_link_libraries(${CEF_TARGET} Qt5::Core)
+target_link_libraries(${CEF_TARGET} qcefbrowser)
 
 if(USE_SANDBOX)
   # Logical target used to link the cef_sandbox library.

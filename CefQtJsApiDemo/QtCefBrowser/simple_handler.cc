@@ -20,7 +20,6 @@
 #include <QtCore>
 #include "include/base/cef_bind.h"
 
-#include "qcefipcprotocol.h"
 
 namespace {
 
@@ -185,24 +184,14 @@ bool SimpleHandler::OnProcessMessageReceived(
     CefProcessId source_process,
     CefRefPtr<CefProcessMessage> message) {
     CEF_REQUIRE_UI_THREAD();
-
     std::string message_name = message->GetName();
-    if (message_name == cefv8bind_protcool::CefApiMetaDatasReq::message_name())
+    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
     {
-        cefv8bind_protcool::CefApiMetaDatasReq req;
-        if (req.unPack(message->GetArgumentList()))
+        if (browserDelegate->OnProcessMessageReceived(browser, frame, source_process, message))
         {
-            int bId = browser->GetIdentifier();
-            int fFrameId = frame->GetIdentifier();
-            QString bfid = QString("%1_%2").arg(bId).arg(fFrameId);
-            int renderPid = req.render_pid;
-            bfid;
-            renderPid;
-            bId;
-            fFrameId;
+            return true;
         }
-        m_browerPrivate->onCefMetaReq(browser, frame);
-        return true;
     }
 
     return false;
