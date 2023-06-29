@@ -22,6 +22,8 @@ void QCefV8BindAppPrivate::_init()
 		if (process_type == "renderer")
 		{
 			// to do: create and register the delegate of render process
+			m_renderDelegate = new QCefV8BindRenderDelegate();
+			QCefCoreApp::getInstance()->regRenderDelegate(m_renderDelegate.get());
 		}
 	}
 }

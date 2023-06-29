@@ -1,11 +1,11 @@
-#include "qclientrenderdelegate.h"
+#include "qcefv8bindrenderdelegate.h"
 #include "../qcefipcprotocol.h"
 #include "../qcefipcvalue.h"
+#include "qcefv8handler.h"
 QString getBrwoserFrameId(int64 browserId, int64 frameId) {
     return QString("%1_%2").arg(browserId).arg(frameId);
 }
-void QClientRenderDelegate::OnContextCreated(CefRefPtr<QCefRenderApp> app,
-    CefRefPtr<CefBrowser> browser,
+void QCefV8BindRenderDelegate::OnContextCreated( CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame> frame,
     CefRefPtr<CefV8Context> context) {
     cefv8bind_protcool::CefApiMetaDatasReq ipc_protocol;
@@ -16,8 +16,7 @@ void QClientRenderDelegate::OnContextCreated(CefRefPtr<QCefRenderApp> app,
     m_frameHandlers.insert(getBrwoserFrameId(browser->GetIdentifier(),frame->GetIdentifier()), handler);
 }
 
-void QClientRenderDelegate::OnContextReleased(CefRefPtr<QCefRenderApp> app,
-    CefRefPtr<CefBrowser> browser,
+void QCefV8BindRenderDelegate::OnContextReleased(CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame> frame,
     CefRefPtr<CefV8Context> context) {
     QString bfId = getBrwoserFrameId(browser->GetIdentifier(), frame->GetIdentifier());
@@ -28,8 +27,7 @@ void QClientRenderDelegate::OnContextReleased(CefRefPtr<QCefRenderApp> app,
     }
 }
 
-bool QClientRenderDelegate::OnProcessMessageReceived(CefRefPtr<QCefRenderApp> app,
-    CefRefPtr<CefBrowser> browser,
+bool QCefV8BindRenderDelegate::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame> frame,
     CefProcessId source_process,
     CefRefPtr<CefProcessMessage> message) {

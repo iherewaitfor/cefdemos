@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "qcefv8bindglobal.h"
 #include "qcefv8bindbrowserdelegate.h"
+#include "render/qcefv8bindrenderdelegate.h"
 
 class QCefV8BindApp;
 class QCefV8BindBrowserDelegate;
@@ -27,4 +28,5 @@ private:
 private:
 	QPointer<QObject>	m_v8RootObject;
 	CefRefPtr<QCefV8BindBrowserDelegate>	m_browerDelegate;
+	CefRefPtr<QCefV8BindRenderDelegate>	m_renderDelegate;
 };

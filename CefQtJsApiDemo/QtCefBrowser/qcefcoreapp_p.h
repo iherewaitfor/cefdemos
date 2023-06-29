@@ -10,6 +10,7 @@
 #include "qcefbrowser.h"
 #include "qcefcoreapp.h"
 #include "qcefbrowserhandlerdelegate.h"
+#include "render/qcefrenderhandlerdelegate.h"
 class QCefCoreApp;
 class QCefBrowser;
 class QCefCoreAppPrivate : public QObject,  public CefBaseRefCounted
@@ -24,6 +25,7 @@ public:
     QList<CefRefPtr<CefBrowser>> m_popupBrowsers;
     QPointer<QObject> m_qApiRootObject;
     std::set<client::BrowserDelegate*> m_browserDelegates;
+    std::set<client::RenderDelegate*> m_renderDelegates;
 public:
 
     QCefCoreAppPrivate(QCefCoreApp* q)
@@ -77,6 +79,10 @@ public:
     }
     std::set<client::BrowserDelegate*> browserDelegates() const { 
         return m_browserDelegates; 
+    }
+
+    std::set<client::RenderDelegate*> renderDelegates() const {
+        return m_renderDelegates;
     }
 public slots:
     void quit() {

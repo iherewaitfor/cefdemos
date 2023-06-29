@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "include/cef_v8.h"
-#include "qclientrenderdelegate.h"
+#include "qcefv8bindrenderdelegate.h"
 class QClientRenderDelegate;
 class QCefV8Handler : public CefV8Handler
 {

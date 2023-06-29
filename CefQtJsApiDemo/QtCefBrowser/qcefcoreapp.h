@@ -6,6 +6,7 @@
 #include "qcefcoreapp_p.h"
 #include <QObject>
 #include "qcefbrowserhandlerdelegate.h"
+#include "render/qcefrenderhandlerdelegate.h"
 class QCefBrowser;
 class QCefCoreAppPrivate;
 class QCEFBROWSER_DECL_EXPORT QCefCoreApp:public QObject {
@@ -20,6 +21,8 @@ public:
 	QPointer<QObject> getApitRootObject();
 	void regBrowserDelegate(client::BrowserDelegate*);
 	void unregBrowserDelegate(client::BrowserDelegate*);
+	void regRenderDelegate(client::RenderDelegate*);
+	void unregRenderDelegate(client::RenderDelegate*);
 
 signals:
 	void allClosed();

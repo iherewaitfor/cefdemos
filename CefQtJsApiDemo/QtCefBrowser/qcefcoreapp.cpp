@@ -37,3 +37,9 @@ void QCefCoreApp::regBrowserDelegate(client::BrowserDelegate* delegate) {
 void QCefCoreApp::unregBrowserDelegate(client::BrowserDelegate* delegate) {
     d_ptr->m_browserDelegates.erase(delegate);
 }
+void QCefCoreApp::regRenderDelegate(client::RenderDelegate* delegate) {
+    d_ptr->m_renderDelegates.insert(delegate);
+}
+void QCefCoreApp::unregRenderDelegate(client::RenderDelegate* delegate) {
+    d_ptr->m_renderDelegates.erase(delegate);
+}
