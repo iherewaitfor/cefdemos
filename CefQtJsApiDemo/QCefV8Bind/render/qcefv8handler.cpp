@@ -39,9 +39,10 @@ void QCefV8Handler::on_cefMetaDatasResponse(CefRefPtr<CefBrowser> browser, CefRe
     }
     CefRefPtr<CefV8Context> context = m_frame->GetV8Context();
 
-	//CefApiMetaDatasResponse ipc_protocol;
-	//if (!ipc_protocol.unPack(message->GetArgumentList()))
-	//{
-	//	return;
-	//}
+	CefApiMetaDatasResponse ipc_protocol;
+	if (!ipc_protocol.unPack(message->GetArgumentList()))
+	{
+		return;
+	}
 }
+

@@ -89,6 +89,67 @@ CefRefPtr<CefValue> QCefValueConverter::to( const QVariantMap& v) {
 	retValue->SetDictionary(dicValue);
 	return retValue;
 }
+CefRefPtr<CefV8Value> QCefValueConverter::to(CefRefPtr<CefValue> const& v)
+{
+	CefRefPtr<CefV8Value> result;
+	switch (v->GetType())
+	{
+	case VTYPE_INVALID:
+		result = CefV8Value::CreateUndefined();
+		break;
+	case VTYPE_NULL:
+		result = CefV8Value::CreateNull();
+		break;
+	case VTYPE_BOOL:
+		result = CefV8Value::CreateBool(v->GetBool());
+		break;
+	case VTYPE_INT:
+		result = CefV8Value::CreateInt(v->GetInt());
+		break;
+	case VTYPE_DOUBLE:
+		result = CefV8Value::CreateDouble(v->GetDouble());
+		break;
+	case VTYPE_STRING:
+	{
+		result = CefV8Value::CreateString(v->GetString());
+	}
+	break;
+	case VTYPE_DICTIONARY:
+	{
+		CefRefPtr<CefV8Value> v8ValueMap = CefV8Value::CreateObject(nullptr, nullptr);
+		CefDictionaryValue::KeyList keys;
+		if (v->GetDictionary() && v->GetDictionary()->GetKeys(keys))
+		{
+			for (CefDictionaryValue::KeyList::size_type i = 0; i < keys.size(); ++i)
+			{
+				CefRefPtr<CefValue> cefValue = v->GetDictionary()->GetValue(keys[i]);
+				v8ValueMap->SetValue(keys[i], QCefValueConverter::to(cefValue), V8_PROPERTY_ATTRIBUTE_READONLY);
+			}
+		}
+
+		result = v8ValueMap;
+	}
+	break;
+	case VTYPE_LIST:
+	{
+		CefRefPtr<CefV8Value> v8Values = CefV8Value::CreateArray(v->GetList()->GetSize());
+		for (size_t i = 0; i < v->GetList()->GetSize(); ++i)
+		{
+			CefRefPtr<CefV8Value> v8Value = QCefValueConverter::to(v->GetList()->GetValue(i));
+			if (v8Value)
+			{
+				v8Values->SetValue(i, v8Value);
+			}
+		}
+		result = v8Values;
+	}
+	break;
+	default:
+		break;
+	}
+
+	return result;
+}
 
 
 QVariant QCefValueConverter::from(const CefRefPtr<CefValue>& v) {

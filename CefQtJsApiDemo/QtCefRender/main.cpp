@@ -21,8 +21,8 @@ int WINAPI wWinMain(HINSTANCE hInstance,
       const std::string& process_type = commandLine->GetSwitchValue("type");
       if (process_type == "renderer")
       {
-        //#define VSDEUGB
-        #ifdef   VSDEUGB
+        //#define RENDER_DEUGB
+        #ifdef   RENDER_DEUGB
                   char szBuf[MAX_PATH] = { 0 };
                   sprintf(szBuf, "C:\\Windows\\System32\\VSJitDebugger.exe -p %d", GetCurrentProcessId());
                   WinExec(szBuf, SW_SHOW);
