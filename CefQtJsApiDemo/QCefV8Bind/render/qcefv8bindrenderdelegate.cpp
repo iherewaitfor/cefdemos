@@ -46,5 +46,16 @@ bool QCefV8BindRenderDelegate::OnProcessMessageReceived(CefRefPtr<CefBrowser> br
         }
         return true;
     }
+    else if (message->GetName() == cefv8bind_protcool::InvokeResp::message_name()) 
+    {
+        QString bfId = getBrwoserFrameId(browser->GetIdentifier(), frame->GetIdentifier());
+        if (m_frameHandlers.contains(bfId)) {
+            CefRefPtr<QCefV8Handler> handler = m_frameHandlers.value(bfId);
+            if (handler) {
+                handler->onInvokeResponse(message,frame->GetV8Context());
+            }
+        }
+        return true;
+    }
     return false;
 }

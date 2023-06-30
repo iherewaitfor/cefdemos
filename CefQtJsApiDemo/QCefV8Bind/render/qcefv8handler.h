@@ -23,6 +23,8 @@ public:
         CefRefPtr<CefProcessMessage> message
     );
 
+	void onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRefPtr<CefV8Context> context);
+
 private:
 	//CefV8Handler
 	virtual bool Execute(const CefString& name,
