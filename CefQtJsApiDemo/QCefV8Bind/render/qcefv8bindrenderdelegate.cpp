@@ -5,6 +5,9 @@
 QString getBrwoserFrameId(int64 browserId, int64 frameId) {
     return QString("%1_%2").arg(browserId).arg(frameId);
 }
+void QCefV8BindRenderDelegate::OnWebKitInitialized(){
+    CefRegisterExtension(CefString(L"qcef/promisecreator"), KPromiseCreatorScript, nullptr);
+}
 void QCefV8BindRenderDelegate::OnContextCreated( CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame> frame,
     CefRefPtr<CefV8Context> context) {

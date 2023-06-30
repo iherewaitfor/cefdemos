@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "include/cef_v8.h"
 #include "qcefv8bindrenderdelegate.h"
+#include "../qcefipcprotocol.h"
+#include "asyncmethodcallback.h"
 class QClientRenderDelegate;
 class QCefV8Handler : public CefV8Handler
 {
@@ -28,12 +30,16 @@ private:
 		const CefV8ValueList& arguments,
 		CefRefPtr<CefV8Value>& retval,
 		CefString& exception);
-
 private:
-	IMPLEMENT_REFCOUNTING(QCefV8Handler);
+	CefRefPtr<CefListValue> toProcessMessage(const CefV8ValueList& source);
+	void sendIPCMessage(CefRefPtr<CefV8Context> context,
+		cefv8bind_protcool::PackageBase& ipc_protocol);
 
 private:
     CefRefPtr<CefFrame> m_frame;
+	QPointer<AsyncCefMethodCallbackMgr> m_asynCallbackMgr;
+
+	IMPLEMENT_REFCOUNTING(QCefV8Handler);
 };
 
 

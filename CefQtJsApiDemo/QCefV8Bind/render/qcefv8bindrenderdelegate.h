@@ -11,7 +11,7 @@ public:
 
 	virtual void OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info) {};
 
-	virtual void OnWebKitInitialized() {}
+	virtual void OnWebKitInitialized();
 
 	virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefDictionaryValue> extra_info) {}

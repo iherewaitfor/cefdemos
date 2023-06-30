@@ -19,6 +19,7 @@ public:
 	static CefRefPtr<CefV8Value> to(CefRefPtr<CefValue> const& v);
 
 	static QVariant from(const CefRefPtr<CefValue>& v);
+	static CefRefPtr<CefValue> from(CefRefPtr<CefV8Value> const& v);
 
 	static QVariantList convertFromCefListToVariantList(const  CefRefPtr<CefValue> & arg);
 	static QVariant converCefValueToVariant(const CefRefPtr<CefValue> arg);

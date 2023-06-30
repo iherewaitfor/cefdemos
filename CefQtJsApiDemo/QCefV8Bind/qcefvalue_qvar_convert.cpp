@@ -246,3 +246,55 @@ QVariantMap QCefValueConverter::convertFromCefValueToVariantMap( CefRefPtr<CefVa
 	}
 	return result;
 }
+
+CefRefPtr<CefValue> QCefValueConverter::from(CefRefPtr<CefV8Value> const& v)
+{
+	CefRefPtr<CefValue> result = CefValue::Create();	
+	if (v->IsString())
+	{
+		result->SetString(v->GetStringValue());
+	}
+	else if (v->IsUInt() || v->IsInt())
+	{
+		result->SetInt(v->IsUInt() ? v->GetUIntValue() : v->GetIntValue());
+	}
+	else if (v->IsNull())
+	{
+		result->SetNull();
+	}
+	else if (v->IsDouble())
+	{
+		result->SetDouble(v->GetDoubleValue());
+	}
+	else if (v->IsBool())
+	{
+		result->SetBool(v->GetBoolValue());
+	}
+	else if (v->IsArray())
+	{
+		CefRefPtr<CefListValue> listValue = CefListValue::Create();
+		result->SetList(listValue);
+		for (int i = 0; i < v->GetArrayLength(); ++i)
+		{
+			listValue->SetValue(i, QCefValueConverter::from(v->GetValue(i)));
+		}
+	}
+	else if (v->IsObject())
+	{
+		CefRefPtr<CefDictionaryValue> mapCefValue = CefDictionaryValue::Create();
+		result->SetDictionary(mapCefValue);
+
+		std::vector<CefString> keys;
+		if (v->GetKeys(keys))
+		{
+			std::vector<CefString>::const_iterator iter = keys.begin();
+			while (iter != keys.end())
+			{
+				mapCefValue->SetValue(*iter, QCefValueConverter::from(v->GetValue(*iter)));
+				++iter;
+			}
+		}
+	}
+
+	return result;
+}

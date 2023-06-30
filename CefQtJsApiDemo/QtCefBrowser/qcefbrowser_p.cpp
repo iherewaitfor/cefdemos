@@ -8,8 +8,6 @@
 #include <include/cef_browser.h>
 #include <QtCore>
 
-#include "qcefipcprotocol.h"
-
 static int win_id_generator = 0;
 QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
     : q_ptr(q)

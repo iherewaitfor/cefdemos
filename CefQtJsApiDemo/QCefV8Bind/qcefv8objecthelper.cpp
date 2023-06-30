@@ -157,6 +157,10 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 
 		cef_metaObject.metaProperties.append(cef_metaProp);
 	}
+	if (isNewValue)
+	{
+		QCefV8BindApp::getInstance()->d_func()->getObjectMgr()->insertBrowser(cef_metaObject.objectId, const_cast<QObject*>(itemObject));
+	}
 	return true;
 }
 CefRefPtr<CefV8Value> QCefV8ObjectHelper::getV8Object(quint32 objectId, CefRefPtr<CefV8Value> rootV8Object)
