@@ -42,6 +42,22 @@ QCefV8ObjectHelper::~QCefV8ObjectHelper(void)
 
 }
 
+CefRefPtr<CefV8Value> QCefV8ObjectHelper::bindV8Objects(const QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects, CefRefPtr<CefV8Context> context, CefRefPtr<CefV8Handler> v8Handler)
+{
+	CefRefPtr<CefV8Value> rootV8;
+	foreach(CefMetaObject cefMetaObject, cef_metaObjects)
+	{
+		CefRefPtr<CefV8Value> v8Obj = createV8Object(cefMetaObject, v8Handler, context);
+
+		if (cefMetaObject.parentId == 0)
+		{
+			rootV8 = v8Obj;
+		}
+	}
+
+	return rootV8;
+}
+
 
 void QCefV8ObjectHelper::convertQObjectToCefObjects(const QObject *itemObject, const QObject*parentObject, QList<cefv8bind_protcool::CefMetaObject> &cef_metaObjects)
 {
@@ -109,18 +125,18 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 		QMetaMethod method = metaObject->method(i);
 		if (method.methodType() == QMetaMethod::Method)
 		{
-			CefMetaMethod cef_metaMethord;
-			cef_metaMethord.methodType = method.methodType();
-			cef_metaMethord.methodIndex = i;
-			cef_metaMethord.methodName = QCefMetaUtilities::getMethodName(QString::fromLatin1(method.methodSignature()));
-			cef_metaMethord.returnTypeName = QString::fromLatin1(method.typeName());
+			CefMetaMethod cef_metaMethod;
+			cef_metaMethod.methodType = method.methodType();
+			cef_metaMethod.methodIndex = i;
+			cef_metaMethod.methodName = QCefMetaUtilities::getMethodName(QString::fromLatin1(method.methodSignature()));
+			cef_metaMethod.returnTypeName = QString::fromLatin1(method.typeName());
 
 			QList<QByteArray> types = method.parameterTypes();
 			foreach(QByteArray item, types)
 			{
-				cef_metaMethord.parameterTypes << QString::fromLatin1(item.data(), item.size());
+				cef_metaMethod.parameterTypes << QString::fromLatin1(item.data(), item.size());
 			}
-			cef_metaObject.metaMethods.append(cef_metaMethord);
+			cef_metaObject.metaMethods.append(cef_metaMethod);
 		}
 	}
 
@@ -261,6 +277,12 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8Object(const cefv8bind_protcoo
 				v8Object->SetValue(QCefValueConverter::to(propertyName), propV8Object, V8_PROPERTY_ATTRIBUTE_READONLY);
 			}
 		}
+	}
+	if (parentV8Object)
+	{
+		//把创建的对象挂到parentObject上，如果有parent的话。
+		const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
+		parentV8Object->SetValue(cefMetaObject.objectName.toStdString(), v8Object, attributes);
 	}
 
 	return v8Object;

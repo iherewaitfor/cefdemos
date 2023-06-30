@@ -9,7 +9,6 @@
 #include <QtCore>
 
 #include "qcefipcprotocol.h"
-#include "qcefv8objecthelper.h"
 
 static int win_id_generator = 0;
 QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
@@ -101,10 +100,5 @@ void QCefBrowserPrivate::onCefMetaReq(CefRefPtr<CefBrowser> browser, CefRefPtr<C
 }
 
 void QCefBrowserPrivate::onCefMetaReqSlot(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) {
-    QList<cefv8bind_protcool::CefMetaObject>  cef_metaObjects;
-    QCefV8ObjectHelper objectHelper;
-    objectHelper.convertQObjectToCefObjects(qCefCoreAppPrivate()->getApitRootObject(), nullptr, cef_metaObjects);
-    cefv8bind_protcool::CefApiMetaDatasResponse response;
-    response.cef_metaObjects = cef_metaObjects;
-    frame->SendProcessMessage(PID_RENDERER, response.makeIPCMessage());
+
 }

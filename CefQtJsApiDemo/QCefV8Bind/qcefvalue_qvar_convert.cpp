@@ -29,6 +29,7 @@ CefRefPtr<CefValue> QCefValueConverter::to( const QStringList& v) {
 	{
 		list->SetString(i, QCefValueConverter::to(v.at(i)));
 	}
+	retValue->SetList(list);
 	return retValue;
 }
 

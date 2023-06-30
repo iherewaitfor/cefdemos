@@ -42,14 +42,14 @@ bool cefv8bind_protcool::CefMetaProperty::unPack(const CefRefPtr<CefListValue> p
 
 void cefv8bind_protcool::CefMetaObject::pack(CefRefPtr<CefListValue> protocolMsg)
 {
-	CefRefPtr<CefListValue> cef_metaMethords = CefListValue::Create();
+	CefRefPtr<CefListValue> cef_metaMethods = CefListValue::Create();
 	for (int i = 0; i < metaMethods.count(); ++i)
 	{
 		CefRefPtr<CefListValue> protocolItem = CefListValue::Create();
 		CefMetaMethod item = metaMethods.at(i);
 		item.pack(protocolItem);
 
-		cef_metaMethords->SetList(i, protocolItem);
+		cef_metaMethods->SetList(i, protocolItem);
 
 	}
 
@@ -67,7 +67,7 @@ void cefv8bind_protcool::CefMetaObject::pack(CefRefPtr<CefListValue> protocolMsg
 	protocolMsg->SetString(1, QCefValueConverter::to(className));
 	protocolMsg->SetInt(2, objectId);
 	protocolMsg->SetInt(3, parentId);
-	protocolMsg->SetList(4, cef_metaMethords);
+	protocolMsg->SetList(4, cef_metaMethods);
 	protocolMsg->SetList(5, cef_metaPropertys);
 	
 }
@@ -79,11 +79,11 @@ bool cefv8bind_protcool::CefMetaObject::unPack(const CefRefPtr<CefListValue> pro
 	objectId = protocolMsg->GetInt(2);
 	parentId = protocolMsg->GetInt(3);
 
-	CefRefPtr<CefListValue> cef_metaMethords = protocolMsg->GetList(4);
-	for (size_t i = 0; i < cef_metaMethords->GetSize(); ++i)
+	CefRefPtr<CefListValue> cef_metaMethods = protocolMsg->GetList(4);
+	for (size_t i = 0; i < cef_metaMethods->GetSize(); ++i)
 	{
 		CefMetaMethod item;
-		if (item.unPack(cef_metaMethords->GetList(i)))
+		if (item.unPack(cef_metaMethods->GetList(i)))
 		{
 			metaMethods.append(item);
 		}

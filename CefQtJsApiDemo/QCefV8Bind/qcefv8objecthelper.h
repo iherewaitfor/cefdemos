@@ -18,7 +18,12 @@ public:
 	//browser
 	void convertQObjectToCefObjects(const QObject *rootObject, const QObject*parentObject, QList<cefv8bind_protcool::CefMetaObject> &cef_metaObjects);
 	bool convertQObjectToCefObject(const QObject *itemObject, const QObject *parentObject, cefv8bind_protcool::CefMetaObject &cef_metaObject);
-	
+	//for render
+
+	CefRefPtr<CefV8Value> bindV8Objects(const QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects,
+		CefRefPtr<CefV8Context> context, CefRefPtr<CefV8Handler> v8Handler);
+
+
 	CefRefPtr<CefV8Value> createV8Object(const cefv8bind_protcool::CefMetaObject& cefMetaObject, CefRefPtr<CefV8Handler> v8Handler, CefRefPtr<CefV8Context> context);
 private:
 	CefRefPtr<CefV8Value> getV8Object(quint32 objectId, CefRefPtr<CefV8Value> rootV8Object);
