@@ -2,6 +2,7 @@
 #include "qcefv8bindapp.h"
 #include "qcefv8bindapp_p.h"
 #include "qcefv8bindutility.h"
+#include "autosignalsemitter.h"
 
 using namespace cefv8bind_protcool;
 const char KV8ObjectName[] = "V8ObjectName";
@@ -123,7 +124,7 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 	for(int i = 0; i < metaObject->methodCount(); ++i)
 	{
 		QMetaMethod method = metaObject->method(i);
-		if (method.methodType() == QMetaMethod::Method)
+		if (method.methodType() == QMetaMethod::Method || method.methodType() == QMetaMethod::Signal)
 		{
 			CefMetaMethod cef_metaMethod;
 			cef_metaMethod.methodType = method.methodType();
@@ -137,6 +138,13 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 				cef_metaMethod.parameterTypes << QString::fromLatin1(item.data(), item.size());
 			}
 			cef_metaObject.metaMethods.append(cef_metaMethod);
+		}
+		if (method.methodType() == QMetaMethod::Signal && isNewValue)
+		{
+			//to do: connect the signal of the object
+			AutoSignalsEmitter* autoEmitter = new AutoSignalsEmitter(method, const_cast<QObject*>(itemObject));
+			QObject::connect(itemObject, QString("2").append(method.methodSignature()).toStdString().c_str(),
+				autoEmitter, SLOT(proxySlot()), Qt::DirectConnection);
 		}
 	}
 
@@ -258,7 +266,7 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8Object(const cefv8bind_protcoo
 		{
 			methodV8Object = CefV8Value::CreateObject(nullptr, nullptr);
 		}
-
+		//存储方法的元数据，方便后续调用时获取。
 		QSharedPointer<QObject> objMethod = QSharedPointer<QObject>(new QObject());
 		objMethod->setProperty(KCefMetaMethod, QVariant::fromValue<cefv8bind_protcool::CefMetaMethod>(metaMethod));
 		objMethod->setProperty(KObjectId, cefMetaObject.objectId);

@@ -12,6 +12,7 @@ void NumberLogic::setCounter(qint32 counter) {
 }
 int NumberLogic::addCount(qint32 i) {
     m_counter += i;
+    emit counterChanged(m_counter);
     return m_counter;
 }
 void NumberLogic::testVoidAdd(qint32 a, qint32 b) {

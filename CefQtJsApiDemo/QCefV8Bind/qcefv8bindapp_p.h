@@ -28,6 +28,9 @@ public:
 	{
 		return m_objectMgr;
 	}
+	CefRefPtr<QCefV8BindBrowserDelegate> getBrowserDelegate() {
+		return m_browerDelegate;
+	}
 private:
 	void _init();
 
