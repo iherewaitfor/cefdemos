@@ -20,6 +20,7 @@ int main(int argc, char** argv )
     NumberLogic* numberLogic = new NumberLogic();
     SubNumberLogic* subNumberLogic = new SubNumberLogic(numberLogic);
     subNumberLogic;
+
     QCefV8BindApp::getInstance()->setV8RootObject(numberLogic);
     QCefCoreApp::getInstance()->createBrowser("https://www.baidu.com");
     QObject::connect(QCefCoreApp::getInstance(), SIGNAL(allClosed()), &cefClient, SLOT(shutDownCef()));

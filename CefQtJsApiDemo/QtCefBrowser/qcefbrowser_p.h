@@ -21,24 +21,22 @@ public:
     QCefBrowserPrivate(QCefBrowser* q, QString url);
     ~QCefBrowserPrivate();
 
-    CefRefPtr<CefBrowserHost> browserHost();
     void createBrowser();
     void closeBrowser();
+
     void OnAfterCreated(CefRefPtr<CefBrowser> browser);
-    void OnBeforeClose();
     void OnClosing(CefRefPtr<CefBrowser> browser);
+    void OnBeforeClose();
 
     void OnAfterCreatedPoppup(CefRefPtr<CefBrowser> browser);
     void OnBeforeClosePoppup(CefRefPtr<CefBrowser> browser);
-
-    void onCefMetaReq(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame);
 signals:
     void afterCreated(CefRefPtr<CefBrowser> browser);
-    void beforeClose();
     void closing(CefRefPtr<CefBrowser> browser);
+    void beforeClose();
+
     void afterCreatedPoppup(CefRefPtr<CefBrowser> browser);
     void beforeClosePoppup(CefRefPtr<CefBrowser> browser);
-    void cefMetaReq(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame);
 
 private slots:
     void OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser);
@@ -46,6 +44,4 @@ private slots:
     void OnClosingSlot(CefRefPtr<CefBrowser> browser);
     void afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser);
     void beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser);
-
-    void onCefMetaReqSlot(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame);
 };

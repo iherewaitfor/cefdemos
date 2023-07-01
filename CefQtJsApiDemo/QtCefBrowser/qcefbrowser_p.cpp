@@ -24,9 +24,6 @@ QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
 
     connect(this, SIGNAL(afterCreatedPoppup(CefRefPtr<CefBrowser>)), SLOT(afterCreatedPoppupSlot(CefRefPtr<CefBrowser>)));
     connect(this, SIGNAL(beforeClosePoppup(CefRefPtr<CefBrowser>)), SLOT(beforeClosePoppupSlot(CefRefPtr<CefBrowser>)));
-    connect(this, SIGNAL(cefMetaReq(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>)),
-        SLOT(onCefMetaReqSlot(CefRefPtr<CefBrowser>, CefRefPtr<CefFrame>)));
-
 }
 
 QCefBrowserPrivate::~QCefBrowserPrivate()
@@ -59,44 +56,42 @@ void QCefBrowserPrivate::OnAfterCreated(CefRefPtr<CefBrowser> browser)
     emit afterCreated(browser);
 }
 
+void QCefBrowserPrivate::OnClosing(CefRefPtr<CefBrowser> browser)
+{
+    InterlockedExchange(&m_closing, 1);
+    emit closing(browser);
+}
+
 void QCefBrowserPrivate::OnBeforeClose()
 {
     emit beforeClose();
-}
-void QCefBrowserPrivate::OnClosing(CefRefPtr<CefBrowser> browser)
-{
-    emit closing(browser);
 }
 
 void QCefBrowserPrivate::OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser) {
 
 }
-void QCefBrowserPrivate::OnBeforeCloseSlot() {
-    m_browser = nullptr;
-    qCefCoreAppPrivate()->removeBrowser(q_ptr);
-}
+
 void QCefBrowserPrivate::OnClosingSlot(CefRefPtr<CefBrowser> browser) {
-    InterlockedExchange(&m_closing, 1);
+    m_browser = nullptr;
 }
 
+void QCefBrowserPrivate::OnBeforeCloseSlot() {
+    
+    qCefCoreAppPrivate()->removeBrowser(q_ptr);
+}
 
 void QCefBrowserPrivate::OnAfterCreatedPoppup(CefRefPtr<CefBrowser> browser) {
     emit afterCreatedPoppup(browser);
 }
+
 void QCefBrowserPrivate::OnBeforeClosePoppup(CefRefPtr<CefBrowser> browser) {
     emit beforeClosePoppup(browser);
 }
+
 void QCefBrowserPrivate::afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser) {
     qCefCoreAppPrivate()->addPopupBrowser(browser);
 }
+
 void QCefBrowserPrivate::beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser) {
     qCefCoreAppPrivate()->removePopupBrowser(browser);
-}
-
-void QCefBrowserPrivate::onCefMetaReq(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) {
-    emit cefMetaReq(browser, frame);
-}
-
-void QCefBrowserPrivate::onCefMetaReqSlot(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame) {
-
 }
