@@ -31,6 +31,7 @@ QCefBrowserPrivate::~QCefBrowserPrivate()
 }
 void QCefBrowserPrivate::createBrowser() {
     CefRefPtr<SimpleHandler> clientHandler = new SimpleHandler(shared_from_this());
+    m_clientHandler = clientHandler;
 
     CefWindowInfo windowInfo;
     windowInfo.SetAsPopup(NULL, "test");
@@ -42,17 +43,14 @@ void QCefBrowserPrivate::createBrowser() {
 
 void QCefBrowserPrivate::closeBrowser()
 {
-    if (!m_browser || m_closing)
-    {
-        return;
+    if (m_clientHandler) {
+        m_clientHandler->closeMainBrowser();
     }
-    m_browser->GetHost()->CloseBrowser(true);
 }
 
 
 void QCefBrowserPrivate::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
-    m_browser = browser;
     emit afterCreated(browser);
 }
 
@@ -72,7 +70,7 @@ void QCefBrowserPrivate::OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser) {
 }
 
 void QCefBrowserPrivate::OnClosingSlot(CefRefPtr<CefBrowser> browser) {
-    m_browser = nullptr;
+    m_clientHandler = nullptr;
 }
 
 void QCefBrowserPrivate::OnBeforeCloseSlot() {

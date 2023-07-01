@@ -204,7 +204,7 @@ void SimpleHandler::closeBrowser() {
     if (!CefCurrentlyOn(TID_UI)) {
         return;
     }
-    if (m_browser) {
+    if (m_browser && !m_closing) {
         m_browser->GetHost()->CloseBrowser(false);
     }
 }
