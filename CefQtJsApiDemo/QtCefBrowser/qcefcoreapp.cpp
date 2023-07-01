@@ -20,9 +20,12 @@ QCefCoreApp* QCefCoreApp::getInstance()
     static QCefCoreApp app;
     return g_instance;
 }
-QPointer<QCefBrowser> QCefCoreApp::createBrowser(const QString url) {
-    QPointer<QCefBrowser> browser = QPointer<QCefBrowser>(new QCefBrowser(url));
-    d_ptr->addBrowser(browser);
+QSharedPointer<QCefBrowser> QCefCoreApp::createBrowser(const QString url) {
+    if (d_ptr->m_bClosing) {
+        return QSharedPointer<QCefBrowser>();
+    }
+    QSharedPointer<QCefBrowser> browser = QSharedPointer<QCefBrowser>(new QCefBrowser(url));
+    d_ptr->addBrowser(browser->getId(), browser);
     return browser;
 }
 void QCefCoreApp::setApiRoot(QPointer<QObject> qApiRootObject) {

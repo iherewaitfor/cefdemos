@@ -118,7 +118,7 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
 void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
     CEF_REQUIRE_UI_THREAD();
     if (browserId == browser->GetIdentifier()) {
-        m_browerPrivate->OnBeforeClose();
+        m_browerPrivate->OnBeforeClose(browser);
     }
     else {
         bool isLastPopupBrowserDelete = false;

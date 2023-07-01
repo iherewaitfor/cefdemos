@@ -16,7 +16,7 @@ public:
 	QCefCoreApp();
 	virtual ~QCefCoreApp();
 	static QCefCoreApp* getInstance();
-	QPointer<QCefBrowser> createBrowser(const QString url);
+	QSharedPointer<QCefBrowser> createBrowser(const QString url);
 	void setApiRoot(QPointer<QObject> qApiRootObject);
 	QPointer<QObject> getApitRootObject();
 	void regBrowserDelegate(client::BrowserDelegate*);

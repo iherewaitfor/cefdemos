@@ -6,14 +6,10 @@ QCefBrowser::QCefBrowser(QString url)
     , d_ptr(new QCefBrowserPrivate(this, url))
 {
     d_ptr->createBrowser();
-    qCefCoreAppPrivate()->addBrowser(QPointer<QCefBrowser>(this));
 }
 
 QCefBrowser::~QCefBrowser()
 {
-    
-    qCefCoreAppPrivate()->removeBrowser(QPointer<QCefBrowser>(this));
-
     d_ptr->q_ptr = NULL;
 }
 
@@ -26,6 +22,9 @@ QString QCefBrowser::url() const
 {
     return d_ptr->m_url;
 }
-int QCefBrowser::uniqueWindowId() const {
-    return d_ptr->m_uniqueWindowId;
+int QCefBrowser::getId() const {
+    return d_ptr->m_Id;
+}
+int QCefBrowser::getBrowserId() {
+    return d_ptr->m_browserId;
 }

@@ -21,15 +21,16 @@ signals:
     void allClosed();
 public:
     QCefCoreApp* q_ptr;
-    std::set<QPointer<QCefBrowser>> m_browsers;
-    QList<CefRefPtr<CefBrowser>> m_popupBrowsers;
+    std::map<int,QSharedPointer<QCefBrowser>> m_browsers;
+    std::set<int> m_popupBrowsers;
     QPointer<QObject> m_qApiRootObject;
     std::set<client::BrowserDelegate*> m_browserDelegates;
     std::set<client::RenderDelegate*> m_renderDelegates;
+    bool m_bClosing;
 public:
 
     QCefCoreAppPrivate(QCefCoreApp* q)
-        : q_ptr(q)
+        : q_ptr(q), m_bClosing(false)
     {
         qRegisterMetaType<CefRefPtr<CefBrowser>>("CefRefPtr<CefBrowser>");
         qRegisterMetaType<CefRefPtr<CefFrame>>("CefRefPtr<CefFrame>");
@@ -42,32 +43,27 @@ public:
     {
     }
 
-    void addBrowser(QPointer<QCefBrowser> v)
+    void addBrowser(int id, QSharedPointer<QCefBrowser> v)
     {
-        m_browsers.insert(v);
+        m_browsers[id] = v;
     }
 
-    void removeBrowser(QPointer<QCefBrowser> v)
+    void removeBrowser(int id)
     {
-        m_browsers.erase(v);
+        m_browsers.erase(id);
 
-        if (m_browsers.empty() && m_popupBrowsers.isEmpty())
+        if (m_browsers.empty() && m_popupBrowsers.empty())
         {
             // to do quit
             quit();
         }
     }
-    void addPopupBrowser(CefRefPtr<CefBrowser> browser) {
-        m_popupBrowsers.push_back(browser);
+    void addPopupBrowser(int browserId) {
+        m_popupBrowsers.insert(browserId);
     }
-    void removePopupBrowser(CefRefPtr<CefBrowser> browser) {
-        for (int i = 0; i < m_popupBrowsers.size(); i++) {
-            if (m_popupBrowsers.at(i)->GetIdentifier() == browser->GetIdentifier()) {
-                m_popupBrowsers.removeAt(i);
-                break;
-            }
-        }
-        if (m_popupBrowsers.isEmpty() && m_browsers.empty()) {
+    void removePopupBrowser(int browserId) {
+        m_popupBrowsers.erase(browserId);
+        if (m_popupBrowsers.empty() && m_browsers.empty()) {
            quit();
         }
     }
@@ -86,6 +82,7 @@ public:
     }
 public slots:
     void quit() {
+        m_bClosing = true;
         CefQuitMessageLoop();
         emit allClosed();
     }

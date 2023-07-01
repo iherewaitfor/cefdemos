@@ -17,7 +17,8 @@ public:
 
     CefRefPtr<SimpleHandler> m_clientHandler;
     volatile unsigned long m_closing;
-    int m_uniqueWindowId;
+    int m_Id;//只是QCefBrowser的id，创建就有。
+    int m_browserId; //实际的browser创建后才有。
 public:
     QCefBrowserPrivate(QCefBrowser* q, QString url);
     ~QCefBrowserPrivate();
@@ -27,23 +28,23 @@ public:
 
     void OnAfterCreated(CefRefPtr<CefBrowser> browser);
     void OnClosing(CefRefPtr<CefBrowser> browser);
-    void OnBeforeClose();
+    void OnBeforeClose(CefRefPtr<CefBrowser> browser);
 
     void OnAfterCreatedPoppup(CefRefPtr<CefBrowser> browser);
     void OnBeforeClosePoppup(CefRefPtr<CefBrowser> browser);
 signals:
-    void afterCreated(CefRefPtr<CefBrowser> browser);
-    void closing(CefRefPtr<CefBrowser> browser);
-    void beforeClose();
+    void afterCreated(int browserId);
+    void closing(int browserId);
+    void beforeClose(int browserId);
 
-    void afterCreatedPoppup(CefRefPtr<CefBrowser> browser);
-    void beforeClosePoppup(CefRefPtr<CefBrowser> browser);
+    void afterCreatedPoppup(int browserId);
+    void beforeClosePoppup(int browserId);
 
 private slots:
-    void OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser);
-    void OnBeforeCloseSlot();
-    void OnClosingSlot(CefRefPtr<CefBrowser> browser);
+    void OnAfterCreatedSlot(int browserId);
+    void OnBeforeCloseSlot(int browserId);
+    void OnClosingSlot(int browserId);
 
-    void afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser);
-    void beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser);
+    void afterCreatedPoppupSlot(int browserId);
+    void beforeClosePoppupSlot(int browserId);
 };

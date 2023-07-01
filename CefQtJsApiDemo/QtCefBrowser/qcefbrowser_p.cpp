@@ -15,15 +15,16 @@ QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
     , m_parent(NULL)
     , m_url(url)
     , m_closing(0)
+    , m_browserId(0)
 {
-    m_uniqueWindowId = ++win_id_generator;
+    m_Id = ++win_id_generator;
 
-    connect(this, SIGNAL(afterCreated(CefRefPtr<CefBrowser>)), SLOT(OnAfterCreatedSlot(CefRefPtr<CefBrowser>)));
-    connect(this, SIGNAL(beforeClose()), SLOT(OnBeforeCloseSlot()));
-    connect(this, SIGNAL(closing(CefRefPtr<CefBrowser>)), SLOT(OnClosingSlot(CefRefPtr<CefBrowser>)));
+    connect(this, SIGNAL(afterCreated(int)), SLOT(OnAfterCreatedSlot(int)));
+    connect(this, SIGNAL(beforeClose(int)), SLOT(OnBeforeCloseSlot(int)));
+    connect(this, SIGNAL(closing(int)), SLOT(OnClosingSlot(int)));
 
-    connect(this, SIGNAL(afterCreatedPoppup(CefRefPtr<CefBrowser>)), SLOT(afterCreatedPoppupSlot(CefRefPtr<CefBrowser>)));
-    connect(this, SIGNAL(beforeClosePoppup(CefRefPtr<CefBrowser>)), SLOT(beforeClosePoppupSlot(CefRefPtr<CefBrowser>)));
+    connect(this, SIGNAL(afterCreatedPoppup(int)), SLOT(afterCreatedPoppupSlot(int)));
+    connect(this, SIGNAL(beforeClosePoppup(int)), SLOT(beforeClosePoppupSlot(int)));
 }
 
 QCefBrowserPrivate::~QCefBrowserPrivate()
@@ -51,65 +52,47 @@ void QCefBrowserPrivate::closeBrowser()
 
 void QCefBrowserPrivate::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
-    emit afterCreated(browser);
+    m_browserId = browser->GetIdentifier();
+    emit afterCreated(m_browserId);
 }
 
 void QCefBrowserPrivate::OnClosing(CefRefPtr<CefBrowser> browser)
 {
     InterlockedExchange(&m_closing, 1);
-    emit closing(browser);
+    emit closing(browser->GetIdentifier());
 }
 
-void QCefBrowserPrivate::OnBeforeClose()
+void QCefBrowserPrivate::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
-    emit beforeClose();
+    emit beforeClose(browser->GetIdentifier());
 }
 
-void QCefBrowserPrivate::OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser) {
-    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
-    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
-    {
-        browserDelegate->OnBrowserCreated(browser);
-    }
+void QCefBrowserPrivate::OnAfterCreatedSlot(int browserId) {
+
 }
 
-void QCefBrowserPrivate::OnClosingSlot(CefRefPtr<CefBrowser> browser) {
-    m_clientHandler = nullptr;
-    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
-    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
-    {
-        browserDelegate->OnBrowserClosing(browser);
-    }
+void QCefBrowserPrivate::OnClosingSlot(int browserId) {
+
 }
 
-void QCefBrowserPrivate::OnBeforeCloseSlot() {
+void QCefBrowserPrivate::OnBeforeCloseSlot(int browserId) {
     
-    qCefCoreAppPrivate()->removeBrowser(q_ptr);
+    qCefCoreAppPrivate()->removeBrowser(m_Id);
 }
 
 void QCefBrowserPrivate::OnAfterCreatedPoppup(CefRefPtr<CefBrowser> browser) {
-    emit afterCreatedPoppup(browser);
+    emit afterCreatedPoppup(browser->GetIdentifier());
 }
 
 void QCefBrowserPrivate::OnBeforeClosePoppup(CefRefPtr<CefBrowser> browser) {
-    emit beforeClosePoppup(browser);
+    emit beforeClosePoppup(browser->GetIdentifier());
 }
 
-void QCefBrowserPrivate::afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser) {
-    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
-    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
-    {
-        browserDelegate->OnBrowserCreated(browser);
-    }
-    qCefCoreAppPrivate()->addPopupBrowser(browser);
+void QCefBrowserPrivate::afterCreatedPoppupSlot(int browserId) {
+    qCefCoreAppPrivate()->addPopupBrowser(browserId);
 }
 
-void QCefBrowserPrivate::beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser) {
-    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
-    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
-    {
-        browserDelegate->OnBrowserClosed(browser);
-    }
+void QCefBrowserPrivate::beforeClosePoppupSlot(int browserId) {
 
-    qCefCoreAppPrivate()->removePopupBrowser(browser);
+    qCefCoreAppPrivate()->removePopupBrowser(browserId);
 }

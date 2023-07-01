@@ -18,7 +18,8 @@ public:
     virtual ~QCefBrowser();
     void close();
     QString url() const;
-    int uniqueWindowId() const;
+    int getId() const;
+    int getBrowserId();
 private:
     std::tr1::shared_ptr<QCefBrowserPrivate> d_ptr;
 };
