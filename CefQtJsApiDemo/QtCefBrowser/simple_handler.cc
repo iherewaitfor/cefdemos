@@ -108,7 +108,6 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
           return true; //不关闭。先删除弹出页面。close popupbrowsers first.
       }
       else {
-          m_browerPrivate->OnClosing(browser);
           m_browser = nullptr; //去掉引用计数，以便退出。
           return false;//执行关闭。
       }

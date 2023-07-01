@@ -66,11 +66,20 @@ void QCefBrowserPrivate::OnBeforeClose()
 }
 
 void QCefBrowserPrivate::OnAfterCreatedSlot(CefRefPtr<CefBrowser> browser) {
-
+    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
+    {
+        browserDelegate->OnBrowserCreated(browser);
+    }
 }
 
 void QCefBrowserPrivate::OnClosingSlot(CefRefPtr<CefBrowser> browser) {
     m_clientHandler = nullptr;
+    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
+    {
+        browserDelegate->OnBrowserClosing(browser);
+    }
 }
 
 void QCefBrowserPrivate::OnBeforeCloseSlot() {
@@ -87,9 +96,20 @@ void QCefBrowserPrivate::OnBeforeClosePoppup(CefRefPtr<CefBrowser> browser) {
 }
 
 void QCefBrowserPrivate::afterCreatedPoppupSlot(CefRefPtr<CefBrowser> browser) {
+    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
+    {
+        browserDelegate->OnBrowserCreated(browser);
+    }
     qCefCoreAppPrivate()->addPopupBrowser(browser);
 }
 
 void QCefBrowserPrivate::beforeClosePoppupSlot(CefRefPtr<CefBrowser> browser) {
+    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
+    {
+        browserDelegate->OnBrowserClosed(browser);
+    }
+
     qCefCoreAppPrivate()->removePopupBrowser(browser);
 }
