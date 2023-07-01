@@ -63,10 +63,8 @@ void QCefV8BindBrowserDelegate::OnProcessMessageReceivedSlot(CefRefPtr<CefBrowse
         if (req.unPack(message->GetArgumentList()))
         {
             int bId = browser->GetIdentifier();
-            int fFrameId = frame->GetIdentifier();
-            QString bfid = QString("%1_%2").arg(bId).arg(fFrameId);
+            int64 fFrameId = frame->GetIdentifier();
             int renderPid = req.render_pid;
-            bfid;
             renderPid;
             bId;
             fFrameId;
@@ -104,8 +102,6 @@ void QCefV8BindBrowserDelegate::OnProcessMessageReceivedSlot(CefRefPtr<CefBrowse
                     rsp.returnValue = QCefValueConverter::to(metaInvoker.result);
                     frame->SendProcessMessage(PID_RENDERER, rsp.makeIPCMessage());
                 }
-
-
             }
         }
 

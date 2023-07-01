@@ -37,7 +37,7 @@ public:
 
 private:
 
-    QMap<QString, CefRefPtr<QCefV8Handler>> m_frameHandlers;
+    QMap<int64, CefRefPtr<QCefV8Handler>> m_frameHandlers;
 
     DISALLOW_COPY_AND_ASSIGN(QCefV8BindRenderDelegate);
     IMPLEMENT_REFCOUNTING(QCefV8BindRenderDelegate);

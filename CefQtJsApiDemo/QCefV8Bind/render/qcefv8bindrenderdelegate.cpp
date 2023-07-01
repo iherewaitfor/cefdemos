@@ -16,17 +16,17 @@ void QCefV8BindRenderDelegate::OnContextCreated( CefRefPtr<CefBrowser> browser,
     frame->SendProcessMessage(PID_BROWSER, ipc_protocol.makeIPCMessage());
 
     CefRefPtr<QCefV8Handler> handler = new QCefV8Handler(frame);
-    m_frameHandlers.insert(getBrwoserFrameId(browser->GetIdentifier(),frame->GetIdentifier()), handler);
+    m_frameHandlers.insert(frame->GetIdentifier(), handler);
 }
 
 void QCefV8BindRenderDelegate::OnContextReleased(CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame> frame,
     CefRefPtr<CefV8Context> context) {
-    QString bfId = getBrwoserFrameId(browser->GetIdentifier(), frame->GetIdentifier());
-    if (m_frameHandlers.contains(bfId))
+    int64 frameId = frame->GetIdentifier();
+    if (m_frameHandlers.contains(frameId))
     {
-        m_frameHandlers[bfId]->clear();
-        m_frameHandlers.remove(bfId);
+        m_frameHandlers[frameId]->clear();
+        m_frameHandlers.remove(frameId);
     }
 }
 
@@ -37,9 +37,9 @@ bool QCefV8BindRenderDelegate::OnProcessMessageReceived(CefRefPtr<CefBrowser> br
 
     if (message->GetName() == cefv8bind_protcool::CefApiMetaDatasResponse::message_name())
     {
-        QString bfId = getBrwoserFrameId(browser->GetIdentifier(), frame->GetIdentifier());
-        if (m_frameHandlers.contains(bfId)) {
-            CefRefPtr<QCefV8Handler> handler = m_frameHandlers.value(bfId);
+        int64 frameId = frame->GetIdentifier();
+        if (m_frameHandlers.contains(frameId)) {
+            CefRefPtr<QCefV8Handler> handler = m_frameHandlers.value(frameId);
             if (handler) {
                 handler->on_cefMetaDatasResponse(browser, frame, message);
             }
@@ -48,9 +48,9 @@ bool QCefV8BindRenderDelegate::OnProcessMessageReceived(CefRefPtr<CefBrowser> br
     }
     else if (message->GetName() == cefv8bind_protcool::InvokeResp::message_name()) 
     {
-        QString bfId = getBrwoserFrameId(browser->GetIdentifier(), frame->GetIdentifier());
-        if (m_frameHandlers.contains(bfId)) {
-            CefRefPtr<QCefV8Handler> handler = m_frameHandlers.value(bfId);
+        int64 frameId = frame->GetIdentifier();
+        if (m_frameHandlers.contains(frameId)) {
+            CefRefPtr<QCefV8Handler> handler = m_frameHandlers.value(frameId);
             if (handler) {
                 handler->onInvokeResponse(message,frame->GetV8Context());
             }
