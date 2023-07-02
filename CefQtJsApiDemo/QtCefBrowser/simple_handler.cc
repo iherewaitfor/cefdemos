@@ -93,6 +93,11 @@ void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
       m_popupBrowsers.push_back(browser);
       m_browerPrivate->OnAfterCreatedPoppup(browser);
   }
+  std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+  Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
+  {
+      browserDelegate->OnBrowserCreated(browser);
+  }
 }
 
 bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
@@ -105,6 +110,12 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
               (*it)->GetHost()->CloseBrowser(false);
           }
           m_browerPrivate->OnClosing(browser);
+          std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+          Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
+          {
+              browserDelegate->OnBrowserClosing(browser);
+          }
+
           return true; //不关闭。先删除弹出页面。close popupbrowsers first.
       }
       else {
@@ -112,11 +123,23 @@ bool SimpleHandler::DoClose(CefRefPtr<CefBrowser> browser) {
           return false;//执行关闭。
       }
   }
+  else {
+      std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+      Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
+      {
+          browserDelegate->OnBrowserClosing(browser);
+      }
+  }
   return false;
 }
 
 void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
     CEF_REQUIRE_UI_THREAD();
+    std::set<client::BrowserDelegate*> browserDelegates = qCefCoreAppPrivate()->browserDelegates();
+    Q_FOREACH(client::BrowserDelegate * browserDelegate, browserDelegates)
+    {
+        browserDelegate->OnBrowserClosed(browser);
+    }
     if (browserId == browser->GetIdentifier()) {
         m_browerPrivate->OnBeforeClose(browser);
     }

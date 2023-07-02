@@ -30,12 +30,16 @@ QCefV8BindBrowserDelegate::~QCefV8BindBrowserDelegate()
 
 }
 
-void QCefV8BindBrowserDelegate::OnBrowserCreated(CefRefPtr<CefBrowser> browser, int)
+void QCefV8BindBrowserDelegate::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
 {
 
 }
 
-void QCefV8BindBrowserDelegate::OnBrowserClosed(CefRefPtr<CefBrowser> browser, int)
+void QCefV8BindBrowserDelegate::OnBrowserClosing(CefRefPtr<CefBrowser> browser) {
+
+}
+
+void QCefV8BindBrowserDelegate::OnBrowserClosed(CefRefPtr<CefBrowser> browser)
 {
 }
 

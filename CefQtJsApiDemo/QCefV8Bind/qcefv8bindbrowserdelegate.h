@@ -13,6 +13,15 @@ class QCefV8BindBrowserDelegate : public QObject,  public virtual CefBaseRefCoun
 public:
 	QCefV8BindBrowserDelegate();
 	~QCefV8BindBrowserDelegate();
+	//client::BrowserDelegate Methods
+	virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser);
+	virtual void OnBrowserClosing(CefRefPtr<CefBrowser> browser);
+	virtual void OnBrowserClosed(CefRefPtr<CefBrowser> browser);
+	virtual bool OnProcessMessageReceived(
+		CefRefPtr<CefBrowser> browser,
+		CefRefPtr<CefFrame> frame,
+		CefProcessId source_process,
+		CefRefPtr<CefProcessMessage> message);
 signals:
 	void processMessageReceived(
 		CefRefPtr<CefBrowser> browser,
@@ -25,17 +34,8 @@ private slots:
 		CefRefPtr<CefFrame> frame,
 		CefProcessId source_process,
 		CefRefPtr<CefProcessMessage> message);
-
 private:
+
+
 	IMPLEMENT_REFCOUNTING(QCefV8BindBrowserDelegate);
-
-	virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser, int);
-	virtual void OnBrowserClosing(CefRefPtr<CefBrowser> browser) {}
-	virtual void OnBrowserClosed(CefRefPtr<CefBrowser> browser, int);
-	virtual bool OnProcessMessageReceived(
-		CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame,
-		CefProcessId source_process,
-		CefRefPtr<CefProcessMessage> message);
-
 };
