@@ -41,6 +41,8 @@ void QCefV8BindBrowserDelegate::OnBrowserClosing(CefRefPtr<CefBrowser> browser) 
 
 void QCefV8BindBrowserDelegate::OnBrowserClosed(CefRefPtr<CefBrowser> browser)
 {
+    base::AutoLock scopeLock(lock);
+    m_subscribeBrowsers.remove(browser->GetIdentifier());
 }
 
 bool QCefV8BindBrowserDelegate::OnProcessMessageReceived(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefProcessId source_process, CefRefPtr<CefProcessMessage> message)
@@ -79,6 +81,12 @@ void QCefV8BindBrowserDelegate::OnProcessMessageReceivedSlot(CefRefPtr<CefBrowse
         cefv8bind_protcool::CefApiMetaDatasResponse response;
         response.cef_metaObjects = cef_metaObjects;
         frame->SendProcessMessage(PID_RENDERER, response.makeIPCMessage());
+
+        base::AutoLock scopeLock(lock);
+        if (!m_subscribeBrowsers.contains(browser->GetIdentifier()))
+        {
+            m_subscribeBrowsers.insert(browser->GetIdentifier());
+        }
     } else if (message_name == cefv8bind_protcool::InvokeReq::message_name()) {
         cefv8bind_protcool::InvokeReq req;
         if (req.unPack(message->GetArgumentList()))

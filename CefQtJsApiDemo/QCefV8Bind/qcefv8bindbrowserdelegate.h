@@ -35,6 +35,8 @@ private slots:
 		CefProcessId source_process,
 		CefRefPtr<CefProcessMessage> message);
 private:
+	base::Lock lock;
+	QSet<int>	m_subscribeBrowsers;
 
 
 	IMPLEMENT_REFCOUNTING(QCefV8BindBrowserDelegate);
