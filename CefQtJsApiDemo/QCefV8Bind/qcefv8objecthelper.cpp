@@ -12,6 +12,11 @@ const char KCefMetaObject[] = "CefMetaObject";
 const char KCefMetaMethod[] = "CefMetaMethod";
 const char KRenderV8Object[] = "RenderV8Object";
 
+const char ConnectSignal[] = "connectSignal";
+const char DisConnectSignal[] = "disconnect";
+const char OnInitSdkOKNotify[] = "onInitSdkOKSignal"; //signal
+const char InitSdkReadyFlag[] = "qcefSdkReadyFlag";
+
 namespace QCefMetaUtilities {
 	int getSequenceId()
 	{
@@ -41,6 +46,35 @@ QCefV8ObjectHelper::QCefV8ObjectHelper()
 QCefV8ObjectHelper::~QCefV8ObjectHelper(void)
 {
 
+}
+
+void QCefV8ObjectHelper::bindGlobalFunctions(CefRefPtr<CefV8Value> window, CefRefPtr<CefV8Handler> v8Handler)
+{
+	QStringList globalFuncs;
+	globalFuncs.append(ConnectSignal);
+	globalFuncs.append(DisConnectSignal);
+
+	foreach(QString functionName, globalFuncs)
+	{
+		CefRefPtr<CefV8Value> v8Value = CefV8Value::CreateFunction(QCefValueConverter::to(functionName), v8Handler);
+		const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
+		window->SetValue(QCefValueConverter::to(functionName), v8Value, attributes);
+	}
+
+	QStringList	globalSignals;
+	globalSignals << OnInitSdkOKNotify;
+	foreach(QString functionName, globalSignals)
+	{
+		CefRefPtr<CefV8Value> v8Value = CefV8Value::CreateObject(nullptr, nullptr);
+
+		QSharedPointer<QObject> obj = QSharedPointer<QObject>(new QObject());
+		obj->setObjectName(functionName);
+		obj->setProperty(KRenderV8Object, true);
+		v8Value->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(obj));
+
+		const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
+		window->SetValue(QCefValueConverter::to(functionName), v8Value, attributes);
+	}
 }
 
 CefRefPtr<CefV8Value> QCefV8ObjectHelper::bindV8Objects(const QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects, CefRefPtr<CefV8Context> context, CefRefPtr<CefV8Handler> v8Handler)
@@ -80,7 +114,6 @@ void QCefV8ObjectHelper::convertQObjectToCefObjects(const QObject *itemObject, c
 		if (var.type() == QMetaType::QObjectStar && !var.isNull())
 		{
 			QObject*obj = var.value<QObject*>();
-			//obj->setProperty(KV8ObjectName, QString::fromLatin1(propName));
 			lists << obj;
 		}
 	}
@@ -97,7 +130,6 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 	cefv8bind_protcool::CefMetaObject &cef_metaObject
 	)
 {
-	//const QString objectName = itemObject->property(KV8ObjectName).toString();
 	const QString objectName = itemObject->objectName();
 
 	bool isNewValue = false;

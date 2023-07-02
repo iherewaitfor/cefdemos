@@ -9,6 +9,11 @@ extern const char KCefMetaObject[];
 extern const char KCefMetaMethod[];
 extern const char KRenderV8Object[];
 
+extern const char ConnectSignal[];
+extern const char DisConnectSignal[];
+extern const char OnInitSdkOKNotify[];
+extern const char InitSdkReadyFlag[];
+
 class  QCefV8ObjectHelper
 {
 public:
@@ -23,6 +28,7 @@ public:
 	CefRefPtr<CefV8Value> bindV8Objects(const QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects,
 		CefRefPtr<CefV8Context> context, CefRefPtr<CefV8Handler> v8Handler);
 
+	void bindGlobalFunctions(CefRefPtr<CefV8Value> window, CefRefPtr<CefV8Handler> v8Handler);
 
 	CefRefPtr<CefV8Value> createV8Object(const cefv8bind_protcool::CefMetaObject& cefMetaObject, CefRefPtr<CefV8Handler> v8Handler, CefRefPtr<CefV8Context> context);
 private:
