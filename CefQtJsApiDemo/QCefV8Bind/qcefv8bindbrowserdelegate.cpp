@@ -29,10 +29,22 @@ QCefV8BindBrowserDelegate::~QCefV8BindBrowserDelegate()
 {
 
 }
+void QCefV8BindBrowserDelegate::sendProcessMessage(CefProcessId cefProcEd, CefRefPtr<CefProcessMessage> message)
+{
+    base::AutoLock scopeLock(lock);
+    foreach(int id, m_subscribeBrowsers)
+    {
+        if (m_browsers.contains(id) && m_browsers[id])
+        {
+            m_browsers[id]->GetMainFrame()->SendProcessMessage(cefProcEd, message);
+        }
+    }
+}
 
 void QCefV8BindBrowserDelegate::OnBrowserCreated(CefRefPtr<CefBrowser> browser)
 {
-
+    base::AutoLock scopeLock(lock);
+    m_browsers.insert(browser->GetIdentifier(), browser);
 }
 
 void QCefV8BindBrowserDelegate::OnBrowserClosing(CefRefPtr<CefBrowser> browser) {
@@ -42,6 +54,7 @@ void QCefV8BindBrowserDelegate::OnBrowserClosing(CefRefPtr<CefBrowser> browser) 
 void QCefV8BindBrowserDelegate::OnBrowserClosed(CefRefPtr<CefBrowser> browser)
 {
     base::AutoLock scopeLock(lock);
+    m_browsers.remove(browser->GetIdentifier());
     m_subscribeBrowsers.remove(browser->GetIdentifier());
 }
 

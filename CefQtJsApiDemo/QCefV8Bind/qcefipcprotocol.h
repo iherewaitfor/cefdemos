@@ -151,4 +151,31 @@ namespace cefv8bind_protcool
 		qint64 callBackId;
 		bool invokeResult;
 	};
+
+	struct EmitSignalMsg : public PackageBase
+	{
+		QCEF_IPCMSG_NAME(EmitSignalMsg);
+
+		void pack(CefRefPtr<CefListValue> protocolMsg)
+		{
+			protocolMsg->SetString(0, methodName);
+			protocolMsg->SetInt(1, objectId);
+			protocolMsg->SetInt(2, methodIndex);
+			protocolMsg->SetList(3, methodArgs);
+		}
+
+		bool unPack(const CefRefPtr<CefListValue> protocolMsg)
+		{
+			methodName = protocolMsg->GetString(0);
+			objectId = protocolMsg->GetInt(1);
+			methodIndex = protocolMsg->GetInt(2);
+			methodArgs = protocolMsg->GetList(3);
+			return true;
+		}
+
+		CefString methodName;
+		int	methodIndex;
+		CefRefPtr<CefListValue> methodArgs;
+		int objectId;
+	};
 }

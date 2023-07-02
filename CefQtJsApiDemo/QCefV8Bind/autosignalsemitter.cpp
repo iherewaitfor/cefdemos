@@ -1,5 +1,9 @@
 #include "autosignalsemitter.h"
 #include "qcefv8bindapp.h"
+#include "qcefv8bindapp_p.h"
+#include "qcefipcprotocol.h"
+#include "qcefipcvalue.h"
+#include "qcefv8objecthelper.h"
 
 AutoSignalsEmitter::AutoSignalsEmitter(QMetaMethod sourceMethod,QObject*parent)
     : QObject(parent), m_signalMetaMethod(sourceMethod){
@@ -29,6 +33,20 @@ void AutoSignalsEmitter::proxySignalEmit(void** _a)
         // (_a[0] is return value)
         args << arg;
     }
+    if (QCefV8BindApp::getInstance()->d_func()->getBrowserDelegate()) {
+        QObject* obj = sender();
+        cefv8bind_protcool::EmitSignalMsg msg;
+        msg.objectId= obj->property(KObjectId).toUInt();
+        //QString signature = m_signalMetaMethod.methodSignature();
+        //QString name = m_signalMetaMethod.name();
+        //signature;
+        //name;
+        msg.methodName = QCefValueConverter::to(QString(m_signalMetaMethod.name()));
+        msg.methodIndex = m_signalMetaMethod.methodIndex();
+        msg.methodArgs = QCefValueConverter::to(args)->GetList();
+       QCefV8BindApp::getInstance()->d_func()->getBrowserDelegate()->sendProcessMessage(PID_RENDERER, msg.makeIPCMessage());
+    }
+    
     //to do : send siganle msg to render process.
     
 //    emit proxySignal(sender(), m_signalMetaMethod, args);
