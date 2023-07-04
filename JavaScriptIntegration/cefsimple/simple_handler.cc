@@ -15,6 +15,8 @@
 #include "include/wrapper/cef_closure_task.h"
 #include "include/wrapper/cef_helpers.h"
 
+#include "include/wrapper/cef_stream_resource_handler.h"
+
 namespace {
 
 SimpleHandler* g_instance = nullptr;
@@ -28,10 +30,84 @@ std::string GetDataURI(const std::string& data, const std::string& mime_type) {
 
 }  // namespace
 
+////////////////////////////////////////////////////////////
+
+const std::string& test_host = "https://myjstest.com/";
+
+
+// Provider implementation for loading BINARY resources from the current
+// executable.
+class BinaryResourceProvider : public CefResourceManager::Provider {
+public:
+    explicit BinaryResourceProvider(const std::string& root_url)
+        : root_url_(root_url) {
+        DCHECK(!root_url.empty());
+    }
+
+    bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
+        CEF_REQUIRE_IO_THREAD();
+
+        const std::string& url = request->url();
+        if (url.find(root_url_) != 0L) {
+            // Not handled by this provider.
+            return false;
+        }
+
+        CefRefPtr<CefResourceHandler> handler;
+
+        const std::string& relative_path = url.substr(root_url_.length());
+
+#ifndef UNICODE
+        std::string strPath;
+#else
+        std::wstring strPath;
+#endif // !UNICODE
+        TCHAR path[MAX_PATH];
+        ::GetModuleFileName(NULL, path, MAX_PATH);
+        strPath = path;
+
+        size_t index = strPath.rfind(TEXT("\\"));
+        strPath = strPath.substr(0, index);
+        strPath = (TCHAR*)strPath.append(TEXT("\\index.html")).c_str();
+        if (relative_path == "index.html") {
+            //"D:\\srccode\\cefdemos\\JavaScriptIntegration\\build\\cefsimple\\Debug\\index.html"
+            CefRefPtr<CefStreamReader> stream = CefStreamReader::CreateForFile(strPath);
+            if (stream.get()) {
+                handler = new CefStreamResourceHandler(
+                    request->mime_type_resolver().Run(url), stream);
+            }
+        }
+
+        request->Continue(handler);
+        return true;
+    }
+
+private:
+    std::string root_url_;
+
+    DISALLOW_COPY_AND_ASSIGN(BinaryResourceProvider);
+};
+
+// Add example Providers to the CefResourceManager.
+void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
+    if (!CefCurrentlyOn(TID_IO)) {
+        // Execute on the browser IO thread.
+        CefPostTask(TID_IO, base::BindOnce(SetupResourceManager, resource_manager));
+        return;
+    }
+    resource_manager->AddProvider(
+        new BinaryResourceProvider(test_host), 100, std::string());
+
+}
+////////////////////////////////////////////////////////////
+
+
 SimpleHandler::SimpleHandler(bool use_views)
     : use_views_(use_views), is_closing_(false) {
   DCHECK(!g_instance);
   g_instance = this;
+  resource_manager_ = new CefResourceManager();
+  SetupResourceManager(resource_manager_);
 }
 
 SimpleHandler::~SimpleHandler() {
@@ -143,6 +219,41 @@ void SimpleHandler::CloseAllBrowsers(bool force_close) {
   for (; it != browser_list_.end(); ++it)
     (*it)->GetHost()->CloseBrowser(force_close);
 }
+
+
+CefRefPtr<CefResourceRequestHandler> SimpleHandler::GetResourceRequestHandler(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefRefPtr<CefRequest> request,
+    bool is_navigation,
+    bool is_download,
+    const CefString& request_initiator,
+    bool& disable_default_handling) {
+    CEF_REQUIRE_IO_THREAD();
+    return this;
+}
+
+cef_return_value_t SimpleHandler::OnBeforeResourceLoad(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefRefPtr<CefRequest> request,
+    CefRefPtr<CefCallback> callback) {
+    CEF_REQUIRE_IO_THREAD();
+
+    return resource_manager_->OnBeforeResourceLoad(browser, frame, request,
+        callback);
+}
+
+CefRefPtr<CefResourceHandler> SimpleHandler::GetResourceHandler(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefRefPtr<CefRequest> request) {
+    CEF_REQUIRE_IO_THREAD();
+
+    return resource_manager_->GetResourceHandler(browser, frame, request);
+}
+
+
 
 // static
 bool SimpleHandler::IsChromeRuntimeEnabled() {

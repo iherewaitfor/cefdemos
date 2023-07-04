@@ -101,9 +101,10 @@ void SimpleApp::OnContextInitialized() {
   // Check if a "--url=" value was provided via the command-line. If so, use
   // that instead of the default URL.
   url = command_line->GetSwitchValue("url");
+  const std::string& test_host = "https://myjstest.com/";
   if (url.empty()) {
-      url = "http://www.google.com";
-      url = "D:\\srccode\\cefdemos\\JavaScriptIntegration\\index.html";
+//      url = "http://www.google.com";
+      url = test_host + "index.html";
   }
 
   if (use_views) {
