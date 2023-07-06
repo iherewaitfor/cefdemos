@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>schemetest</title>
+    <style></style>
+  </head>
+  <body>
+   schemetest image
+   <img src="client://tests/logo.png">
+  
+    JavaScript接口测试
+    <button onclick="clickPlay();">test.myval</button>
+	<button onclick="clickWindowBindValue();">window.myval</button>
+	<button onclick="clickWindowBindObject();">myObject.myval+ myObject.myfunc()</button>
+	<br/>
+	显示文本<div id="showTextDiv"><div>
+    <script>
+      function clickPlay(){
+		const showTextDiv = document.getElementById("showTextDiv");
+		showTextDiv.textContent = test.myval;
+      }
+	  function clickWindowBindValue(){
+		const showTextDiv = document.getElementById("showTextDiv");
+		showTextDiv.textContent = window.myval;
+      }
+	  
+	  function clickWindowBindObject(){
+		const showTextDiv = document.getElementById("showTextDiv");
+		showTextDiv.textContent = myObjcet.myval +" myfunc():" + myObjcet.myfunc();
+      }
+    </script>
+  </body>
+</html>
