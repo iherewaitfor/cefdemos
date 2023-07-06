@@ -18,7 +18,44 @@
 namespace scheme_handler {
 
 namespace {
+    // help method
+    std::wstring getResourceRootPath() {
+        static std::wstring strPath;
+        if (strPath.empty()) {
+            TCHAR path[MAX_PATH];
+            ::GetModuleFileName(NULL, path, MAX_PATH);
+            strPath = path;
 
+            size_t index = strPath.rfind(TEXT("\\"));
+            strPath = strPath.substr(0, index + 1);
+        }
+        return strPath;
+    }
+    // help method
+    bool readFromFile(std::wstring strRelativePath, std::string &dataDst) {
+        FILE* infile = NULL;
+        static char* buf = NULL; //
+        std::wstring strPath = getResourceRootPath() + strRelativePath;
+        if ((infile = _wfopen(strPath.c_str(), L"rb")) == NULL) {
+            printf("cannot open this file\n");
+            return  false;
+        }
+        if (buf == NULL) {
+            buf = new  char[1000000];
+        }
+        // for convinient, the test file is less then 1000000
+        ZeroMemory(buf, 1000000);
+        size_t rd = fread(buf, 1, 1000000, infile);
+        if (rd > 0) {
+            dataDst.resize(rd);
+            dataDst.assign(buf, rd);
+        }
+        if (infile) {
+            fclose(infile);
+            infile = NULL;
+        }
+        return true;
+    }
 // Implementation of the scheme handler for client:// requests.
 class ClientSchemeHandler : public CefResourceHandler {
  public:
@@ -27,46 +64,24 @@ class ClientSchemeHandler : public CefResourceHandler {
   bool ProcessRequest(CefRefPtr<CefRequest> request,
                       CefRefPtr<CefCallback> callback) override {
     CEF_REQUIRE_IO_THREAD();
-    //为方便，取文件路径
-#ifndef UNICODE
-    static std::string strPath;
-#else
-    static std::wstring strPath;
-#endif // !UNICODE
-    TCHAR path[MAX_PATH];
-    ::GetModuleFileName(NULL, path, MAX_PATH);
-    strPath = path;
-
-    size_t index = strPath.rfind(TEXT("\\"));
-    strPath = strPath.substr(0, index+1);
 
     bool handled = false;
 
     std::string url = request->GetURL();
     if (strstr(url.c_str(), kFileName) != nullptr) {
       // Load the response html.
-        strPath.append(TEXT("scheme_test.html"));
-        FILE* infile = NULL;
-        char* buf = NULL; //
-        if ((infile = _wfopen(strPath.c_str(), L"rb")) == NULL) {
-            printf("cannot open this file\n");
-            return  false;
+        std::wstring relativePath = L"scheme_test.html";
+        if (!readFromFile(relativePath, data_)) {
+            return false;
         }
-
-        buf = new  char[1000000];
-        // for convinient, the test file is less then 1000000
-        ZeroMemory(buf, 1000000);
-        size_t rd = fread(buf, 1, 1000000, infile);
-        if (rd > 0) {
-            data_.resize(rd);
-            data_.assign(buf, rd);
-        }
-
         handled = true;
         mime_type_ = "text/html";
     } else if (strstr(url.c_str(), "logo.png") != nullptr) {
       // Load the response image.
-        return false;
+        std::wstring relativePath = L"logo.png";
+        if (!readFromFile(relativePath, data_)) {
+            return false;
+        }
       handled = true;
       mime_type_ = "image/png";
     }
