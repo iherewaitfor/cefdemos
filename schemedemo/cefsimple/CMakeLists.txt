@@ -16,6 +16,10 @@ project(cefsimple)
 # Target executable names.
 set(CEF_TARGET "cefsimple")
 
+file (GLOB HEADERS
+		"*.h")
+
+
 ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
 
 # Determine the target output directory.
@@ -27,7 +31,7 @@ SET_CEF_TARGET_OUT_DIR()
 
 if(OS_WINDOWS)
   # Executable target.
-  add_executable(${CEF_TARGET} WIN32 ${DIR_SRCS})
+  add_executable(${CEF_TARGET} WIN32 ${DIR_SRCS} ${HEADERS})
   add_dependencies(${CEF_TARGET} libcef_dll_wrapper)
   
   SET_EXECUTABLE_TARGET_PROPERTIES(${CEF_TARGET})
