@@ -75,12 +75,16 @@ bool SimpleHandler::OnBeforePopup(CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefDictionaryValue>& extra_info,
     bool* no_javascript_access) {
     CEF_REQUIRE_UI_THREAD();
+#ifdef DEBUG_WINDOW_OPEN
     if (!m_closing && m_browser && !windowInfo.parent_window) {
         //若父窗口句柄为空，默认设置弹出窗口的父窗口为自主窗口。
         HWND parentHWND = m_browser->GetHost()->GetWindowHandle();
         windowInfo.parent_window = parentHWND;
     }
-    return false;
+    return false; 
+#else
+    return true; //不允许打开弹出窗口。window.open
+#endif 
 }
 void SimpleHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser) {
   CEF_REQUIRE_UI_THREAD();
