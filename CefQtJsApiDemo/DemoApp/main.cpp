@@ -1,12 +1,12 @@
 #include <QtCore>
 #include <QApplication>
-#include "..\QtCefBrowser\qcefclient.h"
-#include "..\QtCefBrowser\qcefcoreapp.h"
+#include "QtCefBrowser/qcefclient.h"
+#include "QtCefBrowser/qcefcoreapp.h"
 #include <QtWidgets>
 
 #include "numberlogic.h"
 #include "subnumberlogic.h"
-#include "..\QCefV8Bind\qcefv8bindapp.h"
+#include "QCefV8Bind/qcefv8bindapp.h"
 
 int main(int argc, char** argv )
 {

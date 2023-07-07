@@ -10,6 +10,8 @@ set(CMAKE_AUTOMOC ON)
 #项目使用UNICODE版本。win中的各种API将使用UNICODE版本。
 add_definitions("-DUNICODE" "-D_UNICODE")
 
+include_directories(../include)
+
 aux_source_directory(. EXAMPLE_SRCS)
 #list(APPEND DIR_SRCS ./cefsimple.rc)
 file (GLOB HEADERS
