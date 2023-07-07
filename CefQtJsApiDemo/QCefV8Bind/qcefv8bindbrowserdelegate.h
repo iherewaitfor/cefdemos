@@ -1,10 +1,10 @@
 ﻿#pragma once
-#include "../QtCefBrowser/qcefbrowserglobal.h"
+#include "QtCefBrowser/qcefbrowserglobal.h"
 #include "qcefv8bindglobal.h"
 #include "include/cef_base.h"
 #include <QtCore>
 
-#include "../QtCefBrowser/qcefbrowserhandlerdelegate.h"
+#include "QtCefBrowser/qcefbrowserhandlerdelegate.h"
 
 class QCefV8BindBrowserDelegate : public QObject,  public virtual CefBaseRefCounted
 	, public client::BrowserDelegate

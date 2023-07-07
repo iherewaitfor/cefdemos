@@ -10,7 +10,7 @@ add_definitions("-DUNICODE" "-D_UNICODE")
 
 add_definitions("-DQCEFV8BIND_IMPL")
 
-
+include_directories(../include)
 aux_source_directory(. EXAMPLE_SRCS)
 #list(APPEND DIR_SRCS ./cefsimple.rc)
 aux_source_directory(./render SRCS_RENDER)
