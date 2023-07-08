@@ -71,6 +71,8 @@ class SimpleHandler : public CefClient,
   // Returns true if the Chrome runtime is enabled.
   static bool IsChromeRuntimeEnabled();
 
+  void setSize(RECT webRect);
+
  private:
   // Platform-specific implementation.
   void PlatformTitleChange(CefRefPtr<CefBrowser> browser,

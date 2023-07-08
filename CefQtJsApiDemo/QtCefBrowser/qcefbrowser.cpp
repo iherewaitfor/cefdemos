@@ -5,6 +5,15 @@ QCefBrowser::QCefBrowser(QString url)
     : QObject(NULL)
     , d_ptr(new QCefBrowserPrivate(this, url))
 {
+    BrowserWindowOptions options;
+    options.url = url.toStdString();
+    options.width = 500;
+    options.height = 500;
+    options.topMost = true;
+    options.visible = true;
+
+    d_ptr->initWindowOptions(options);
+    d_ptr->createHostWindow();
     d_ptr->createBrowser();
 }
 

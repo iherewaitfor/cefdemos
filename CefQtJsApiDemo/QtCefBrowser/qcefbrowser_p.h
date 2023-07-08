@@ -4,6 +4,8 @@
 #include "include/cef_app.h"
 #include "simple_handler.h"
 #include <QtCore>
+#include "browser/qcefbrowserwindow.h"
+#include "browser/browser_struct.h"
 class QCefBrowser;
 class SimpleHandler;
 class QCefBrowserPrivate : public QObject,
@@ -12,6 +14,10 @@ class QCefBrowserPrivate : public QObject,
     Q_OBJECT
 public:
     QCefBrowser* q_ptr;
+
+    BrowserWindowOptions m_windowOptions;
+
+    QString m_startUpUrl;
     QString m_url;
     HWND m_parent;
 
@@ -19,12 +25,21 @@ public:
     volatile unsigned long m_closing;
     int m_Id;//只是QCefBrowser的id，创建就有。
     int m_browserId; //实际的browser创建后才有。
+
+    QCefBrowserWindow* m_hostWindow;
 public:
     QCefBrowserPrivate(QCefBrowser* q, QString url);
     ~QCefBrowserPrivate();
 
+    void onHostWindowWillClose();
+    void onHostWindowDestroy();
+    bool modalMode() const;
+
+    void createHostWindow();
     void createBrowser();
     void closeBrowser();
+    void initWindowOptions(const BrowserWindowOptions& options);
+    void setSize();
 
     void OnAfterCreated(CefRefPtr<CefBrowser> browser);
     void OnClosing(CefRefPtr<CefBrowser> browser);

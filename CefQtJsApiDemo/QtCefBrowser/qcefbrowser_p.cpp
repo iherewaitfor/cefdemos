@@ -30,13 +30,141 @@ QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
 QCefBrowserPrivate::~QCefBrowserPrivate()
 {
 }
+
+void QCefBrowserPrivate::onHostWindowWillClose()
+{
+    if (modalMode() && m_parent)
+    {
+        EnableWindow(m_parent, true);
+    }
+}
+
+void QCefBrowserPrivate::onHostWindowDestroy()
+{
+    closeBrowser();
+
+    //if (q_ptr)
+    //    q_ptr->windowDestroyed(m_uniqueWindowId);
+}
+
+bool QCefBrowserPrivate::modalMode() const
+{
+    return m_windowOptions.modalMode.value();
+}
+MONITORINFO GetMonitorInformation(HWND handle)
+{
+    MONITORINFO mi;
+    mi.cbSize = sizeof(mi);
+    HMONITOR monitor = MonitorFromWindow(handle, MONITOR_DEFAULTTONEAREST);
+    GetMonitorInfo(monitor, &mi);
+    return mi;
+}
+
+void QCefBrowserPrivate::createHostWindow()
+{
+    m_hostWindow = new QCefBrowserWindow(this);
+
+    m_hostWindow->setBackgourndColor(RGB(255, 255, 255));
+    m_hostWindow->setFrameless(false);
+    m_hostWindow->setResizable(m_windowOptions.resizable.value());
+    m_hostWindow->setShowInTaskbar(m_windowOptions.showInTaskbar.value());
+    m_hostWindow->setNcBorderWidth(m_windowOptions.ncBorderWidth.value());
+
+    if (m_windowOptions.maxWidth.has_value())
+        m_hostWindow->setMaxWidth(m_windowOptions.maxWidth.value());
+    if (m_windowOptions.maxHeight.has_value())
+        m_hostWindow->setMaxHeight(m_windowOptions.maxHeight.value());
+    if (m_windowOptions.minWidth.has_value())
+        m_hostWindow->setMinWidth(m_windowOptions.minWidth.value());
+    if (m_windowOptions.minHeight.has_value())
+        m_hostWindow->setMinHeight(m_windowOptions.minHeight.value());
+
+    if (m_windowOptions.lifeGuard.value())
+        m_hostWindow->SetAppLifeGuard();
+
+    // create window
+    if (m_parent && m_windowOptions.asChild.value())
+    {
+        m_hostWindow->createAsChild(m_parent);
+    }
+    else
+    {
+        if (m_parent)
+        {
+            MONITORINFO info = GetMonitorInformation(m_parent);
+            int workWidth = info.rcWork.right - info.rcWork.left;
+            int workHeight = info.rcWork.bottom - info.rcWork.top;
+            POINT p = { 0 };
+            p.x = info.rcWork.left + (workWidth - (m_hostWindow->width())) / 2;
+            p.y = info.rcWork.top + (workHeight - (m_hostWindow->height())) / 2;
+
+            if (p.x < info.rcWork.left)
+            {
+                p.x = info.rcWork.left;
+            }
+            if (p.y < info.rcWork.top)
+            {
+                p.y = info.rcWork.top;
+            }
+            m_hostWindow->move(p);
+        }
+        else
+        {
+            POINT pt = {};
+            GetCursorPos(&pt);
+            pt.x -= m_hostWindow->width() / 2;
+            pt.y -= m_hostWindow->height() / 2;
+            m_hostWindow->move(pt);
+        }
+
+        m_hostWindow->create(m_parent, 0,0);
+    }
+
+    SIZE sz = { m_windowOptions.width.value(), m_windowOptions.height.value() };
+    m_hostWindow->resize(sz);
+
+
+    if (m_windowOptions.x.has_value() || m_windowOptions.y.has_value())
+    {
+        POINT pt = { m_windowOptions.x.value_or(m_hostWindow->pos().x),
+                     m_windowOptions.y.value_or(m_hostWindow->pos().y) };
+        m_hostWindow->move(pt);
+    }
+    else
+    {
+        m_hostWindow->moveCenter();
+    }
+
+    if (modalMode() && m_parent)
+    {
+        EnableWindow(m_parent, false);
+    }
+
+    if (m_windowOptions.title.has_value())
+    {
+        m_hostWindow->SetTitle(QString::fromUtf8(m_windowOptions.title.value().c_str()).toStdWString());
+    }
+
+    if (m_windowOptions.captionAreas.has_value())
+    {
+        m_hostWindow->setCaptionArea(m_windowOptions.captionAreas.value());
+    }
+}
+
+
+
 void QCefBrowserPrivate::createBrowser() {
     CefRefPtr<SimpleHandler> clientHandler = new SimpleHandler(shared_from_this());
     m_clientHandler = clientHandler;
 
     CefWindowInfo windowInfo;
-    windowInfo.SetAsPopup(NULL, "test");
     CefBrowserSettings settings;
+
+    windowInfo.SetAsPopup(NULL, "test");
+
+    //RECT wnd_rect = m_hostWindow->clientRect();
+    //CefRect rect(wnd_rect.left, wnd_rect.top, wnd_rect.right - wnd_rect.left, wnd_rect.bottom - wnd_rect.top);
+    //windowInfo.SetAsChild(m_hostWindow->winId(), rect);
 
     CefString url = m_url.toUtf8().constData();
     CefBrowserHost::CreateBrowser(windowInfo, clientHandler, url, settings, nullptr, nullptr);
@@ -44,10 +172,77 @@ void QCefBrowserPrivate::createBrowser() {
 
 void QCefBrowserPrivate::closeBrowser()
 {
+    if(!m_clientHandler || m_closing != 0)
     if (m_clientHandler) {
         m_clientHandler->closeMainBrowser();
     }
 }
+void QCefBrowserPrivate::initWindowOptions(const BrowserWindowOptions& options)
+{
+    BrowserWindowOptions windowOptions = options;
+    if (!windowOptions.visible.has_value())
+        windowOptions.visible = true;
+    if (!windowOptions.topMost.has_value())
+        windowOptions.topMost = false;
+    if (!windowOptions.offscreen.has_value())
+        windowOptions.offscreen = false;
+    if (!windowOptions.transparent.has_value())
+        windowOptions.transparent = false;
+    if (!windowOptions.lifeGuard.has_value())
+        windowOptions.lifeGuard = false;
+    if (!windowOptions.ignoreSysClose.has_value())
+        windowOptions.ignoreSysClose = false;
+    if (!windowOptions.showInTaskbar.has_value())
+        windowOptions.showInTaskbar = true;
+
+    if (!windowOptions.ncBorderWidth.has_value())
+        windowOptions.ncBorderWidth = 8;
+    if (!windowOptions.width.has_value())
+        windowOptions.width = 400;
+    if (!windowOptions.height.has_value())
+        windowOptions.height = 300;
+    if (!windowOptions.resizable.has_value())
+        windowOptions.resizable = true;
+
+    if (!windowOptions.frameless.has_value())
+        windowOptions.frameless = true;
+    if (windowOptions.offscreen.value())
+        windowOptions.frameless = true;
+
+    if (!windowOptions.parentHandle.has_value())
+        windowOptions.parentHandle = 0;
+    m_parent = (HWND)(windowOptions.parentHandle.value());
+
+    if (!m_windowOptions.asChild.has_value())
+        m_windowOptions.asChild = false;
+
+    if (!windowOptions.modalMode.has_value())
+        windowOptions.modalMode = false;
+    windowOptions.osrMode = false;
+
+
+    m_windowOptions = windowOptions;
+    if (m_windowOptions.url.has_value())
+    {
+        m_startUpUrl = QString::fromUtf8(m_windowOptions.url.value().c_str());
+        m_url = m_startUpUrl;
+    }
+}
+
+void QCefBrowserPrivate::setSize()
+{
+    if (!m_hostWindow)
+    {
+        return;
+    }
+    RECT webRect = m_hostWindow->clientRect();
+
+    if (m_clientHandler) {
+        m_clientHandler->setSize(webRect);
+    }
+}
+
+
 
 
 void QCefBrowserPrivate::OnAfterCreated(CefRefPtr<CefBrowser> browser)

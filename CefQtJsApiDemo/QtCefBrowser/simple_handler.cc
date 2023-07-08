@@ -234,3 +234,14 @@ void SimpleHandler::closeBrowser() {
         m_browser->GetHost()->CloseBrowser(false);
     }
 }
+void SimpleHandler::setSize(RECT webRect)
+{
+    CEF_REQUIRE_UI_THREAD();
+    if (!CefCurrentlyOn(TID_UI)) {
+        CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::setSize, this, webRect));
+        return;
+    }
+    HWND cefWindow = (HWND)m_browser->GetHost()->GetWindowHandle();
+    SetWindowPos(cefWindow, NULL, webRect.left, webRect.top, webRect.right - webRect.left,
+        webRect.bottom - webRect.top, SWP_NOZORDER | SWP_NOACTIVATE);
+}
