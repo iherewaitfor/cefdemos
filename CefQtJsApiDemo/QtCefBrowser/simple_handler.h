@@ -54,6 +54,9 @@ class SimpleHandler : public CefClient,
   virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
 
   // CefLoadHandler methods:
+  virtual void OnLoadStart(CefRefPtr<CefBrowser> browser,
+      CefRefPtr<CefFrame> frame,
+      TransitionType transition_type)override;
   virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
                            CefRefPtr<CefFrame> frame,
                            ErrorCode errorCode,
@@ -71,8 +74,11 @@ class SimpleHandler : public CefClient,
   // Returns true if the Chrome runtime is enabled.
   static bool IsChromeRuntimeEnabled();
 
-  void setSize(RECT webRect);
+  void setSize();
+  void initWindow();
 
+public:
+    CefRefPtr<CefBrowser> m_browser; //主页面。
  private:
   // Platform-specific implementation.
   void PlatformTitleChange(CefRefPtr<CefBrowser> browser,
@@ -84,7 +90,7 @@ class SimpleHandler : public CefClient,
   std::tr1::shared_ptr<QCefBrowserPrivate> m_browerPrivate;
   bool m_closing; //主页面将要关闭。
   int browserId;
-  CefRefPtr<CefBrowser> m_browser; //主页面。
+
   QList<CefRefPtr<CefBrowser>> m_popupBrowsers;
   // Include the default reference counting implementation.
   IMPLEMENT_REFCOUNTING(SimpleHandler);

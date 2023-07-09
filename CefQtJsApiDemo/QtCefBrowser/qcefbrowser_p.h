@@ -27,6 +27,8 @@ public:
     int m_browserId; //实际的browser创建后才有。
 
     QCefBrowserWindow* m_hostWindow;
+    std::vector<QSharedPointer<QCefBrowserChildWindow>> m_hookChildWindows;
+
 public:
     QCefBrowserPrivate(QCefBrowser* q, QString url);
     ~QCefBrowserPrivate();
@@ -39,7 +41,10 @@ public:
     void createBrowser();
     void closeBrowser();
     void initWindowOptions(const BrowserWindowOptions& options);
+    void initWindow();
     void setSize();
+    void hookChildWindows();
+    bool findHookedChildWindow(HWND window);
 
     void OnAfterCreated(CefRefPtr<CefBrowser> browser);
     void OnClosing(CefRefPtr<CefBrowser> browser);

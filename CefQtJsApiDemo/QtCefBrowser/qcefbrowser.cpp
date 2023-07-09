@@ -7,14 +7,21 @@ QCefBrowser::QCefBrowser(QString url)
 {
     BrowserWindowOptions options;
     options.url = url.toStdString();
-    options.width = 500;
-    options.height = 500;
+    options.width = 1200;
+    options.height = 900;
+    options.minWidth = 300;
+    options.minHeight = 300;
+    options.showInTaskbar = true;
     options.topMost = true;
     options.visible = true;
+    options.frameless = false;
+    std::vector<RECT> capVector;
+    RECT rect = { 0, 0, 1200, 100 };
+    capVector.push_back(rect);
+    options.captionAreas = capVector;
 
     d_ptr->initWindowOptions(options);
-    d_ptr->createHostWindow();
-    d_ptr->createBrowser();
+    d_ptr->initWindow(); // crate browser in TID_UI thread.
 }
 
 QCefBrowser::~QCefBrowser()

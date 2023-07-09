@@ -7,6 +7,7 @@
 #include <include/cef_app.h>
 #include <include/cef_browser.h>
 #include <QtCore>
+#include "include/wrapper/cef_helpers.h"
 
 static int win_id_generator = 0;
 QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
@@ -65,7 +66,7 @@ void QCefBrowserPrivate::createHostWindow()
     m_hostWindow = new QCefBrowserWindow(this);
 
     m_hostWindow->setBackgourndColor(RGB(255, 255, 255));
-    m_hostWindow->setFrameless(false);
+    m_hostWindow->setFrameless(m_windowOptions.frameless.value(),false);
     m_hostWindow->setResizable(m_windowOptions.resizable.value());
     m_hostWindow->setShowInTaskbar(m_windowOptions.showInTaskbar.value());
     m_hostWindow->setNcBorderWidth(m_windowOptions.ncBorderWidth.value());
@@ -154,20 +155,20 @@ void QCefBrowserPrivate::createHostWindow()
 
 
 void QCefBrowserPrivate::createBrowser() {
-    CefRefPtr<SimpleHandler> clientHandler = new SimpleHandler(shared_from_this());
-    m_clientHandler = clientHandler;
+    //CefRefPtr<SimpleHandler> clientHandler = new SimpleHandler(shared_from_this());
+    //m_clientHandler = clientHandler;
 
     CefWindowInfo windowInfo;
     CefBrowserSettings settings;
 
-    windowInfo.SetAsPopup(NULL, "test");
+    //windowInfo.SetAsPopup(NULL, "test");
 
-    //RECT wnd_rect = m_hostWindow->clientRect();
-    //CefRect rect(wnd_rect.left, wnd_rect.top, wnd_rect.right - wnd_rect.left, wnd_rect.bottom - wnd_rect.top);
-    //windowInfo.SetAsChild(m_hostWindow->winId(), rect);
+    RECT wnd_rect = m_hostWindow->clientRect();
+    CefRect rect(wnd_rect.left, wnd_rect.top, wnd_rect.right - wnd_rect.left, wnd_rect.bottom - wnd_rect.top);
+    windowInfo.SetAsChild(m_hostWindow->winId(), rect);
 
     CefString url = m_url.toUtf8().constData();
-    CefBrowserHost::CreateBrowser(windowInfo, clientHandler, url, settings, nullptr, nullptr);
+    CefBrowserHost::CreateBrowser(windowInfo, m_clientHandler, url, settings, nullptr, nullptr);
 }
 
 void QCefBrowserPrivate::closeBrowser()
@@ -179,6 +180,7 @@ void QCefBrowserPrivate::closeBrowser()
 }
 void QCefBrowserPrivate::initWindowOptions(const BrowserWindowOptions& options)
 {
+    m_clientHandler = new SimpleHandler(shared_from_this());
     BrowserWindowOptions windowOptions = options;
     if (!windowOptions.visible.has_value())
         windowOptions.visible = true;
@@ -235,13 +237,52 @@ void QCefBrowserPrivate::setSize()
     {
         return;
     }
-    RECT webRect = m_hostWindow->clientRect();
 
     if (m_clientHandler) {
-        m_clientHandler->setSize(webRect);
+        m_clientHandler->setSize();
+    }
+}
+void QCefBrowserPrivate::initWindow() {
+    if (m_clientHandler) {
+        m_clientHandler->initWindow();
+    }
+}
+BOOL WINAPI hookChildFunc(HWND hWnd, LPARAM lParam)
+{
+    CEF_REQUIRE_UI_THREAD();
+    QCefBrowserPrivate* pThis = (QCefBrowserPrivate*)lParam;
+    if (!pThis->findHookedChildWindow(hWnd))
+    {
+        QSharedPointer<QCefBrowserChildWindow> hook =
+            QSharedPointer<QCefBrowserChildWindow>(new QCefBrowserChildWindow(hWnd, pThis));
+        pThis->m_hookChildWindows.push_back(hook);
+    }
+    return TRUE;
+};
+void QCefBrowserPrivate::hookChildWindows()
+{
+    CEF_REQUIRE_UI_THREAD();
+    m_hostWindow->show(); // test: to do delete
+    if (m_clientHandler) {
+        HWND window = m_clientHandler->m_browser->GetHost()->GetWindowHandle();
+        hookChildFunc(window, (LONG_PTR)this);
+        EnumChildWindows(window, hookChildFunc, (LONG_PTR)this);
     }
 }
 
+bool QCefBrowserPrivate::findHookedChildWindow(HWND window)
+{
+    CEF_REQUIRE_UI_THREAD();
+    std::vector<QSharedPointer<QCefBrowserChildWindow>>::iterator it = m_hookChildWindows.begin();
+    for (; it != m_hookChildWindows.end(); ++it)
+    {
+        if ((*it)->winId() == window)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 
 
@@ -259,6 +300,11 @@ void QCefBrowserPrivate::OnClosing(CefRefPtr<CefBrowser> browser)
 
 void QCefBrowserPrivate::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
+	CEF_REQUIRE_UI_THREAD();
+    m_clientHandler = nullptr;
+    m_hookChildWindows.clear();
+    if (m_hostWindow)
+        m_hostWindow->forceClose();
     emit beforeClose(browser->GetIdentifier());
 }
 

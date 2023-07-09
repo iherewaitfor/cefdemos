@@ -146,6 +146,7 @@ void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
     }
     if (browserId == browser->GetIdentifier()) {
         m_browerPrivate->OnBeforeClose(browser);
+        m_browser = nullptr; //去掉引用计数，以便退出
     }
     else {
         bool isLastPopupBrowserDelete = false;
@@ -168,6 +169,14 @@ void SimpleHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser) {
   
 }
 
+void SimpleHandler::OnLoadStart(CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    TransitionType transition_type) {
+    CEF_REQUIRE_UI_THREAD();
+    if (m_browerPrivate) {
+        m_browerPrivate->hookChildWindows();
+    }
+}
 void SimpleHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
                                 CefRefPtr<CefFrame> frame,
                                 ErrorCode errorCode,
@@ -234,14 +243,31 @@ void SimpleHandler::closeBrowser() {
         m_browser->GetHost()->CloseBrowser(false);
     }
 }
-void SimpleHandler::setSize(RECT webRect)
+void SimpleHandler::setSize()
 {
     CEF_REQUIRE_UI_THREAD();
     if (!CefCurrentlyOn(TID_UI)) {
-        CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::setSize, this, webRect));
+        CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::setSize, this));
         return;
     }
-    HWND cefWindow = (HWND)m_browser->GetHost()->GetWindowHandle();
-    SetWindowPos(cefWindow, NULL, webRect.left, webRect.top, webRect.right - webRect.left,
-        webRect.bottom - webRect.top, SWP_NOZORDER | SWP_NOACTIVATE);
+
+    RECT webRect = m_browerPrivate->m_hostWindow->clientRect();
+    if (m_browser) {
+        HWND cefWindow = (HWND)m_browser->GetHost()->GetWindowHandle();
+        SetWindowPos(cefWindow, NULL, webRect.left, webRect.top, webRect.right - webRect.left,
+            webRect.bottom - webRect.top, SWP_NOZORDER | SWP_NOACTIVATE);
+    }
+}
+
+void SimpleHandler::initWindow()
+{
+    //CEF_REQUIRE_UI_THREAD();
+    if (!CefCurrentlyOn(TID_UI)) {
+        CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::initWindow, this));
+        return;
+    }
+    if (m_browerPrivate) {
+        m_browerPrivate->createHostWindow();
+        m_browerPrivate->createBrowser();
+    }
 }
