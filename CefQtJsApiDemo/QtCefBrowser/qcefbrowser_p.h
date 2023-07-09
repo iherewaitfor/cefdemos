@@ -30,7 +30,7 @@ public:
     std::vector<QSharedPointer<QCefBrowserChildWindow>> m_hookChildWindows;
 
 public:
-    QCefBrowserPrivate(QCefBrowser* q, QString url);
+    QCefBrowserPrivate(QCefBrowser* q);
     ~QCefBrowserPrivate();
 
     void onHostWindowWillClose();

@@ -20,11 +20,11 @@ QCefCoreApp* QCefCoreApp::getInstance()
     static QCefCoreApp app;
     return g_instance;
 }
-QSharedPointer<QCefBrowser> QCefCoreApp::createBrowser(const QString url) {
+QSharedPointer<QCefBrowser> QCefCoreApp::createBrowser(const BrowserWindowOptions& option) {
     if (d_ptr->m_bClosing) {
         return QSharedPointer<QCefBrowser>();
     }
-    QSharedPointer<QCefBrowser> browser = QSharedPointer<QCefBrowser>(new QCefBrowser(url));
+    QSharedPointer<QCefBrowser> browser = QSharedPointer<QCefBrowser>(new QCefBrowser(option));
     d_ptr->addBrowser(browser->getId(), browser);
     return browser;
 }

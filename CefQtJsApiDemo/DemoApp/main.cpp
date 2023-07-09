@@ -22,7 +22,21 @@ int main(int argc, char** argv )
     subNumberLogic;
 
     QCefV8BindApp::getInstance()->setV8RootObject(numberLogic);
-    QCefCoreApp::getInstance()->createBrowser("https://www.baidu.com");
+
+    BrowserWindowOptions options;
+    options.url = "https://www.baidu.com";
+    options.width = 1200;
+    options.height = 900;
+    options.minWidth = 300;
+    options.minHeight = 300;
+    options.showInTaskbar = true;
+    options.visible = true;
+    options.frameless = false;
+    std::vector<RECT> capVector;
+    RECT rect = { 0, 0, 1200, 100 };
+    capVector.push_back(rect);
+    options.captionAreas = capVector;
+    QCefCoreApp::getInstance()->createBrowser(options);
     QObject::connect(QCefCoreApp::getInstance(), SIGNAL(allClosed()), &cefClient, SLOT(shutDownCef()));
     QObject::connect(&cefClient, SIGNAL(shutdown()), &app, SLOT(quit()));
 	

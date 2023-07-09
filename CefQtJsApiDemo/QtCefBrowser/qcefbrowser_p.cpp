@@ -10,11 +10,10 @@
 #include "include/wrapper/cef_helpers.h"
 
 static int win_id_generator = 0;
-QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q, QString url)
+QCefBrowserPrivate::QCefBrowserPrivate(QCefBrowser* q)
     : q_ptr(q)
     , QObject(nullptr)
     , m_parent(NULL)
-    , m_url(url)
     , m_closing(0)
     , m_browserId(0)
 {

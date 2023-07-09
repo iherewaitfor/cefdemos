@@ -3,14 +3,14 @@
 #include "qcefbrowserglobal.h"
 #include <Qtcore>
 #include <QString>
-
+#include "browser/browser_struct.h"
 class QCefBrowserPrivate;
 class QCEFBROWSER_DECL_EXPORT QCefBrowser : public QObject
 {
     friend class QCefBrowserPrivate;
     Q_OBJECT;
 public:
-    QCefBrowser(QString url);
+    QCefBrowser(const BrowserWindowOptions& option);
     inline std::tr1::shared_ptr<QCefBrowserPrivate> d_func()
     {
         return d_ptr;

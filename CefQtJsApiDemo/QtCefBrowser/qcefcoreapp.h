@@ -7,6 +7,7 @@
 #include <QObject>
 #include "qcefbrowserhandlerdelegate.h"
 #include "render/qcefrenderhandlerdelegate.h"
+#include "browser/browser_struct.h"
 class QCefBrowser;
 class QCefCoreAppPrivate;
 class QCEFBROWSER_DECL_EXPORT QCefCoreApp:public QObject {
@@ -16,7 +17,7 @@ public:
 	QCefCoreApp();
 	virtual ~QCefCoreApp();
 	static QCefCoreApp* getInstance();
-	QSharedPointer<QCefBrowser> createBrowser(const QString url);
+	QSharedPointer<QCefBrowser> createBrowser(const BrowserWindowOptions& option);
 	void setApiRoot(QPointer<QObject> qApiRootObject);
 	QPointer<QObject> getApitRootObject();
 	void regBrowserDelegate(client::BrowserDelegate*);
