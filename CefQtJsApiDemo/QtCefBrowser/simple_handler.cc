@@ -259,6 +259,18 @@ void SimpleHandler::setSize()
     }
 }
 
+void SimpleHandler::showWindow(bool visible)
+{
+    if (!CefCurrentlyOn(TID_UI)) {
+        CefPostTask(TID_UI, base::BindOnce(&SimpleHandler::showWindow, this, visible));
+        return;
+    }
+    CEF_REQUIRE_UI_THREAD();
+    if (m_browerPrivate) {
+        m_browerPrivate->showWindow(visible);
+    }
+}
+
 void SimpleHandler::initWindow()
 {
     //CEF_REQUIRE_UI_THREAD();

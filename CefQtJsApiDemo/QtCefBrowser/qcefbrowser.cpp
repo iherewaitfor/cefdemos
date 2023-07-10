@@ -22,6 +22,8 @@ QCefBrowser::QCefBrowser(const BrowserWindowOptions& option)
 
     d_ptr->initWindowOptions(option);
     d_ptr->initWindow(); // crate browser in TID_UI thread.
+
+    d_ptr->showWindowTID_UI(d_ptr->m_windowOptions.visible.value());
 }
 
 QCefBrowser::~QCefBrowser()
@@ -43,4 +45,14 @@ int QCefBrowser::getId() const {
 }
 int QCefBrowser::getBrowserId() {
     return d_ptr->m_browserId;
+}
+
+void QCefBrowser::show()
+{
+    d_ptr->showWindowTID_UI(true);
+}
+
+void QCefBrowser::hide()
+{
+    d_ptr->showWindowTID_UI(false);
 }

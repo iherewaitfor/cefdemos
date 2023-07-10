@@ -172,6 +172,7 @@ void QCefBrowserPrivate::createBrowser() {
 
 void QCefBrowserPrivate::closeBrowser()
 {
+    base::AutoLock scopLock(lock);
     if(!m_clientHandler || m_closing != 0)
     if (m_clientHandler) {
         m_clientHandler->closeMainBrowser();
@@ -237,11 +238,13 @@ void QCefBrowserPrivate::setSize()
         return;
     }
 
+    base::AutoLock scopLock(lock);
     if (m_clientHandler) {
         m_clientHandler->setSize();
     }
 }
 void QCefBrowserPrivate::initWindow() {
+    base::AutoLock scopLock(lock);
     if (m_clientHandler) {
         m_clientHandler->initWindow();
     }
@@ -261,7 +264,6 @@ BOOL WINAPI hookChildFunc(HWND hWnd, LPARAM lParam)
 void QCefBrowserPrivate::hookChildWindows()
 {
     CEF_REQUIRE_UI_THREAD();
-    m_hostWindow->show(); // test: to do delete
     if (m_clientHandler) {
         HWND window = m_clientHandler->m_browser->GetHost()->GetWindowHandle();
         hookChildFunc(window, (LONG_PTR)this);
@@ -283,7 +285,27 @@ bool QCefBrowserPrivate::findHookedChildWindow(HWND window)
     return false;
 }
 
+void QCefBrowserPrivate::showWindowTID_UI(bool visible)
+{
+    base::AutoLock scopLock(lock);
+    //切到TID_UI线程执行。
+    if (m_clientHandler) {
+        m_clientHandler->showWindow(visible);
+    }
+}
 
+void QCefBrowserPrivate::showWindow(bool visible) {
+    CEF_REQUIRE_UI_THREAD();
+    if (m_hostWindow) {
+        if (visible) {
+            m_hostWindow->show();
+        }
+        else
+        {
+            m_hostWindow->hide();
+        }
+    }
+}
 
 void QCefBrowserPrivate::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
@@ -300,6 +322,7 @@ void QCefBrowserPrivate::OnClosing(CefRefPtr<CefBrowser> browser)
 void QCefBrowserPrivate::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
 	CEF_REQUIRE_UI_THREAD();
+    base::AutoLock scopLock(lock);
     m_clientHandler = nullptr;
     m_hookChildWindows.clear();
     if (m_hostWindow)

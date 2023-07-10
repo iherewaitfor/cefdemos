@@ -76,6 +76,7 @@ class SimpleHandler : public CefClient,
 
   void setSize();
   void initWindow();
+  void showWindow(bool visible);
 
 public:
     CefRefPtr<CefBrowser> m_browser; //Ö÷Ò³Ãæ¡£

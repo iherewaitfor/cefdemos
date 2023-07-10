@@ -20,6 +20,9 @@ public:
     QString url() const;
     int getId() const;
     int getBrowserId();
+
+    void show();
+    void hide();
 private:
     std::tr1::shared_ptr<QCefBrowserPrivate> d_ptr;
 };

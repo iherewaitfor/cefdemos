@@ -21,6 +21,7 @@ public:
     QString m_url;
     HWND m_parent;
 
+    base::Lock lock;
     CefRefPtr<SimpleHandler> m_clientHandler;
     volatile unsigned long m_closing;
     int m_Id;//只是QCefBrowser的id，创建就有。
@@ -45,6 +46,9 @@ public:
     void setSize();
     void hookChildWindows();
     bool findHookedChildWindow(HWND window);
+
+    void showWindowTID_UI(bool visible);
+    void showWindow(bool visible);
 
     void OnAfterCreated(CefRefPtr<CefBrowser> browser);
     void OnClosing(CefRefPtr<CefBrowser> browser);
