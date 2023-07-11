@@ -11,6 +11,7 @@
 #include "qcefcoreapp.h"
 #include "qcefbrowserhandlerdelegate.h"
 #include "render/qcefrenderhandlerdelegate.h"
+#include "window.h"
 class QCefCoreApp;
 class QCefBrowser;
 class QCefCoreAppPrivate : public QObject,  public CefBaseRefCounted
@@ -27,6 +28,7 @@ public:
     std::set<client::BrowserDelegate*> m_browserDelegates;
     std::set<client::RenderDelegate*> m_renderDelegates;
     bool m_bClosing;
+    QMap<int, QSharedPointer<CefApi::Window>> m_apiWindows; //cefbrowserId, apiwindow
 public:
 
     QCefCoreAppPrivate(QCefCoreApp* q)
@@ -67,6 +69,22 @@ public:
            quit();
         }
     }
+    void addApiWindow(int cefBrowserId, QSharedPointer<CefApi::Window> v)
+    {
+        m_apiWindows[cefBrowserId] = v;
+    }
+
+    void removeApiWindow(int cefBrowserId)
+    {
+        m_apiWindows.remove(cefBrowserId);
+    }
+    QSharedPointer<CefApi::Window> getApiWindow(int cefBrowserId) {
+        if (m_apiWindows.contains(cefBrowserId)) {
+            return m_apiWindows.value(cefBrowserId);
+        }
+        return nullptr;
+    }
+    
     void setApiRoot(QPointer<QObject> qApiRootObject) {
         m_qApiRootObject = qApiRootObject;
     }

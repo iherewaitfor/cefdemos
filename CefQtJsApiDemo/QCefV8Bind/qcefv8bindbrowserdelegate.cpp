@@ -7,6 +7,7 @@
 #include "qcefv8objecthelper.h"
 #include "qcefvalue_qvar_convert.h"
 #include "qcefv8bindbrowserdelegate.h"
+#include "QtCefBrowser/qcefcoreapp.h"
 
 #include "metainvoker.h"
 
@@ -91,6 +92,7 @@ void QCefV8BindBrowserDelegate::OnProcessMessageReceivedSlot(CefRefPtr<CefBrowse
         QList<cefv8bind_protcool::CefMetaObject>  cef_metaObjects;
         QCefV8ObjectHelper objectHelper;
         objectHelper.convertQObjectToCefObjects(QCefV8BindApp::getInstance()->d_func()->getRootObject(), nullptr, cef_metaObjects);
+        objectHelper.convertQObjectToCefObjects(QCefCoreApp::getInstance()->getApiWindow(browser->GetIdentifier()), nullptr, cef_metaObjects);
         cefv8bind_protcool::CefApiMetaDatasResponse response;
         response.cef_metaObjects = cef_metaObjects;
         frame->SendProcessMessage(PID_RENDERER, response.makeIPCMessage());

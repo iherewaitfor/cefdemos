@@ -46,3 +46,7 @@ void QCefCoreApp::regRenderDelegate(client::RenderDelegate* delegate) {
 void QCefCoreApp::unregRenderDelegate(client::RenderDelegate* delegate) {
     d_ptr->m_renderDelegates.erase(delegate);
 }
+
+CefApi::Window* QCefCoreApp::getApiWindow(int cefBrowserId) {
+    return d_ptr->getApiWindow(cefBrowserId).data();
+}

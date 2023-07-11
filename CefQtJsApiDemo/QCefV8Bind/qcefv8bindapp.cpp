@@ -52,3 +52,23 @@ QCefV8BindApp* QCefV8BindApp::getInstance()
 	static QCefV8BindApp s_v8BindApp;
 	return &s_v8BindApp;
 }
+
+void QCefV8BindApp::addWindowObject(int cefBrowserId, QObject* o)
+{
+	d_func()->m_windowObjects.insert(cefBrowserId, o);
+}
+
+void QCefV8BindApp::removeWindowObject(int cefBrowserId)
+{
+	d_func()->m_windowObjects.remove(cefBrowserId);
+}
+
+QObject* QCefV8BindApp::getWindowObject(int cefBrowserId)
+{
+	if (d_func()->m_windowObjects.contains(cefBrowserId))
+	{
+		return d_func()->m_windowObjects[cefBrowserId];
+	}
+	return NULL;
+}
+

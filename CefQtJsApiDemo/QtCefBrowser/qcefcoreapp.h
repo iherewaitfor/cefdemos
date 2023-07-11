@@ -8,8 +8,10 @@
 #include "qcefbrowserhandlerdelegate.h"
 #include "render/qcefrenderhandlerdelegate.h"
 #include "browser/browser_struct.h"
+#include "window.h"
 class QCefBrowser;
 class QCefCoreAppPrivate;
+class Window;
 class QCEFBROWSER_DECL_EXPORT QCefCoreApp:public QObject {
 	Q_OBJECT;
 public:
@@ -24,8 +26,11 @@ public:
 	void unregBrowserDelegate(client::BrowserDelegate*);
 	void regRenderDelegate(client::RenderDelegate*);
 	void unregRenderDelegate(client::RenderDelegate*);
+	CefApi::Window* getApiWindow(int cefBrowserId);
 
 signals:
+	void browserCreated(int cefBrowserId);
+	void browserClosed(int cefBrowserId);
 	void allClosed();
 };
 

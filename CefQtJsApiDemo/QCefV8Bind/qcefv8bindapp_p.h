@@ -39,4 +39,5 @@ private:
 	CefRefPtr<QCefV8BindBrowserDelegate>	m_browerDelegate;
 	CefRefPtr<QCefV8BindRenderDelegate>	m_renderDelegate;
 	QPointer<QCefObjectMgr>	m_objectMgr;
+	QMap<int, QPointer<QObject>>	m_windowObjects;
 };

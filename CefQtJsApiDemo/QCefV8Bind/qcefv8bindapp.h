@@ -17,4 +17,8 @@ public:
     void setV8RootObject(QPointer<QObject> o);
 
     static QCefV8BindApp* getInstance();
+    void addWindowObject(int cefBrowserId, QObject* o);
+    void removeWindowObject(int cefBrowserId);
+    QObject* getWindowObject(int cefBrowserId);
+
 };

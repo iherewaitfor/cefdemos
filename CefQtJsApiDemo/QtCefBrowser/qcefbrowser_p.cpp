@@ -331,7 +331,10 @@ void QCefBrowserPrivate::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 }
 
 void QCefBrowserPrivate::OnAfterCreatedSlot(int browserId) {
-
+    qCefCoreAppPrivate()->q_ptr->browserCreated(browserId);
+    
+    qCefCoreAppPrivate()->addApiWindow(browserId, 
+        QSharedPointer<CefApi::Window>(new CefApi::Window(nullptr, QPointer<QCefBrowser>(q_ptr))));
 }
 
 void QCefBrowserPrivate::OnClosingSlot(int browserId) {
@@ -339,7 +342,8 @@ void QCefBrowserPrivate::OnClosingSlot(int browserId) {
 }
 
 void QCefBrowserPrivate::OnBeforeCloseSlot(int browserId) {
-    
+    qCefCoreAppPrivate()->q_ptr->browserClosed(browserId);
+    qCefCoreAppPrivate()->removeApiWindow(browserId);
     qCefCoreAppPrivate()->removeBrowser(m_Id);
 }
 
