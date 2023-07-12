@@ -173,7 +173,9 @@ void QCefBrowserPrivate::createBrowser() {
 void QCefBrowserPrivate::closeBrowser()
 {
     base::AutoLock scopLock(lock);
-    if(!m_clientHandler || m_closing != 0)
+    if (!m_clientHandler || m_closing != 0) {
+        return;
+    }
     if (m_clientHandler) {
         m_clientHandler->closeMainBrowser();
     }
