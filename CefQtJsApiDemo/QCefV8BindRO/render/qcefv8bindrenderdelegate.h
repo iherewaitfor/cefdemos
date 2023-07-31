@@ -29,12 +29,6 @@ public:
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefV8Context> context);
 
-	virtual bool OnProcessMessageReceived(
-		CefRefPtr<CefBrowser> browser,
-		CefRefPtr<CefFrame> frame,
-		CefProcessId source_process,
-		CefRefPtr<CefProcessMessage> message);
-
 private:
 
     QMap<int64, CefRefPtr<QCefV8Handler>> m_frameHandlers;
