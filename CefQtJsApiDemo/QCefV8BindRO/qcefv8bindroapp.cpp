@@ -16,6 +16,9 @@ void QCefV8BindAppROPrivate::_init()
 		m_browerDelegate = new QCefV8BindBrowserDelegate();
 		QCefCoreApp::getInstance()->regBrowserDelegate(m_browerDelegate.get());
 		// to do init QRemoteObjectRegistryHost and QRemoteObjectHost
+		m_pQRemoteObjectRegistryHost.reset(new QRemoteObjectRegistryHost(QUrl(QStringLiteral("local:registry")))); // create node that hosts registy
+		m_pQRemoteObjectHost.reset(new QRemoteObjectHost(QUrl(QStringLiteral("local:replica")), QUrl(QStringLiteral("local:registry")))); // create node that will host source and connect to registry
+
 	}
 	else
 	{
@@ -54,3 +57,6 @@ QCefV8BindAppRO* QCefV8BindAppRO::getInstance()
 	return &s_v8BindApp;
 }
 
+void QCefV8BindAppRO::enableRemoting(QObject* apiRemotObject) {
+	d_func()->m_pQRemoteObjectHost->enableRemoting(apiRemotObject);
+}

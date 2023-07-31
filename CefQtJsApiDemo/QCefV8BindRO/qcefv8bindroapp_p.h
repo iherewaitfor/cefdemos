@@ -3,7 +3,7 @@
 #include "qcefv8bindbrowserdelegate.h"
 #include "render/qcefv8bindrenderdelegate.h"
 #include "qcefobjectmgr.h"
-
+#include <QtRemoteObjects>
 class QCefObjectMgr;
 class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
@@ -40,4 +40,7 @@ private:
 	CefRefPtr<QCefV8BindRenderDelegate>	m_renderDelegate;
 	QPointer<QCefObjectMgr>	m_objectMgr;
 	QMap<int, QPointer<QObject>>	m_windowObjects;
+
+	QScopedPointer<QRemoteObjectRegistryHost> m_pQRemoteObjectRegistryHost;
+	QScopedPointer<QRemoteObjectHost> m_pQRemoteObjectHost;
 };

@@ -57,7 +57,7 @@ endif()
 #只引用Qt5Core写法一
 # 提供Qt5位置定位.cmake文件
 set(Qt5_DIR ${Qt5HOMEDIR}/lib/cmake/Qt5)
-find_package(Qt5 COMPONENTS Core Widgets)
+find_package(Qt5 COMPONENTS Core Widgets RemoteObjects)
 
 #只引用Qt5Core写法二
 #提供Qt5Core库的.cmake文件位置

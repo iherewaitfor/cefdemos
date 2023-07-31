@@ -16,6 +16,8 @@ public:
 
     void setV8RootObject(QPointer<QObject> o);
 
+    void enableRemoting(QObject* apiRemotObject);
+
     static QCefV8BindAppRO* getInstance();
 
 };
