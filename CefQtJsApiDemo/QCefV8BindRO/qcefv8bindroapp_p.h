@@ -4,6 +4,7 @@
 #include "render/qcefv8bindrenderdelegate.h"
 #include "qcefobjectmgr.h"
 #include <QtRemoteObjects>
+#include "remoteobjecttreehelper.h"
 class QCefObjectMgr;
 class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
@@ -43,4 +44,6 @@ private:
 
 	QScopedPointer<QRemoteObjectRegistryHost> m_pQRemoteObjectRegistryHost;
 	QScopedPointer<QRemoteObjectHost> m_pQRemoteObjectHost;
+	RemoteObjectTreeHelper m_remoteObjectTreeHelper;
+
 };
