@@ -15,6 +15,7 @@ void QCefV8BindAppROPrivate::_init()
 	{
 		m_browerDelegate = new QCefV8BindBrowserDelegate();
 		QCefCoreApp::getInstance()->regBrowserDelegate(m_browerDelegate.get());
+		// to do init QRemoteObjectRegistryHost and QRemoteObjectHost
 	}
 	else
 	{
@@ -51,24 +52,5 @@ QCefV8BindAppRO* QCefV8BindAppRO::getInstance()
 {
 	static QCefV8BindAppRO s_v8BindApp;
 	return &s_v8BindApp;
-}
-
-void QCefV8BindAppRO::addWindowObject(int cefBrowserId, QObject* o)
-{
-	d_func()->m_windowObjects.insert(cefBrowserId, o);
-}
-
-void QCefV8BindAppRO::removeWindowObject(int cefBrowserId)
-{
-	d_func()->m_windowObjects.remove(cefBrowserId);
-}
-
-QObject* QCefV8BindAppRO::getWindowObject(int cefBrowserId)
-{
-	if (d_func()->m_windowObjects.contains(cefBrowserId))
-	{
-		return d_func()->m_windowObjects[cefBrowserId];
-	}
-	return NULL;
 }
 

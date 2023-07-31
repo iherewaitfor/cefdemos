@@ -44,7 +44,7 @@ void AutoSignalsEmitter::proxySignalEmit(void** _a)
         msg.methodName = QCefValueConverter::to(QString(m_signalMetaMethod.name()));
         msg.methodIndex = m_signalMetaMethod.methodIndex();
         msg.methodArgs = QCefValueConverter::to(args)->GetList();
-       QCefV8BindAppRO::getInstance()->d_func()->getBrowserDelegate()->sendProcessMessage(PID_RENDERER, msg.makeIPCMessage());
+//       QCefV8BindAppRO::getInstance()->d_func()->getBrowserDelegate()->sendProcessMessage(PID_RENDERER, msg.makeIPCMessage());
     }
     
     //to do : send siganle msg to render process.
