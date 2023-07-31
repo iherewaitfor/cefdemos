@@ -103,6 +103,7 @@ add_subdirectory(DemoApp)
 add_subdirectory(QtCefBrowser)
 add_subdirectory(QtCefRender)
 add_subdirectory(QCefV8Bind)
+add_subdirectory(QCefV8BindRO)
 
 # Display configuration settings.
 PRINT_CEF_CONFIG()
