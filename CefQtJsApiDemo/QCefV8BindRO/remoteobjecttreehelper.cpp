@@ -10,8 +10,21 @@ void RemoteObjectTreeHelper::setRootObject(QObject* rootObject) {
 	convertQObjectToRemoteStructList(m_rootObject, nullptr, m_objectsList);
 }
 
-bool RemoteObjectTreeHelper::enableObjectsRemoting(QRemoteObjectHost* objectHost) {
-    return false;
+bool RemoteObjectTreeHelper::enableObjectsRemoting(QRemoteObjectHost* sourceNode) {
+	if (!sourceNode) {
+		return false;
+	}
+	// enable remoting of source object
+	// enableRemoting the remote object tree
+	Q_FOREACH(const QString key, m_objectMap.keys()) {
+		QObject* remoteObj = (QObject*)m_objectMap.value(key);
+		if (remoteObj) {
+			sourceNode->enableRemoting(remoteObj, key);
+		}
+	}
+	//remoting the tree helper
+	sourceNode->enableRemoting(this, "QCefRemoteObjectTreeHelper");
+    return true;
 }
 
 QVariantList RemoteObjectTreeHelper::getObjects() {

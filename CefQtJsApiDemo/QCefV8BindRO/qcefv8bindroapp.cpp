@@ -50,6 +50,8 @@ void QCefV8BindAppRO::setV8RootObject(QPointer<QObject> o)
 {
 	o->setProperty(KV8ObjectName, o->objectName());
 	d_func()->m_v8RootObject = o;
+	d_func()->m_remoteObjectTreeHelper.setRootObject(o);
+	d_func()->m_remoteObjectTreeHelper.enableObjectsRemoting(d_func()->m_pQRemoteObjectHost.data());
 }
 QCefV8BindAppRO* QCefV8BindAppRO::getInstance()
 {
