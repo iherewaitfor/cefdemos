@@ -28,6 +28,7 @@ void QCefV8BindAppROPrivate::_init()
 			// to do: create and register the delegate of render process
 			m_renderDelegate = new QCefV8BindRenderDelegate();
 			QCefCoreApp::getInstance()->regRenderDelegate(m_renderDelegate.get());
+			m_pQRemoteObjectNode.reset(new QRemoteObjectNode(QUrl(QStringLiteral("local:registry"))));
 		}
 	}
 }

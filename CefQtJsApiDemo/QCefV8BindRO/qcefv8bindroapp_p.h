@@ -46,4 +46,6 @@ private:
 	QScopedPointer<QRemoteObjectHost> m_pQRemoteObjectHost;
 	RemoteObjectTreeHelper m_remoteObjectTreeHelper;
 
+	QScopedPointer<QRemoteObjectNode> m_pQRemoteObjectNode;
+
 };
