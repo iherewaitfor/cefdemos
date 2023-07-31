@@ -4,19 +4,19 @@
 #include "qcefv8bindroglobal.h"
 
 class QObject;
-class QCefV8BindAppPrivate;
-class QCEFV8BINDRO_DECL_EXPORT QCefV8BindApp
+class QCefV8BindAppROPrivate;
+class QCEFV8BINDRO_DECL_EXPORT QCefV8BindAppRO
 {
 public:
-    Q_DISABLE_COPY(QCefV8BindApp);
-    QCEFV8BIND_DECLARE_PRIVATE(QCefV8BindApp);
+    Q_DISABLE_COPY(QCefV8BindAppRO);
+    QCEFV8BINDRO_DECLARE_PRIVATE(QCefV8BindAppRO);
 
-    QCefV8BindApp();
-    virtual ~QCefV8BindApp(void);
+    QCefV8BindAppRO();
+    virtual ~QCefV8BindAppRO(void);
 
     void setV8RootObject(QPointer<QObject> o);
 
-    static QCefV8BindApp* getInstance();
+    static QCefV8BindAppRO* getInstance();
     void addWindowObject(int cefBrowserId, QObject* o);
     void removeWindowObject(int cefBrowserId);
     QObject* getWindowObject(int cefBrowserId);

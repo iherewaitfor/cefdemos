@@ -1,12 +1,12 @@
-﻿#include "qcefv8bindapp.h"
+﻿#include "qcefv8bindroapp.h"
 #include "include/cef_command_line.h"
 
 #include "../QtCefBrowser/qcefcoreapp.h"
 #include "qcefv8objecthelper.h"
-#include "qcefv8bindapp_p.h"
+#include "qcefv8bindroapp_p.h"
 #include "qcefv8bindbrowserdelegate.h"
 
-void QCefV8BindAppPrivate::_init()
+void QCefV8BindAppROPrivate::_init()
 {
 	CefRefPtr<CefCommandLine>  commandLine = CefCommandLine::CreateCommandLine();
 	commandLine->InitFromString(::GetCommandLine());
@@ -28,12 +28,12 @@ void QCefV8BindAppPrivate::_init()
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-QCefV8BindApp::QCefV8BindApp()
-: d_ptr( new QCefV8BindAppPrivate())
+QCefV8BindAppRO::QCefV8BindAppRO()
+: d_ptr( new QCefV8BindAppROPrivate())
 {
 }
 
-QCefV8BindApp::~QCefV8BindApp(void)
+QCefV8BindAppRO::~QCefV8BindAppRO(void)
 {
 	if (d_ptr)
 	{
@@ -42,28 +42,28 @@ QCefV8BindApp::~QCefV8BindApp(void)
 	}
 }
 
-void QCefV8BindApp::setV8RootObject(QPointer<QObject> o)
+void QCefV8BindAppRO::setV8RootObject(QPointer<QObject> o)
 {
 	o->setProperty(KV8ObjectName, o->objectName());
 	d_func()->m_v8RootObject = o;
 }
-QCefV8BindApp* QCefV8BindApp::getInstance()
+QCefV8BindAppRO* QCefV8BindAppRO::getInstance()
 {
-	static QCefV8BindApp s_v8BindApp;
+	static QCefV8BindAppRO s_v8BindApp;
 	return &s_v8BindApp;
 }
 
-void QCefV8BindApp::addWindowObject(int cefBrowserId, QObject* o)
+void QCefV8BindAppRO::addWindowObject(int cefBrowserId, QObject* o)
 {
 	d_func()->m_windowObjects.insert(cefBrowserId, o);
 }
 
-void QCefV8BindApp::removeWindowObject(int cefBrowserId)
+void QCefV8BindAppRO::removeWindowObject(int cefBrowserId)
 {
 	d_func()->m_windowObjects.remove(cefBrowserId);
 }
 
-QObject* QCefV8BindApp::getWindowObject(int cefBrowserId)
+QObject* QCefV8BindAppRO::getWindowObject(int cefBrowserId)
 {
 	if (d_func()->m_windowObjects.contains(cefBrowserId))
 	{

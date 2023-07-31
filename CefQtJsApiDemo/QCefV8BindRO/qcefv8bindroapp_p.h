@@ -5,18 +5,18 @@
 #include "qcefobjectmgr.h"
 
 class QCefObjectMgr;
-class QCefV8BindApp;
+class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
-class QCefV8BindAppPrivate
+class QCefV8BindAppROPrivate
 {
-	QCEFV8BIND_DECLARE_PUBLIC(QCefV8BindApp);
+	QCEFV8BINDRO_DECLARE_PUBLIC(QCefV8BindAppRO);
 public:
-	QCefV8BindAppPrivate():m_objectMgr(new QCefObjectMgr(nullptr))
+	QCefV8BindAppROPrivate():m_objectMgr(new QCefObjectMgr(nullptr))
 	{
 		_init();
 	}
 
-	virtual ~QCefV8BindAppPrivate()
+	virtual ~QCefV8BindAppROPrivate()
 	{
 	}
 

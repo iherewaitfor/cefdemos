@@ -1,6 +1,6 @@
 ﻿#include "qcefv8objecthelper.h"
-#include "qcefv8bindapp.h"
-#include "qcefv8bindapp_p.h"
+#include "qcefv8bindroapp.h"
+#include "qcefv8bindroapp_p.h"
 #include "qcefv8bindutility.h"
 #include "autosignalsemitter.h"
 
@@ -199,7 +199,7 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 	}
 	if (isNewValue)
 	{
-		QCefV8BindApp::getInstance()->d_func()->getObjectMgr()->insertBrowser(cef_metaObject.objectId, const_cast<QObject*>(itemObject));
+		QCefV8BindAppRO::getInstance()->d_func()->getObjectMgr()->insertBrowser(cef_metaObject.objectId, const_cast<QObject*>(itemObject));
 	}
 	return true;
 }
@@ -236,7 +236,7 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::getV8Object(quint32 objectId, CefRefPt
 }
 void QCefV8ObjectHelper::getObjectPathName(quint32 objectId, QStringList& objNames)
 {
-	QPointer<QCefObjectMgr> objectMgr = QCefV8BindApp::getInstance()->d_func()->getObjectMgr();
+	QPointer<QCefObjectMgr> objectMgr = QCefV8BindAppRO::getInstance()->d_func()->getObjectMgr();
 
 	QObject* metaObj = objectMgr->findRenderObject(objectId);
 	if (metaObj == NULL)
@@ -283,7 +283,7 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8Object(const cefv8bind_protcoo
 	v8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(obj));
 
 	//存当前对象
-	QCefV8BindApp::getInstance()->d_func()->getObjectMgr()->insertRender(cefMetaObject.objectId, obj.data());
+	QCefV8BindAppRO::getInstance()->d_func()->getObjectMgr()->insertRender(cefMetaObject.objectId, obj.data());
 
 	foreach(CefMetaMethod metaMethod, cefMetaObject.metaMethods)
 	{
@@ -364,7 +364,7 @@ CefRefPtr<CefV8Value> QRenderV8ObjectHelper::createV8Object(const cefv8bind_prot
 	itemObject->setProperty(KRenderV8Object, true);
 	v8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(itemObject));
 
-	QCefV8BindApp::getInstance()->d_func()->getObjectMgr()->insertRender(cefMetaObject.objectId, itemObject.data());
+	QCefV8BindAppRO::getInstance()->d_func()->getObjectMgr()->insertRender(cefMetaObject.objectId, itemObject.data());
 
 	foreach(CefMetaMethod metaMethod, cefMetaObject.metaMethods)
 	{

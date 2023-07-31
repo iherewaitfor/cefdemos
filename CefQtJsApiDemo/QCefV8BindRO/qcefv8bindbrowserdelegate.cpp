@@ -2,8 +2,8 @@
 #include <QVariant>
 #include <QtCore>
 #include "qcefipcprotocol.h"
-#include "qcefv8bindapp.h"
-#include "qcefv8bindapp_p.h"
+#include "qcefv8bindroapp.h"
+#include "qcefv8bindroapp_p.h"
 #include "qcefv8objecthelper.h"
 #include "qcefvalue_qvar_convert.h"
 #include "qcefv8bindbrowserdelegate.h"
@@ -91,7 +91,7 @@ void QCefV8BindBrowserDelegate::OnProcessMessageReceivedSlot(CefRefPtr<CefBrowse
         }
         QList<cefv8bind_protcool::CefMetaObject>  cef_metaObjects;
         QCefV8ObjectHelper objectHelper;
-        objectHelper.convertQObjectToCefObjects(QCefV8BindApp::getInstance()->d_func()->getRootObject(), nullptr, cef_metaObjects);
+        objectHelper.convertQObjectToCefObjects(QCefV8BindAppRO::getInstance()->d_func()->getRootObject(), nullptr, cef_metaObjects);
         objectHelper.convertQObjectToCefObjects(QCefCoreApp::getInstance()->getApiWindow(browser->GetIdentifier()), nullptr, cef_metaObjects);
         cefv8bind_protcool::CefApiMetaDatasResponse response;
         response.cef_metaObjects = cef_metaObjects;
@@ -108,7 +108,7 @@ void QCefV8BindBrowserDelegate::OnProcessMessageReceivedSlot(CefRefPtr<CefBrowse
         {
             QVariant retVar;
 
-            QObject* apiObject = QCefV8BindApp::getInstance()->d_func()->getObjectMgr()->findBrowserObject(req.objctId);
+            QObject* apiObject = QCefV8BindAppRO::getInstance()->d_func()->getObjectMgr()->findBrowserObject(req.objctId);
             if (apiObject) {
                 QMetaMethod metaMethod = apiObject->metaObject()->method(req.methodIndex);
                 MetaInvoker metaInvoker;
