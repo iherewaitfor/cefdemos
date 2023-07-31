@@ -29,6 +29,12 @@ void QCefV8BindAppROPrivate::_init()
 			m_renderDelegate = new QCefV8BindRenderDelegate();
 			QCefCoreApp::getInstance()->regRenderDelegate(m_renderDelegate.get());
 			m_pQRemoteObjectNode.reset(new QRemoteObjectNode(QUrl(QStringLiteral("local:registry"))));
+
+			QSharedPointer<QRemoteObjectDynamicReplica> pRep; // shared pointer to hold replica
+
+			pRep.reset(m_pQRemoteObjectNode->acquireDynamic("QCefRemoteObjectTreeHelper")); // acquire replica of source from host node
+			pRep->setObjectName("QCefRemoteObjectTreeHelper");
+			m_pDynamicClientTreeHelper.reset(new DynamicClientTreeHelper(pRep));
 		}
 	}
 }

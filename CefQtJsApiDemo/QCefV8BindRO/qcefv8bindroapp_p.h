@@ -5,6 +5,7 @@
 #include "qcefobjectmgr.h"
 #include <QtRemoteObjects>
 #include "remoteobjecttreehelper.h"
+#include "render/dynamicclienttreehelper.h"
 class QCefObjectMgr;
 class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
@@ -32,6 +33,7 @@ public:
 	CefRefPtr<QCefV8BindBrowserDelegate> getBrowserDelegate() {
 		return m_browerDelegate;
 	}
+
 private:
 	void _init();
 
@@ -42,10 +44,13 @@ private:
 	QPointer<QCefObjectMgr>	m_objectMgr;
 	QMap<int, QPointer<QObject>>	m_windowObjects;
 
+	//source
 	QScopedPointer<QRemoteObjectRegistryHost> m_pQRemoteObjectRegistryHost;
 	QScopedPointer<QRemoteObjectHost> m_pQRemoteObjectHost;
 	RemoteObjectTreeHelper m_remoteObjectTreeHelper;
 
+	//replica
 	QScopedPointer<QRemoteObjectNode> m_pQRemoteObjectNode;
+	QScopedPointer<DynamicClientTreeHelper> m_pDynamicClientTreeHelper;
 
 };
