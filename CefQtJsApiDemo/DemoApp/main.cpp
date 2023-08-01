@@ -6,7 +6,8 @@
 
 #include "numberlogic.h"
 #include "subnumberlogic.h"
-#include "QCefV8Bind/qcefv8bindapp.h"
+//#include "QCefV8Bind/qcefv8bindapp.h"
+#include "../QCefV8BindRO/qcefv8bindroapp.h"
 
 int main(int argc, char** argv )
 {
@@ -14,14 +15,19 @@ int main(int argc, char** argv )
 
     QCefClient cefClient;
     cefClient.initCef();
-    QCefV8BindApp::getInstance();
+    //QCefV8BindApp::getInstance();
+    ////testAPI
+    //NumberLogic* numberLogic = new NumberLogic();
+    //SubNumberLogic* subNumberLogic = new SubNumberLogic(numberLogic);
+    //subNumberLogic;
+    //QCefV8BindApp::getInstance()->setV8RootObject(numberLogic);
 
+    QCefV8BindAppRO::getInstance();
     //testAPI
     NumberLogic* numberLogic = new NumberLogic();
     SubNumberLogic* subNumberLogic = new SubNumberLogic(numberLogic);
     subNumberLogic;
-
-    QCefV8BindApp::getInstance()->setV8RootObject(numberLogic);
+    QCefV8BindAppRO::getInstance()->setV8RootObject(numberLogic);
 
     BrowserWindowOptions options;
     options.url = "https://www.baidu.com";

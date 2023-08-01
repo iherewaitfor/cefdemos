@@ -9,8 +9,9 @@
 class QCefObjectMgr;
 class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
-class QCefV8BindAppROPrivate
+class QCefV8BindAppROPrivate :public QObject
 {
+	Q_OBJECT
 	QCEFV8BINDRO_DECLARE_PUBLIC(QCefV8BindAppRO);
 public:
 	QCefV8BindAppROPrivate():m_objectMgr(new QCefObjectMgr(nullptr))

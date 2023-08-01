@@ -104,6 +104,9 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::bindV8ObjectsRO(const QMap<QString, QS
 	foreach(QString key, objectMap.keys())
 	{
 		QSharedPointer<DynamicClient> dynamicClient = objectMap.value(key);
+		if (!dynamicClient->getReplica()->isReplicaValid()) {
+			continue;
+		}
 		QObject* object = dynamicClient->getReplica().data();
 		CefRefPtr<CefV8Value> v8Obj = createV8ObjectRO(object, v8Handler, context);
 		QString parentName = object->property("parentName").toString();
@@ -122,7 +125,12 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8ObjectRO(const QObject* object
 	QString objectId = object->objectName();
 	if (!objectId.isEmpty())
 	{
-		QString parentName = object->property("parentName").toString();
+
+		QVariant var = object->property("parentName");
+		if (!var.isValid()) {
+			return nullptr;
+		}
+		QString parentName = var.toString();
 		parentV8Object = getV8ObjectRO(parentName, rootV8Object);
 		if (parentV8Object == nullptr)
 		{
