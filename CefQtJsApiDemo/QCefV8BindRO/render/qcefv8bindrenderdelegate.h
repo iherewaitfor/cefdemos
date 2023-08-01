@@ -3,6 +3,14 @@
 #include "qcefv8handler.h"
 #include <QtCore>
 #include "../../QtCefBrowser/render/qcefrenderhandlerdelegate.h"
+#include "../qcefipcvalue.h"
+//for CefPostTask
+#include "include/base/cef_bind.h"
+#include "include/wrapper/cef_closure_task.h"
+#include "include/wrapper/cef_helpers.h"
+#include "include/base/cef_callback.h"
+
+#include <list>
 class QCefV8Handler;
 class QCefV8BindRenderDelegate : public virtual CefBaseRefCounted,public client::RenderDelegate {
 public:
@@ -28,7 +36,9 @@ public:
 		CefRefPtr<CefBrowser> browser,
 		CefRefPtr<CefFrame> frame,
 		CefRefPtr<CefV8Context> context);
-
+	
+public:
+	void tobindV8Objects(QList<cefv8bind_protcool::CefMetaObject> cefMetaObjects, int64 frameId);
 private:
 
     QMap<int64, CefRefPtr<QCefV8Handler>> m_frameHandlers;

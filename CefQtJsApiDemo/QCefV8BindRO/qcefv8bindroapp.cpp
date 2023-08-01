@@ -35,6 +35,9 @@ void QCefV8BindAppROPrivate::_init()
 			pRep.reset(m_pQRemoteObjectNode->acquireDynamic("QCefRemoteObjectTreeHelper")); // acquire replica of source from host node
 			pRep->setObjectName("QCefRemoteObjectTreeHelper");
 			m_pDynamicClientTreeHelper.reset(new DynamicClientTreeHelper(pRep));
+
+			QObject::connect(m_pDynamicClientTreeHelper.data(), SIGNAL(contextCreated(int, qint64)), m_pDynamicClientTreeHelper.data(), 
+				SLOT(contextCreated_slot(int, qint64)));
 		}
 	}
 }

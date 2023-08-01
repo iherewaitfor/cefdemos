@@ -1,7 +1,13 @@
 #include "dynamicclienttreehelper.h"
 #include <QMetaMethod>
 #include <QRemoteObjectPendingCall>
+#include "../qcefv8objecthelper.h"
 
+int getSequenceId()
+{
+    static volatile long s_id = 0;
+    return InterlockedIncrement(&s_id);
+}
 // constructor
 DynamicClientTreeHelper::DynamicClientTreeHelper(QSharedPointer<QRemoteObjectDynamicReplica> ptr) :
     QObject(nullptr), reptr(ptr), m_binitConnection(false)
@@ -97,10 +103,33 @@ void DynamicClientTreeHelper::pendingCallResult(QRemoteObjectPendingCallWatcher*
         if (!m_dynamicClientsMap.contains(objectName)) {
             QSharedPointer<QRemoteObjectDynamicReplica> pRep;
             pRep.reset(reptr->node()->acquireDynamic(objectName)); // acquire replica of source from host node
+
             pRep->setObjectName(objectName);
             QSharedPointer<DynamicClient> pClient;
             pClient.reset(new DynamicClient(pRep));
+            int objectId = getSequenceId();
+            pClient->setObjectName(objectName);
+            pClient->setProperty(KObjectId, objectId);
+
             m_dynamicClientsMap[objectName] = pClient;
+            m_dynamicClientsIdMap[objectId] = pClient;
         }
     }
+}
+
+void DynamicClientTreeHelper::getMetaObjects(QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects) {
+    //QString objectName = reptr->objectName();
+    //to do , get the objectName of rootObject;
+    QString objectName = "NumberLogic";
+    QSharedPointer<DynamicClient> pClient = m_dynamicClientsMap.value(objectName);
+    QCefV8ObjectHelper objectHelper;
+    objectHelper.convertQObjectToCefObjects(pClient.data(), nullptr, cef_metaObjects);
+}
+
+//render
+void DynamicClientTreeHelper::contextCreated_slot(int browserId, qint64 frameId) {
+    // get the objectsTree and send to bind.
+    QList<cefv8bind_protcool::CefMetaObject> cef_metaObjects;
+    getMetaObjects(cef_metaObjects);
+    QCefV8BindAppRO::getInstance()->d_func()->getRenderDelegate()->tobindV8Objects(cef_metaObjects, frameId);
 }

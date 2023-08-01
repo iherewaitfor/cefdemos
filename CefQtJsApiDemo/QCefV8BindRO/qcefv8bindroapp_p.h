@@ -6,9 +6,11 @@
 #include <QtRemoteObjects>
 #include "remoteobjecttreehelper.h"
 #include "render/dynamicclienttreehelper.h"
+#include "render/qcefv8bindrenderdelegate.h"
 class QCefObjectMgr;
 class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
+class DynamicClientTreeHelper;
 class QCefV8BindAppROPrivate :public QObject
 {
 	Q_OBJECT
@@ -34,6 +36,9 @@ public:
 	CefRefPtr<QCefV8BindBrowserDelegate> getBrowserDelegate() {
 		return m_browerDelegate;
 	}
+	CefRefPtr<QCefV8BindRenderDelegate> getRenderDelegate() {
+		return m_renderDelegate;
+	}
 	DynamicClientTreeHelper * getReplicaTreeHelper(){
 		return m_pDynamicClientTreeHelper.data();
 	}
@@ -48,12 +53,12 @@ private:
 	QPointer<QCefObjectMgr>	m_objectMgr;
 	QMap<int, QPointer<QObject>>	m_windowObjects;
 
-	//source
+	//source in browser process
 	QScopedPointer<QRemoteObjectRegistryHost> m_pQRemoteObjectRegistryHost;
 	QScopedPointer<QRemoteObjectHost> m_pQRemoteObjectHost;
 	RemoteObjectTreeHelper m_remoteObjectTreeHelper;
 
-	//replica
+	//replica in render process
 	QScopedPointer<QRemoteObjectNode> m_pQRemoteObjectNode;
 	QScopedPointer<DynamicClientTreeHelper> m_pDynamicClientTreeHelper;
 
