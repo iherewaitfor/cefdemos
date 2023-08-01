@@ -33,6 +33,9 @@ public:
 	CefRefPtr<QCefV8BindBrowserDelegate> getBrowserDelegate() {
 		return m_browerDelegate;
 	}
+	DynamicClientTreeHelper * getReplicaTreeHelper(){
+		return m_pDynamicClientTreeHelper.data();
+	}
 
 private:
 	void _init();

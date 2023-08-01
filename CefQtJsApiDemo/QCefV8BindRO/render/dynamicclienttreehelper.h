@@ -15,7 +15,7 @@ class DynamicClientTreeHelper : public QObject
 public:
     DynamicClientTreeHelper(QSharedPointer<QRemoteObjectDynamicReplica> ptr);
     ~DynamicClientTreeHelper() override;
-    const QMap<QString, QSharedPointer<QRemoteObjectDynamicReplica>>& getObjectsMap();
+    const QMap<QString, QSharedPointer<DynamicClient>>& getObjectsMap();
 public Q_SLOTS:
     void initConnection_slot(); //QRemoteObjectDynamicReplica
     void stateChanged_slot(QRemoteObjectReplica::State state, QRemoteObjectReplica::State oldState);
@@ -23,7 +23,6 @@ public Q_SLOTS:
 private:
     QSharedPointer<QRemoteObjectDynamicReplica> reptr;// holds reference to replica
     bool m_binitConnection;
-    QMap<QString, QSharedPointer<QRemoteObjectDynamicReplica>> m_objectsMap;
     QMap<QString, QSharedPointer<DynamicClient>> m_dynamicClientsMap;
  };
 

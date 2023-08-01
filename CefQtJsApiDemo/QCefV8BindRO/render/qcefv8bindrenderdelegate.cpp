@@ -3,6 +3,8 @@
 #include "../qcefipcvalue.h"
 #include "qcefv8handler.h"
 #include "../qcefv8objecthelper.h"
+#include "../qcefv8bindroapp.h"
+#include "../qcefv8bindroapp_p.h"
 
 void QCefV8BindRenderDelegate::OnWebKitInitialized(){
     CefRegisterExtension(CefString(L"qcef/promisecreator"), KPromiseCreatorScript, nullptr);

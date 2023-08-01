@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "include/cef_v8.h"
 #include "qcefipcvalue.h"
+#include "render/dynamicclient.h"
 
 extern const char KObjectId[];
 extern const char KV8ObjectName[];
@@ -8,6 +9,10 @@ extern const char KBrowserFrameId[];
 extern const char KCefMetaObject[];
 extern const char KCefMetaMethod[];
 extern const char KRenderV8Object[];
+
+extern const char KObjectIdRO[];
+extern const char KBrowserFrameIdRO[];
+extern const char KCefMetaMethodIndexRO[];
 
 extern const char ConnectSignal[];
 extern const char DisConnectSignal[];
@@ -31,9 +36,19 @@ public:
 	void bindGlobalFunctions(CefRefPtr<CefV8Value> window, CefRefPtr<CefV8Handler> v8Handler);
 
 	CefRefPtr<CefV8Value> createV8Object(const cefv8bind_protcool::CefMetaObject& cefMetaObject, CefRefPtr<CefV8Handler> v8Handler, CefRefPtr<CefV8Context> context);
+
+	//
+	CefRefPtr<CefV8Value> bindV8ObjectsRO(const QMap<QString, QSharedPointer<QRemoteObjectDynamicReplica>>& objectMap,
+		CefRefPtr<CefV8Context> context, CefRefPtr<CefV8Handler> v8Handler);
+	CefRefPtr<CefV8Value> createV8ObjectRO(const QObject * object, CefRefPtr<CefV8Handler> v8Handler, CefRefPtr<CefV8Context> context);
+
+
 private:
 	CefRefPtr<CefV8Value> getV8Object(quint32 objectId, CefRefPtr<CefV8Value> rootV8Object);
 	void getObjectPathName(quint32 objectId, QStringList& objNames);
+
+	CefRefPtr<CefV8Value> getV8ObjectRO(const QString &objectId, CefRefPtr<CefV8Value> rootV8Object);
+	void getObjectPathNameRO(const QString& objectId, QStringList& objNames);
 
 };
 

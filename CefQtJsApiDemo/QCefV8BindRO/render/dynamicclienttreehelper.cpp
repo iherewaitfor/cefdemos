@@ -18,8 +18,8 @@ DynamicClientTreeHelper::~DynamicClientTreeHelper()
 
 }
 
-const QMap<QString, QSharedPointer<QRemoteObjectDynamicReplica>>& DynamicClientTreeHelper::getObjectsMap() {
-    return m_objectsMap;
+const QMap<QString, QSharedPointer<DynamicClient>>& DynamicClientTreeHelper::getObjectsMap() {
+    return m_dynamicClientsMap;
 }
 // Function to initialize connections between slots and signals
 void DynamicClientTreeHelper::initConnection_slot()
@@ -94,12 +94,10 @@ void DynamicClientTreeHelper::pendingCallResult(QRemoteObjectPendingCallWatcher*
         }
         QString objectName = list.at(0).toString();
         QString parentName = list.at(1).toString();
-        if (!m_objectsMap.contains(objectName)) {
+        if (!m_dynamicClientsMap.contains(objectName)) {
             QSharedPointer<QRemoteObjectDynamicReplica> pRep;
             pRep.reset(reptr->node()->acquireDynamic(objectName)); // acquire replica of source from host node
             pRep->setObjectName(objectName);
-            //m_objectsMap.insert(objectName, pRep);
-            m_objectsMap[objectName] = pRep;
             QSharedPointer<DynamicClient> pClient;
             pClient.reset(new DynamicClient(pRep));
             m_dynamicClientsMap[objectName] = pClient;

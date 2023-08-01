@@ -3,6 +3,7 @@
 #include "qcefv8bindroapp_p.h"
 #include "qcefv8bindutility.h"
 #include "autosignalsemitter.h"
+#include "qcefvalue_qvar_convert.h"
 
 using namespace cefv8bind_protcool;
 const char KV8ObjectName[] = "V8ObjectName";
@@ -11,6 +12,10 @@ const char KBrowserFrameId[] = "KBrowserFrameId";
 const char KCefMetaObject[] = "CefMetaObject";
 const char KCefMetaMethod[] = "CefMetaMethod";
 const char KRenderV8Object[] = "RenderV8Object";
+
+const char KObjectIdRO[] = "KObjectIdRO";
+const char KBrowserFrameIdRO[] = "KBrowserFrameIdRO";
+const char KCefMetaMethodIndexRO[] = "KCefMetaMethodIndexRO";
 
 const char ConnectSignal[] = "connectSignal";
 const char DisConnectSignal[] = "disconnect";
@@ -93,6 +98,151 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::bindV8Objects(const QList<cefv8bind_pr
 	return rootV8;
 }
 
+CefRefPtr<CefV8Value> QCefV8ObjectHelper::bindV8ObjectsRO(const QMap<QString, QSharedPointer<QRemoteObjectDynamicReplica>>& objectMap,
+	CefRefPtr<CefV8Context> context, CefRefPtr<CefV8Handler> v8Handler) {
+	CefRefPtr<CefV8Value> rootV8;
+	foreach(QString key, objectMap.keys())
+	{
+		QSharedPointer<QRemoteObjectDynamicReplica> replica = objectMap.value(key);
+		CefRefPtr<CefV8Value> v8Obj = createV8ObjectRO(replica.data(), v8Handler, context);
+		QString parentName = replica->property("parentName").toString();
+		if (parentName.isEmpty())
+		{
+			rootV8 = v8Obj;
+		}
+	}
+	return rootV8;
+
+}
+
+CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8ObjectRO(const QObject* object, CefRefPtr<CefV8Handler> v8Handler, CefRefPtr<CefV8Context> context) {
+	CefRefPtr<CefV8Value> rootV8Object = context->GetGlobal();
+	CefRefPtr<CefV8Value> parentV8Object;
+	QString objectId = object->objectName();
+	if (!objectId.isEmpty())
+	{
+		QString parentName = object->property("parentName").toString();
+		parentV8Object = getV8ObjectRO(parentName, rootV8Object);
+		if (parentV8Object == nullptr)
+		{
+			return nullptr;
+		}
+	}
+
+	CefRefPtr<CefV8Value> v8Object = CefV8Value::CreateObject(nullptr, nullptr);
+	// 把当前QObject接口的信息存储到一个QObject对象上，并把这个QObject对象存放到对应的V8Object的UserData
+	QSharedPointer<QObject> obj = QSharedPointer<QObject>(new QObject());
+	obj->setProperty(KObjectIdRO, objectId); //通过该objcetId可以查询到QObject*从而获取到整个对象的元信息。
+	obj->setProperty(KBrowserFrameId, context ? context->GetFrame()->GetIdentifier() : 0);
+	v8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(obj));
+
+
+
+	const QMetaObject* metaObject = object->metaObject();
+	for(int i = 0; i < metaObject->methodCount(); i++)
+	{
+		QMetaMethod metaMethod = metaObject->method(i);
+		QString methodName = metaMethod.name();
+
+		CefRefPtr<CefV8Value>  methodV8Object;
+		if (metaMethod.methodType() == QMetaMethod::Method)
+		{
+			methodV8Object = CefV8Value::CreateFunction(methodName.toStdString(), v8Handler);
+		}
+		else if (metaMethod.methodType() == QMetaMethod::Signal)
+		{
+			methodV8Object = CefV8Value::CreateObject(nullptr, nullptr);
+		}
+		//存储方法的元数据，方便后续调用时获取。
+		QSharedPointer<QObject> objMethod = QSharedPointer<QObject>(new QObject());
+		objMethod->setProperty(KCefMetaMethodIndexRO, i);
+		objMethod->setProperty(KObjectIdRO, objectId);
+
+		methodV8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(objMethod));
+		v8Object->SetValue(methodName.toStdString(), methodV8Object, V8_PROPERTY_ATTRIBUTE_NONE);
+	}
+
+	for(int i = 0; i < metaObject->propertyCount(); i++)
+	{
+		QMetaProperty metaProperty = metaObject->property(i);
+		QString propertyName = metaProperty.name();
+		QVariant varValue = object->property(propertyName.toStdString().c_str());
+		CefRefPtr<CefValue> cef_value = QCefValueConverter::to(varValue);
+
+		if (cef_value && cef_value->IsValid())
+		{
+
+			CefRefPtr<CefV8Value> propV8Object = QCefValueConverter::to(cef_value);
+			if (propV8Object->IsValid())
+			{
+				v8Object->SetValue(QCefValueConverter::to(propertyName), propV8Object, V8_PROPERTY_ATTRIBUTE_READONLY);
+			}
+		}
+	}
+	if (parentV8Object)
+	{
+		//把创建的对象挂到parentObject上，如果有parent的话。
+		const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
+		parentV8Object->SetValue(CefString(objectId.toStdString()), v8Object, attributes);
+	}
+
+	return v8Object;
+}
+
+CefRefPtr<CefV8Value> QCefV8ObjectHelper::getV8ObjectRO(const QString & objectId, CefRefPtr<CefV8Value> rootV8Object)
+{
+	if (objectId.isEmpty())
+	{
+		return rootV8Object;
+	}
+
+	QStringList objectNames;
+	getObjectPathNameRO(objectId, objectNames);
+
+	CefRefPtr<CefV8Value> parentV8Object = rootV8Object;
+	for (int i = 0; i < objectNames.size(); ++i)
+	{
+		QString objectName = objectNames.at(i);
+		CefRefPtr<CefV8Value> v8Object;
+		if (!parentV8Object->HasValue(objectName.toStdString()))
+		{
+			//对象路径上没有对应的V8Object，就创建。
+			v8Object = CefV8Value::CreateObject(nullptr, nullptr);
+			const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
+			parentV8Object->SetValue(objectName.toStdString(), v8Object, attributes);
+		}
+		else
+		{
+			v8Object = parentV8Object->GetValue(objectName.toStdString());
+		}
+		parentV8Object = v8Object;
+	}
+
+	return parentV8Object;
+}
+
+void QCefV8ObjectHelper::getObjectPathNameRO(const QString& objectId, QStringList& objNames)
+{
+
+	QSharedPointer<DynamicClient> dynamicClient = QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().value(objectId);
+
+	QSharedPointer<QRemoteObjectDynamicReplica> obj = dynamicClient->getReplica();
+	QString objName = obj.data()->objectName();
+	QString parentName = obj.data()->property("parentName").toString();
+	if (!objName.isEmpty())
+	{
+		objNames.push_front(objName);
+	}
+
+	if (parentName.isEmpty())
+	{
+		return;
+	}
+	else
+	{
+		getObjectPathNameRO(parentName, objNames);
+	}
+}
 
 void QCefV8ObjectHelper::convertQObjectToCefObjects(const QObject *itemObject, const QObject*parentObject, QList<cefv8bind_protcool::CefMetaObject> &cef_metaObjects)
 {
@@ -234,6 +384,7 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::getV8Object(quint32 objectId, CefRefPt
 
 	return parentV8Object;
 }
+
 void QCefV8ObjectHelper::getObjectPathName(quint32 objectId, QStringList& objNames)
 {
 	QPointer<QCefObjectMgr> objectMgr = QCefV8BindAppRO::getInstance()->d_func()->getObjectMgr();
