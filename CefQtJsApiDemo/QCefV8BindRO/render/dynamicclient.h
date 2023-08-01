@@ -65,7 +65,7 @@ class DynamicClient : public QObject
 public:
     DynamicClient(QSharedPointer<QRemoteObjectDynamicReplica> ptr);
     ~DynamicClient() override;
-
+    QSharedPointer<QRemoteObjectDynamicReplica> getReplica();
 Q_SIGNALS:
     void makeSourceEmit();
 public Q_SLOTS:
@@ -74,7 +74,6 @@ public Q_SLOTS:
     void onCounterChanged_slot(int); // slot to receive source state
     void pendingCallResult(QRemoteObjectPendingCallWatcher* self);
     void timerOut();
-    QSharedPointer<QRemoteObjectDynamicReplica> getReplica();
     void callRepalicaMethod(QString replicaID, QString Method, QVariantList arguments);
 private:
     bool clientSwitchState; // holds received server switch state
