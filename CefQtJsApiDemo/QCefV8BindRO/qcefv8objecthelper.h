@@ -9,6 +9,7 @@ extern const char KBrowserFrameId[];
 extern const char KCefMetaObject[];
 extern const char KCefMetaMethod[];
 extern const char KRenderV8Object[];
+extern const char KParentName[];
 
 extern const char KObjectIdRO[];
 extern const char KBrowserFrameIdRO[];
@@ -29,6 +30,13 @@ public:
 	void convertQObjectToCefObjects(const QObject *rootObject, const QObject*parentObject, QList<cefv8bind_protcool::CefMetaObject> &cef_metaObjects);
 	bool convertQObjectToCefObject(const QObject *itemObject, const QObject *parentObject, cefv8bind_protcool::CefMetaObject &cef_metaObject);
 	//for render
+	void convertDynamicClientToCefObjects(QSharedPointer<DynamicClient> dynamicClient, QSharedPointer<DynamicClient> parent,
+		QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects);
+	bool QCefV8ObjectHelper::convertDynamicClientToCefObject(
+		QSharedPointer<DynamicClient> itemObject,
+		QSharedPointer<DynamicClient> parentObject,
+		cefv8bind_protcool::CefMetaObject& cef_metaObject
+	);
 
 	CefRefPtr<CefV8Value> bindV8Objects(const QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects,
 		CefRefPtr<CefV8Context> context, CefRefPtr<CefV8Handler> v8Handler);

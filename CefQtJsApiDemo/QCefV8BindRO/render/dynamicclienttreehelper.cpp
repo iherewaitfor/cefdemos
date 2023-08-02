@@ -110,6 +110,8 @@ void DynamicClientTreeHelper::pendingCallResult(QRemoteObjectPendingCallWatcher*
             int objectId = getSequenceId();
             pClient->setObjectName(objectName);
             pClient->setProperty(KObjectId, objectId);
+            pClient->setProperty(KParentName, parentName);
+            
 
             m_dynamicClientsMap[objectName] = pClient;
             m_dynamicClientsIdMap[objectId] = pClient;
@@ -123,7 +125,7 @@ void DynamicClientTreeHelper::getMetaObjects(QList<cefv8bind_protcool::CefMetaOb
     QString objectName = "NumberLogic";
     QSharedPointer<DynamicClient> pClient = m_dynamicClientsMap.value(objectName);
     QCefV8ObjectHelper objectHelper;
-    objectHelper.convertQObjectToCefObjects(pClient.data(), nullptr, cef_metaObjects);
+    objectHelper.convertDynamicClientToCefObjects(pClient, QSharedPointer<DynamicClient>(), cef_metaObjects);
 }
 
 //render

@@ -12,6 +12,7 @@ const char KBrowserFrameId[] = "KBrowserFrameId";
 const char KCefMetaObject[] = "CefMetaObject";
 const char KCefMetaMethod[] = "CefMetaMethod";
 const char KRenderV8Object[] = "RenderV8Object";
+const char KParentName[] = "KParentName";
 
 const char KObjectIdRO[] = "KObjectIdRO";
 const char KBrowserFrameIdRO[] = "KBrowserFrameIdRO";
@@ -283,6 +284,105 @@ void QCefV8ObjectHelper::convertQObjectToCefObjects(const QObject *itemObject, c
 	}
 }
 
+void QCefV8ObjectHelper::convertDynamicClientToCefObjects(QSharedPointer<DynamicClient> itemObject, QSharedPointer<DynamicClient> parentObject, QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects) {
+	if (itemObject.isNull())
+	{
+		return;
+	}
+	foreach(QString key, QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().keys()) {
+		QSharedPointer<DynamicClient> object = QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().value(key);
+		QString parentName = object->property(KParentName).toString();
+		QSharedPointer<DynamicClient> parentObj = QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().value(parentName);
+		CefMetaObject cef_metaObject;
+		if (convertDynamicClientToCefObject(object, parentObj, cef_metaObject)) {
+			cef_metaObjects.append(cef_metaObject);
+		}
+	}
+}
+
+bool QCefV8ObjectHelper::convertDynamicClientToCefObject(
+	QSharedPointer<DynamicClient> itemObject,
+	QSharedPointer<DynamicClient> parentObject,
+	cefv8bind_protcool::CefMetaObject& cef_metaObject
+)
+{
+	const QString objectName = itemObject->objectName();
+
+	bool isNewValue = false;
+	int uniqueId = 0;
+	if (itemObject->property(KObjectId).toUInt() == 0)
+	{
+		isNewValue = true;
+		uniqueId = QCefMetaUtilities::getSequenceId();
+		itemObject->setProperty(KObjectId, uniqueId);
+	}
+	else
+	{
+		uniqueId = itemObject->property(KObjectId).toUInt();
+	}
+
+	const QMetaObject* metaObject = itemObject->getReplica()->metaObject();
+
+	cef_metaObject.objectName = objectName;
+	cef_metaObject.className = metaObject->className();
+	cef_metaObject.objectId = uniqueId;
+	cef_metaObject.parentId = parentObject ? parentObject->property(KObjectId).toUInt() : 0;
+
+	QStringList methods;
+	for (int i = 0; i < metaObject->methodCount(); ++i)
+	{
+		QMetaMethod method = metaObject->method(i);
+		if (method.methodType() == QMetaMethod::Method || method.methodType() == QMetaMethod::Signal)
+		{
+			CefMetaMethod cef_metaMethod;
+			cef_metaMethod.methodType = method.methodType();
+			cef_metaMethod.methodIndex = i;
+			cef_metaMethod.methodName = QCefMetaUtilities::getMethodName(QString::fromLatin1(method.methodSignature()));
+			cef_metaMethod.returnTypeName = QString::fromLatin1(method.typeName());
+
+			QList<QByteArray> types = method.parameterTypes();
+			foreach(QByteArray item, types)
+			{
+				cef_metaMethod.parameterTypes << QString::fromLatin1(item.data(), item.size());
+			}
+			cef_metaObject.metaMethods.append(cef_metaMethod);
+		}
+		if (method.methodType() == QMetaMethod::Signal && isNewValue)
+		{
+			////to do: connect the signal of the object
+			//AutoSignalsEmitter* autoEmitter = new AutoSignalsEmitter(method, const_cast<QObject*>(itemObject));
+			//QObject::connect(itemObject, QString("2").append(method.methodSignature()).toStdString().c_str(),
+			//	autoEmitter, SLOT(proxySlot()), Qt::DirectConnection);
+			
+			// to do connet when js to connect the signal. do not need connect yet.
+		}
+	}
+
+	//property
+	for (int i = 0; i < metaObject->propertyCount(); ++i)
+	{
+		const QMetaProperty& metaProp = metaObject->property(i);
+		if (metaProp.isUser() || !metaProp.isScriptable() || !metaProp.isReadable())
+		{
+			continue;
+		}
+
+		CefMetaProperty cef_metaProp;
+		cef_metaProp.propertyIndex = metaProp.propertyIndex();
+		cef_metaProp.propertyName = QString::fromLatin1(metaProp.name());
+		cef_metaProp.propertyTypeName = QString::fromLatin1(metaProp.typeName());
+		cef_metaProp.propertyValue = metaProp.read(itemObject->getReplica().data());
+
+		cef_metaObject.metaProperties.append(cef_metaProp);
+	}
+	if (isNewValue)
+	{
+	//	QCefV8BindAppRO::getInstance()->d_func()->getObjectMgr()->insertBrowser(cef_metaObject.objectId, const_cast<QObject*>(itemObject));
+	}
+	return true;
+}
+
+
 bool QCefV8ObjectHelper::convertQObjectToCefObject(
 	const QObject *itemObject, 
 	const QObject *parentObject,
@@ -362,6 +462,7 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 	}
 	return true;
 }
+
 CefRefPtr<CefV8Value> QCefV8ObjectHelper::getV8Object(quint32 objectId, CefRefPtr<CefV8Value> rootV8Object)
 {
 	if (objectId == 0)
