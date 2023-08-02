@@ -67,6 +67,15 @@ namespace cefv8bind_protcool
 		~PendingcallReq(){} // signal need
 	};
 
+	struct PendingcallResp
+	{
+		CefRefPtr<CefValue> returnValue;
+		qint64 callBackId;
+		qint64 frameId;
+		bool invokeResult;
+		PendingcallResp() {} //signal need
+		~PendingcallResp() {} // signal need
+	};
 	Q_DECLARE_METATYPE(cefv8bind_protcool::CefMetaObject);
 	Q_DECLARE_METATYPE(cefv8bind_protcool::CefMetaMethod);
 	Q_DECLARE_METATYPE(cefv8bind_protcool::PendingcallReq);

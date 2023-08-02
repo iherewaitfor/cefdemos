@@ -353,9 +353,9 @@ bool QCefV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value> v8Objec
 			req.methodIndex = methodIndex;
 			req.callBackId = callbackId;
 			req.methodArgs = toProcessMessage(arguments);
+			req.frameId = m_frame->GetIdentifier();
 			//emit signal
 			QCefV8BindAppRO::getInstance()->d_func()->callReplicaMethod(req);
-			//QCefV8BindAppRO::getInstance()->d_func()->callReplicaMethod();
 		}
 
 		return true;
@@ -429,5 +429,32 @@ void QCefV8Handler::onEmitSignalMsg(CefRefPtr<CefProcessMessage> message)
 	if (msg.unPack(message->GetArgumentList()))
 	{
 		m_v8SignalMgr->emitSignal(msg, m_frame->GetV8Context());
+	}
+}
+
+
+void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, CefRefPtr<CefV8Context> context)
+{
+	if (m_frame == NULL)
+	{
+		return;
+	}
+	QSharedPointer<AsyncCefMethodCallback> callback = m_asynCallbackMgr->takeAsyncMethodCallback(rsp.callBackId);
+	if (!callback)
+	{
+		return;
+	}
+	if (!rsp.invokeResult)
+	{
+		callback->fail("fail exception");
+		return;
+	}
+	if (context->GetFrame()->GetIdentifier() == callback->frameId()
+		&& context->Enter()
+		)
+	{
+		CefRefPtr<CefV8Value> retV8Value = QCefValueConverter::to(rsp.returnValue);
+		context->Exit();
+		callback->success(retV8Value);
 	}
 }

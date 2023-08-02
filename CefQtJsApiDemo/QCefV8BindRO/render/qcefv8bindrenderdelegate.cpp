@@ -57,5 +57,17 @@ void QCefV8BindRenderDelegate::tobindV8Objects(QList<cefv8bind_protcool::CefMeta
     CefRefPtr<CefV8Context> context = v8Handler->getFrame()->GetV8Context();
     V8ContextCaller auto_caller(context);
     objectHelper.bindV8Objects(cefMetaObjects, context, v8Handler);
-    
+}
+
+void QCefV8BindRenderDelegate::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, int64 frameId) {
+    if (!CefCurrentlyOn(TID_RENDERER)) {
+        CefPostTask(TID_RENDERER, base::BindOnce(&QCefV8BindRenderDelegate::onPendingcallResp, this, rsp, frameId));
+        return;
+    }
+    if (!m_frameHandlers.contains(frameId)) {
+        return;
+    }
+    CefRefPtr<QCefV8Handler> v8Handler = m_frameHandlers.value(frameId);
+    CefRefPtr<CefV8Context> context = v8Handler->getFrame()->GetV8Context();
+    v8Handler->onPendingcallResp(rsp, context);
 }

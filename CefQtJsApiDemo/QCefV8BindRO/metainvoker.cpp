@@ -32,26 +32,25 @@ bool MetaInvoker::run() {
         );
         QRemoteObjectPendingCallWatcher* callwathcer = new QRemoteObjectPendingCallWatcher(call);
         callwathcer->setProperty("callbackId", callbackId);
+        callwathcer->setProperty("frameId", frameId);
         QObject::connect(callwathcer, SIGNAL(finished(QRemoteObjectPendingCallWatcher*)), 
             QCefV8BindAppRO::getInstance()->d_func(), SLOT(pendingCallResult(QRemoteObjectPendingCallWatcher*)));
-
     }
     else {
- ok = metaMethod.invoke(
-        object,
-        Qt::AutoConnection,
-        tempArgs.value(0),
-        tempArgs.value(1),
-        tempArgs.value(2),
-        tempArgs.value(3),
-        tempArgs.value(4),
-        tempArgs.value(5),
-        tempArgs.value(6),
-        tempArgs.value(7),
-        tempArgs.value(8),
-        tempArgs.value(9)
-    );
-
+     ok = metaMethod.invoke(
+            object,
+            Qt::AutoConnection,
+            tempArgs.value(0),
+            tempArgs.value(1),
+            tempArgs.value(2),
+            tempArgs.value(3),
+            tempArgs.value(4),
+            tempArgs.value(5),
+            tempArgs.value(6),
+            tempArgs.value(7),
+            tempArgs.value(8),
+            tempArgs.value(9)
+        );
     }
     return ok;
 }

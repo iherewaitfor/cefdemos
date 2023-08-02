@@ -12,6 +12,7 @@ struct MetaInvoker
     bool ok = false;
     QVariant result;
     qint64 callbackId;
+    qint64 frameId;
     bool MetaInvoker::run();
 };
 
