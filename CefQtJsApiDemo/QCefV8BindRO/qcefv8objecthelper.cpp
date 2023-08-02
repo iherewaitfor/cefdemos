@@ -173,10 +173,14 @@ bool QCefV8ObjectHelper::convertDynamicClientToCefObject(
 	cef_metaObject.objectId = uniqueId;
 	cef_metaObject.parentId = parentObject ? parentObject->property(KObjectId).toUInt() : 0;
 
-	QStringList methods;
+	QStringList methodFilter;
+	methodFilter << "destroyed" << "initialized" << "objectNameChanged";
 	for (int i = 0; i < metaObject->methodCount(); ++i)
 	{
 		QMetaMethod method = metaObject->method(i);
+		if (methodFilter.contains(method.name())) {
+			continue;
+		}
 		if (method.methodType() == QMetaMethod::Method || method.methodType() == QMetaMethod::Signal)
 		{
 			CefMetaMethod cef_metaMethod;
@@ -203,6 +207,8 @@ bool QCefV8ObjectHelper::convertDynamicClientToCefObject(
 		}
 	}
 
+	QStringList filterList;
+	filterList << "node" << "state";
 	//property
 	for (int i = 0; i < metaObject->propertyCount(); ++i)
 	{
@@ -211,12 +217,16 @@ bool QCefV8ObjectHelper::convertDynamicClientToCefObject(
 		{
 			continue;
 		}
+		if (filterList.contains(metaProp.name())) {
+			continue;
+		}
 
 		CefMetaProperty cef_metaProp;
 		cef_metaProp.propertyIndex = metaProp.propertyIndex();
 		cef_metaProp.propertyName = QString::fromLatin1(metaProp.name());
 		cef_metaProp.propertyTypeName = QString::fromLatin1(metaProp.typeName());
 		cef_metaProp.propertyValue = metaProp.read(itemObject->getReplica().data());
+		cef_metaProp.cef_propertyValue = QCefValueConverter::to(cef_metaProp.propertyValue);
 
 		cef_metaObject.metaProperties.append(cef_metaProp);
 	}

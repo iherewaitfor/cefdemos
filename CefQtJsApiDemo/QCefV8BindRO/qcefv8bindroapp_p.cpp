@@ -40,5 +40,5 @@ void QCefV8BindAppROPrivate::pendingCallResult(QRemoteObjectPendingCallWatcher* 
 	resp.invokeResult = (call->error() == QRemoteObjectPendingCall::NoError);
 	resp.returnValue = QCefValueConverter::to(call->returnValue());
 	m_renderDelegate->onPendingcallResp(resp, frameId);
-
+	call->deleteLater(); //释放对象。
 }

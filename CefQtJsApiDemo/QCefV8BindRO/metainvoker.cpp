@@ -35,6 +35,8 @@ bool MetaInvoker::run() {
         callwathcer->setProperty("frameId", frameId);
         QObject::connect(callwathcer, SIGNAL(finished(QRemoteObjectPendingCallWatcher*)), 
             QCefV8BindAppRO::getInstance()->d_func(), SLOT(pendingCallResult(QRemoteObjectPendingCallWatcher*)));
+        //to do . can save pointer callwathcer, and free at some time later (ex:120 secondes),
+        // if the finished signal not emited.(the source remote object perhaps has crashed.)
     }
     else {
      ok = metaMethod.invoke(
