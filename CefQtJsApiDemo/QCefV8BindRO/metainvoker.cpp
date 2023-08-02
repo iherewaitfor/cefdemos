@@ -1,4 +1,8 @@
 #include "metainvoker.h"
+#include <QtCore>
+#include <QtRemoteObjects>
+#include "qcefv8bindroapp.h"
+#include "qcefv8bindroapp_p.h"
 
 bool MetaInvoker::run() {
 	QList<QGenericArgument> tempArgs;
@@ -9,13 +13,33 @@ bool MetaInvoker::run() {
         );
         tempArgs << gArg;
 	}
-    const int retTypeId = metaMethod.returnType();
-    void* retVal = QMetaType::create(retTypeId);
-    QGenericReturnArgument returnArg( QMetaType::typeName(retTypeId), retVal);
-    ok = metaMethod.invoke(
+    if (metaMethod.returnType() != QMetaType::Void) {
+        QRemoteObjectPendingCall call;
+        ok = metaMethod.invoke(
+            object,
+            Qt::AutoConnection,
+            Q_RETURN_ARG(QRemoteObjectPendingCall, call),
+            tempArgs.value(0),
+            tempArgs.value(1),
+            tempArgs.value(2),
+            tempArgs.value(3),
+            tempArgs.value(4),
+            tempArgs.value(5),
+            tempArgs.value(6),
+            tempArgs.value(7),
+            tempArgs.value(8),
+            tempArgs.value(9)
+        );
+        QRemoteObjectPendingCallWatcher* callwathcer = new QRemoteObjectPendingCallWatcher(call);
+        callwathcer->setProperty("callbackId", callbackId);
+        QObject::connect(callwathcer, SIGNAL(finished(QRemoteObjectPendingCallWatcher*)), 
+            QCefV8BindAppRO::getInstance()->d_func(), SLOT(pendingCallResult(QRemoteObjectPendingCallWatcher*)));
+
+    }
+    else {
+ ok = metaMethod.invoke(
         object,
-        Qt::DirectConnection,
-        returnArg,
+        Qt::AutoConnection,
         tempArgs.value(0),
         tempArgs.value(1),
         tempArgs.value(2),
@@ -27,6 +51,7 @@ bool MetaInvoker::run() {
         tempArgs.value(8),
         tempArgs.value(9)
     );
-    result = QVariant(retTypeId, retVal);
+
+    }
     return ok;
 }

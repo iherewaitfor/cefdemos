@@ -55,7 +55,19 @@ namespace cefv8bind_protcool
 	private:
 		QString flag;
 	};
+	struct PendingcallReq
+	{
+		CefString methodName;
+		int	methodIndex;
+		CefRefPtr<CefListValue> methodArgs;
+		int objctId;
+		qint64 callBackId;
+		qint64 frameId;
+		PendingcallReq(){} //signal need
+		~PendingcallReq(){} // signal need
+	};
 
 	Q_DECLARE_METATYPE(cefv8bind_protcool::CefMetaObject);
 	Q_DECLARE_METATYPE(cefv8bind_protcool::CefMetaMethod);
+	Q_DECLARE_METATYPE(cefv8bind_protcool::PendingcallReq);
 }

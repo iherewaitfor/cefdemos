@@ -48,12 +48,6 @@ public:
 	
 
 public:
-    void on_cefMetaDatasResponse(
-        CefRefPtr<CefBrowser> browser,
-        CefRefPtr<CefFrame> frame,
-        CefRefPtr<CefProcessMessage> message
-    );
-
 	void onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRefPtr<CefV8Context> context);
 	void onEmitSignalMsg(CefRefPtr<CefProcessMessage> message);
 

@@ -25,6 +25,7 @@ void QCefV8BindAppROPrivate::_init()
 		const std::string& process_type = commandLine->GetSwitchValue("type");
 		if (process_type == "renderer")
 		{
+			qRegisterMetaType<cefv8bind_protcool::PendingcallReq>("cefv8bind_protcool::PendingcallReq");
 			// to do: create and register the delegate of render process
 			m_renderDelegate = new QCefV8BindRenderDelegate();
 			QCefCoreApp::getInstance()->regRenderDelegate(m_renderDelegate.get());
@@ -38,6 +39,8 @@ void QCefV8BindAppROPrivate::_init()
 
 			QObject::connect(m_pDynamicClientTreeHelper.data(), SIGNAL(contextCreated(int, qint64)), m_pDynamicClientTreeHelper.data(), 
 				SLOT(contextCreated_slot(int, qint64)));
+			QObject::connect(this, SIGNAL(callReplicaMethod(cefv8bind_protcool::PendingcallReq)), this,
+				SLOT(callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq)));
 		}
 	}
 }

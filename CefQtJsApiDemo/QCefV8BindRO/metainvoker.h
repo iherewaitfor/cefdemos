@@ -11,6 +11,7 @@ struct MetaInvoker
     //运行后读取
     bool ok = false;
     QVariant result;
+    qint64 callbackId;
     bool MetaInvoker::run();
 };
 

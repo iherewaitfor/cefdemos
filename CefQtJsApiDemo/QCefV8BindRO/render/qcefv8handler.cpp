@@ -5,6 +5,8 @@
 #include "../qcefv8bindutility.h"
 #include "asyncmethodcallback.h"
 #include "../metainvoker.h"
+#include "../qcefv8bindroapp.h"
+#include "../qcefv8bindroapp_p.h"
 
 using namespace cefv8bind_protcool;
 
@@ -345,52 +347,21 @@ bool QCefV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value> v8Objec
 			{
 				retval = CefV8Value::CreateInt(0);
 			}
-			cefv8bind_protcool::InvokeReq req;
+			cefv8bind_protcool::PendingcallReq req;
 			req.objctId = metaObj->property(KObjectId).toInt();
 			req.methodName = name;
 			req.methodIndex = methodIndex;
 			req.callBackId = callbackId;
 			req.methodArgs = toProcessMessage(arguments);
-
-			sendIPCMessage(context, req);
-
+			//emit signal
+			QCefV8BindAppRO::getInstance()->d_func()->callReplicaMethod(req);
+			//QCefV8BindAppRO::getInstance()->d_func()->callReplicaMethod();
 		}
 
 		return true;
 	}
 
 	return false;
-}
-void QCefV8Handler::on_cefMetaDatasResponse(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame, CefRefPtr<CefProcessMessage> message)
-{
-	if (m_frame == NULL)
-	{
-		return;
-	}
-	CefRefPtr<CefV8Context> context = m_frame->GetV8Context();
-
-	CefApiMetaDatasResponse ipc_protocol;
-	if (!ipc_protocol.unPack(message->GetArgumentList()))
-	{
-		return;
-	}
-	V8ContextCaller auto_caller(context);
-	QCefV8ObjectHelper objectHelper;
-	CefRefPtr<CefV8Value> rootV8Obj = objectHelper.bindV8Objects(ipc_protocol.cef_metaObjects, context, this);
-	rootV8Obj;
-	QString readFlag = InitSdkReadyFlag;
-	{
-		CefRefPtr<CefV8Value> v8Value = CefV8Value::CreateObject(nullptr, nullptr);
-
-		QSharedPointer<QObject> obj = QSharedPointer<QObject>(new QObject());
-		obj->setObjectName(readFlag);
-		obj->setProperty(KRenderV8Object, true);
-		v8Value->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(obj));
-
-		const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
-		context->GetGlobal()->SetValue(QCefValueConverter::to(readFlag), v8Value, attributes);
-	}
-	m_v8SignalMgr->emitRenderSignal(OnInitSdkOKNotify, CefListValue::Create(), context);
 }
 
 CefRefPtr<CefListValue> QCefV8Handler::toProcessMessage(const CefV8ValueList& source)

@@ -7,6 +7,9 @@
 #include "remoteobjecttreehelper.h"
 #include "render/dynamicclienttreehelper.h"
 #include "render/qcefv8bindrenderdelegate.h"
+#include "qcefipcvalue.h"
+#include "metainvoker.h"
+#include <QtCore>
 class QCefObjectMgr;
 class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
@@ -42,7 +45,11 @@ public:
 	DynamicClientTreeHelper * getReplicaTreeHelper(){
 		return m_pDynamicClientTreeHelper.data();
 	}
-
+public Q_SLOTS:
+	void callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req);
+	void pendingCallResult(QRemoteObjectPendingCallWatcher* call);
+Q_SIGNALS:
+	void callReplicaMethod(cefv8bind_protcool::PendingcallReq req);
 private:
 	void _init();
 

@@ -12,6 +12,7 @@
 
 #include "../qcefv8bindroapp.h"
 #include "../qcefv8bindroapp_p.h"
+#include <QtCore>
 
 class DynamicClientTreeHelper : public QObject
 {
@@ -20,6 +21,7 @@ public:
     DynamicClientTreeHelper(QSharedPointer<QRemoteObjectDynamicReplica> ptr);
     ~DynamicClientTreeHelper() override;
     const QMap<QString, QSharedPointer<DynamicClient>>& getObjectsMap();
+    const QMap<int, QSharedPointer<DynamicClient>>& getObjectsIdMap();
     void getMetaObjects(QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects);
 public Q_SLOTS:
     void initConnection_slot(); //QRemoteObjectDynamicReplica

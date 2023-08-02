@@ -2,6 +2,7 @@
 #include <QMetaMethod>
 #include <QRemoteObjectPendingCall>
 #include "../qcefv8objecthelper.h"
+#include "../qcefipcvalue.h"
 
 int getSequenceId()
 {
@@ -26,6 +27,9 @@ DynamicClientTreeHelper::~DynamicClientTreeHelper()
 
 const QMap<QString, QSharedPointer<DynamicClient>>& DynamicClientTreeHelper::getObjectsMap() {
     return m_dynamicClientsMap;
+}
+const QMap<int, QSharedPointer<DynamicClient>>& DynamicClientTreeHelper::getObjectsIdMap() {
+    return m_dynamicClientsIdMap;
 }
 // Function to initialize connections between slots and signals
 void DynamicClientTreeHelper::initConnection_slot()
