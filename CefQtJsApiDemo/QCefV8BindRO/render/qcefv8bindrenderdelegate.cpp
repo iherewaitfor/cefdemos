@@ -71,3 +71,15 @@ void QCefV8BindRenderDelegate::onPendingcallResp(cefv8bind_protcool::Pendingcall
     CefRefPtr<CefV8Context> context = v8Handler->getFrame()->GetV8Context();
     v8Handler->onPendingcallResp(rsp, context);
 }
+
+void QCefV8BindRenderDelegate::dispatchReplicaSignaToJs(cefv8bind_protcool::DispatchReplicaSignaToJs rsp) {
+    if (!CefCurrentlyOn(TID_RENDERER)) {
+        CefPostTask(TID_RENDERER, base::BindOnce(&QCefV8BindRenderDelegate::dispatchReplicaSignaToJs, this, rsp));
+        return;
+    }
+    foreach(int64 frameId, m_frameHandlers.keys()) {
+        CefRefPtr<QCefV8Handler> v8Handler = m_frameHandlers.value(frameId);
+        CefRefPtr<CefV8Context> context = v8Handler->getFrame()->GetV8Context();
+        v8Handler->dispatchReplicaSignaToJs(rsp, context);
+    }
+}

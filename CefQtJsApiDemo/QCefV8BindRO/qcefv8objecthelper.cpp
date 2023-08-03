@@ -288,7 +288,7 @@ bool QCefV8ObjectHelper::convertQObjectToCefObject(
 		if (method.methodType() == QMetaMethod::Signal && isNewValue)
 		{
 			//to do: connect the signal of the object
-			AutoSignalsEmitter* autoEmitter = new AutoSignalsEmitter(method, const_cast<QObject*>(itemObject));
+			AutoSignalsEmitter* autoEmitter = new AutoSignalsEmitter(method, uniqueId, const_cast<QObject*>(itemObject));
 			QObject::connect(itemObject, QString("2").append(method.methodSignature()).toStdString().c_str(),
 				autoEmitter, SLOT(proxySlot()), Qt::DirectConnection);
 		}

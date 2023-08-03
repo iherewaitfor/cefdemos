@@ -20,6 +20,7 @@ public:
 	void emitRenderSignal(const QString& signalName, CefRefPtr<CefListValue> methordArgs, CefRefPtr<CefV8Context> context);
 
 	void clear();
+	void dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& rsp, CefRefPtr<CefV8Context> context);
 
 private:
 	IMPLEMENT_REFCOUNTING(QCefV8SignalManager);
@@ -51,6 +52,7 @@ public:
 	void onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, CefRefPtr<CefV8Context> context);
 	void onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRefPtr<CefV8Context> context);
 	void onEmitSignalMsg(CefRefPtr<CefProcessMessage> message);
+	void dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& rsp, CefRefPtr<CefV8Context> context);
 
 private:
 	//CefV8Handler

@@ -53,6 +53,11 @@ bool QCefV8SignalManager::connectSignal(const CefV8ValueList& arguments, CefRefP
 			return false;
 		}
 		key = _getKey(objectId, methodIndex);
+
+		cefv8bind_protcool::ConnectReplicaSignal connectMsg;
+		connectMsg.methodIndex = methodIndex;
+		connectMsg.objctId = objectId;
+		QCefV8BindAppRO::getInstance()->d_func()->connectReplicaSignal(connectMsg);
 	}
 	if (!m_slots.contains(key))
 	{
@@ -172,6 +177,28 @@ void QCefV8SignalManager::emitSignal(const EmitSignalMsg& msg, CefRefPtr<CefV8Co
 		}
 	}
 }
+void QCefV8SignalManager::dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& msg, CefRefPtr<CefV8Context> context) {
+	QString key = _getKey(msg.objectId, msg.methodIndex);
+	if (m_slots.contains(key))
+	{
+		QList<CefRefPtr<CefV8Value>> cef_slots = m_slots[key];
+
+		Q_FOREACH(CefRefPtr<CefV8Value> callBack, cef_slots)
+		{
+			V8ContextCaller caller(context);
+			CefV8ValueList arguments_out = _convertToV8Args(msg.methodArgs);
+
+			// Execute the callback.
+			CefRefPtr<CefV8Value> retval = callBack->ExecuteFunctionWithContext(context, nullptr, arguments_out);
+			if (retval.get())
+			{
+				if (retval->IsBool())
+					retval->GetBoolValue();
+			}
+		}
+	}
+}
+
 
 void QCefV8SignalManager::emitRenderSignal(const QString& signalName, CefRefPtr<CefListValue> methordArgs, CefRefPtr<CefV8Context> context)
 {
@@ -457,4 +484,13 @@ void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, C
 		context->Exit();
 		callback->success(retV8Value);
 	}
+}
+
+void QCefV8Handler::dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& msg, CefRefPtr<CefV8Context> context)
+{
+	if (m_frame == NULL)
+	{
+		return;
+	}
+	m_v8SignalMgr->dispatchReplicaSignaToJs(msg, m_frame->GetV8Context());
 }

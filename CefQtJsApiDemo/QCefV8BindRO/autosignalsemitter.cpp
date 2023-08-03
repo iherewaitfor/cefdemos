@@ -5,8 +5,8 @@
 #include "qcefipcvalue.h"
 #include "qcefv8objecthelper.h"
 
-AutoSignalsEmitter::AutoSignalsEmitter(QMetaMethod sourceMethod,QObject*parent)
-    : QObject(parent), m_signalMetaMethod(sourceMethod){
+AutoSignalsEmitter::AutoSignalsEmitter(QMetaMethod sourceMethod,int objectId,QObject*parent)
+    : QObject(parent), m_signalMetaMethod(sourceMethod),m_objectId(objectId){
 
 }
 
@@ -33,10 +33,17 @@ void AutoSignalsEmitter::proxySignalEmit(void** _a)
         // (_a[0] is return value)
         args << arg;
     }
-    if (QCefV8BindAppRO::getInstance()->d_func()->getBrowserDelegate()) {
+    if (QCefV8BindAppRO::getInstance()->d_func()->getRenderDelegate()) {
         QObject* obj = sender();
-        cefv8bind_protcool::EmitSignalMsg msg;
-        msg.objectId= obj->property(KObjectId).toUInt();
+        QString objName = obj->objectName();
+        if (!QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().contains(objName)) {
+            return;
+        }
+        QSharedPointer<DynamicClient> dClient = QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().value(objName);
+        
+        cefv8bind_protcool::DispatchReplicaSignaToJs msg;
+        msg.objectId = dClient->property(KObjectId).toInt();
+        
         //QString signature = m_signalMetaMethod.methodSignature();
         //QString name = m_signalMetaMethod.name();
         //signature;
@@ -44,10 +51,6 @@ void AutoSignalsEmitter::proxySignalEmit(void** _a)
         msg.methodName = QCefValueConverter::to(QString(m_signalMetaMethod.name()));
         msg.methodIndex = m_signalMetaMethod.methodIndex();
         msg.methodArgs = QCefValueConverter::to(args)->GetList();
-//       QCefV8BindAppRO::getInstance()->d_func()->getBrowserDelegate()->sendProcessMessage(PID_RENDERER, msg.makeIPCMessage());
+        QCefV8BindAppRO::getInstance()->d_func()->getRenderDelegate()->dispatchReplicaSignaToJs(msg);
     }
-    
-    //to do : send siganle msg to render process.
-    
-//    emit proxySignal(sender(), m_signalMetaMethod, args);
 }

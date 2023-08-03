@@ -26,6 +26,7 @@ void QCefV8BindAppROPrivate::_init()
 		if (process_type == "renderer")
 		{
 			qRegisterMetaType<cefv8bind_protcool::PendingcallReq>("cefv8bind_protcool::PendingcallReq");
+			qRegisterMetaType<cefv8bind_protcool::ConnectReplicaSignal>("cefv8bind_protcool::ConnectReplicaSignal");
 			// to do: create and register the delegate of render process
 			m_renderDelegate = new QCefV8BindRenderDelegate();
 			QCefCoreApp::getInstance()->regRenderDelegate(m_renderDelegate.get());
@@ -41,6 +42,8 @@ void QCefV8BindAppROPrivate::_init()
 				SLOT(contextCreated_slot(int, qint64)));
 			QObject::connect(this, SIGNAL(callReplicaMethod(cefv8bind_protcool::PendingcallReq)), this,
 				SLOT(callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq)));
+			QObject::connect(this, SIGNAL(connectReplicaSignal(cefv8bind_protcool::ConnectReplicaSignal)), this,
+				SLOT(connectReplicaSignal_slot(cefv8bind_protcool::ConnectReplicaSignal)));
 		}
 	}
 }

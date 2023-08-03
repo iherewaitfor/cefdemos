@@ -40,6 +40,7 @@ public:
 public:
 	void tobindV8Objects(QList<cefv8bind_protcool::CefMetaObject> cefMetaObjects, int64 frameId);
 	void onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, int64 frameId);
+	void dispatchReplicaSignaToJs(cefv8bind_protcool::DispatchReplicaSignaToJs rsp);
 private:
 
     QMap<int64, CefRefPtr<QCefV8Handler>> m_frameHandlers;

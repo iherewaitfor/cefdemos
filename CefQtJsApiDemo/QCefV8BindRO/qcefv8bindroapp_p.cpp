@@ -1,4 +1,5 @@
 ﻿#include "qcefv8bindroapp_p.h"
+#include "autosignalsemitter.h"
 //void QCefV8BindAppROPrivate::callReplicaMethod_slot() {
 //	cefv8bind_protcool::PendingcallReq req;
 void QCefV8BindAppROPrivate::callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req) {
@@ -41,4 +42,29 @@ void QCefV8BindAppROPrivate::pendingCallResult(QRemoteObjectPendingCallWatcher* 
 	resp.returnValue = QCefValueConverter::to(call->returnValue());
 	m_renderDelegate->onPendingcallResp(resp, frameId);
 	call->deleteLater(); //释放对象。
+}
+
+void QCefV8BindAppROPrivate::connectReplicaSignal_slot(cefv8bind_protcool::ConnectReplicaSignal req) {
+
+	if (!m_pDynamicClientTreeHelper->getObjectsIdMap().contains(req.objctId)) {
+		return;
+	}
+	QSharedPointer<DynamicClient> pDynamicClient = m_pDynamicClientTreeHelper->getObjectsIdMap().value(req.objctId);
+	if (pDynamicClient.isNull()) {
+		return;;
+	}
+	QObject* apiObject = pDynamicClient->getReplica().data();
+	if (!apiObject) {
+		return;
+	}
+	QMetaMethod metaMethod = apiObject->metaObject()->method(req.methodIndex);
+	if (metaMethod.methodType() != QMetaMethod::Signal) {
+		return;
+	}
+	//to do: same the autoEmitter, and check if the autoEmitter exist. if exist do not new.
+	//to do: connect the signal of the object
+	AutoSignalsEmitter* autoEmitter = new AutoSignalsEmitter(metaMethod,req.objctId, apiObject);
+	QObject::connect(apiObject, QString("2").append(metaMethod.methodSignature()).toStdString().c_str(),
+		autoEmitter, SLOT(proxySlot()), Qt::DirectConnection);
+
 }

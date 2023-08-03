@@ -48,8 +48,10 @@ public:
 public Q_SLOTS:
 	void callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req);
 	void pendingCallResult(QRemoteObjectPendingCallWatcher* call);
+	void connectReplicaSignal_slot(cefv8bind_protcool::ConnectReplicaSignal);
 Q_SIGNALS:
 	void callReplicaMethod(cefv8bind_protcool::PendingcallReq req);
+	void connectReplicaSignal(cefv8bind_protcool::ConnectReplicaSignal);
 private:
 	void _init();
 

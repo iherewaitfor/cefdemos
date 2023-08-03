@@ -76,7 +76,24 @@ namespace cefv8bind_protcool
 		PendingcallResp() {} //signal need
 		~PendingcallResp() {} // signal need
 	};
+
+	struct ConnectReplicaSignal
+	{
+		CefString methodName;
+		int	methodIndex;
+		int objctId;
+		ConnectReplicaSignal() {} //signal need
+		~ConnectReplicaSignal() {} // signal need
+	};
+	struct DispatchReplicaSignaToJs
+	{
+		CefString methodName;
+		int	methodIndex;
+		CefRefPtr<CefListValue> methodArgs;
+		int objectId;
+	};
 	Q_DECLARE_METATYPE(cefv8bind_protcool::CefMetaObject);
 	Q_DECLARE_METATYPE(cefv8bind_protcool::CefMetaMethod);
 	Q_DECLARE_METATYPE(cefv8bind_protcool::PendingcallReq);
+	Q_DECLARE_METATYPE(cefv8bind_protcool::ConnectReplicaSignal);
 }

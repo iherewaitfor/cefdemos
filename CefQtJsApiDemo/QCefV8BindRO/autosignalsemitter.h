@@ -9,7 +9,7 @@ class AutoSignalsEmitter : public QObject
     Q_OBJECT_FAKE
 
 public:
-    explicit AutoSignalsEmitter(QMetaMethod sourceMethod, QObject* parent = nullptr);
+    explicit AutoSignalsEmitter(QMetaMethod sourceMethod, int objectId, QObject* parent = nullptr);
     ~AutoSignalsEmitter();
 private slots:
     //占位槽，用于连接源对象的像信号处理。
@@ -21,6 +21,7 @@ private:
     void proxySignalEmit(void** _a);
 private:
     QMetaMethod m_signalMetaMethod;
+    int m_objectId;
 };
 
 #endif
