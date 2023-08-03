@@ -8,8 +8,6 @@
 #include "qcefv8bindbrowserdelegate.h"
 #include "QtCefBrowser/qcefcoreapp.h"
 
-#include "metainvoker.h"
-
 
 QCefV8BindBrowserDelegate::QCefV8BindBrowserDelegate()
 {

@@ -4,7 +4,7 @@
 #include "../qcefv8objecthelper.h"
 #include "../qcefv8bindutility.h"
 #include "asyncmethodcallback.h"
-#include "../metainvoker.h"
+#include "metainvoker.h"
 #include "../qcefv8bindroapp.h"
 #include "../qcefv8bindroapp_p.h"
 

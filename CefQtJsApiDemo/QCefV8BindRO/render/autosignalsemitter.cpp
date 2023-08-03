@@ -1,8 +1,8 @@
 #include "autosignalsemitter.h"
-#include "qcefv8bindroapp.h"
-#include "qcefv8bindroapp_p.h"
-#include "qcefipcvalue.h"
-#include "qcefv8objecthelper.h"
+#include "../qcefv8bindroapp.h"
+#include "../qcefv8bindroapp_p.h"
+#include "../qcefipcvalue.h"
+#include "../qcefv8objecthelper.h"
 
 AutoSignalsEmitter::AutoSignalsEmitter(QMetaMethod sourceMethod,int objectId,QObject*parent)
     : QObject(parent), m_signalMetaMethod(sourceMethod),m_objectId(objectId){

@@ -1,8 +1,8 @@
 #include "metainvoker.h"
 #include <QtCore>
 #include <QtRemoteObjects>
-#include "qcefv8bindroapp.h"
-#include "qcefv8bindroapp_p.h"
+#include "../qcefv8bindroapp.h"
+#include "../qcefv8bindroapp_p.h"
 
 bool MetaInvoker::run() {
 	QList<QGenericArgument> tempArgs;

@@ -1,5 +1,4 @@
 ﻿#include "qcefv8bindroapp_p.h"
-#include "autosignalsemitter.h"
 //void QCefV8BindAppROPrivate::callReplicaMethod_slot() {
 //	cefv8bind_protcool::PendingcallReq req;
 void QCefV8BindAppROPrivate::callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req) {

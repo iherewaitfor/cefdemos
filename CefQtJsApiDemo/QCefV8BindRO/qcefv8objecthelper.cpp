@@ -2,7 +2,6 @@
 #include "qcefv8bindroapp.h"
 #include "qcefv8bindroapp_p.h"
 #include "qcefv8bindutility.h"
-#include "autosignalsemitter.h"
 #include "qcefvalue_qvar_convert.h"
 
 using namespace cefv8bind_protcool;

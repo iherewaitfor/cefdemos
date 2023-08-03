@@ -8,9 +8,9 @@
 #include "render/dynamicclienttreehelper.h"
 #include "render/qcefv8bindrenderdelegate.h"
 #include "qcefipcvalue.h"
-#include "metainvoker.h"
+#include "render/metainvoker.h"
 #include <QtCore>
-#include "autosignalsemitter.h"
+#include "render/autosignalsemitter.h"
 class QCefObjectMgr;
 class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
