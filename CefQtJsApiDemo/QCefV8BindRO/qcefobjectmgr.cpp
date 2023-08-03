@@ -2,7 +2,7 @@
 #include "qcefv8bindroapp_p.h"
 #include "qcefv8bindroapp.h"
 #include "qcefv8objecthelper.h"
-#include "qcefipcprotocol.h"
+
 
 
 QCefObjectMgr::QCefObjectMgr(QObject* parent)

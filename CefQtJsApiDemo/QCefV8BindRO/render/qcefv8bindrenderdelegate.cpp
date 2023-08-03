@@ -1,5 +1,4 @@
 #include "qcefv8bindrenderdelegate.h"
-#include "../qcefipcprotocol.h"
 #include "../qcefipcvalue.h"
 #include "qcefv8handler.h"
 #include "../qcefv8objecthelper.h"

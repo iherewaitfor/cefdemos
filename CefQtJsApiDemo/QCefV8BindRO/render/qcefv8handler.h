@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "include/cef_v8.h"
 #include "qcefv8bindrenderdelegate.h"
-#include "../qcefipcprotocol.h"
+#include "../qcefipcvalue.h"
 #include "asyncmethodcallback.h"
 class QCefV8SignalManager : public virtual CefBaseRefCounted
 {

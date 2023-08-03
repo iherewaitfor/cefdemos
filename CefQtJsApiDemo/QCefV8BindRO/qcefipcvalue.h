@@ -7,9 +7,6 @@ namespace cefv8bind_protcool
 {
 	struct  CefMetaMethod
 	{
-		void pack(CefRefPtr<CefListValue> protocolMsg);
-		bool unPack(const CefRefPtr<CefListValue> protocolMsg);
-
 		QMetaMethod::MethodType methodType;
 		int methodIndex;
 		QString methodName;
@@ -19,9 +16,6 @@ namespace cefv8bind_protcool
 
 	struct  CefMetaProperty
 	{
-		void pack(CefRefPtr<CefListValue> protocolMsg);
-		bool unPack(const CefRefPtr<CefListValue> protocolMsg);
-
 		int propertyIndex;
 		QString propertyName;
 		QString propertyTypeName;
@@ -31,9 +25,6 @@ namespace cefv8bind_protcool
 
 	struct CefMetaObject
 	{
-		void pack(CefRefPtr<CefListValue> protocolMsg);
-		bool unPack(const CefRefPtr<CefListValue> protocolMsg);
-
 		QString					objectName;
 		QString					className;
 		int						objectId;
@@ -44,9 +35,6 @@ namespace cefv8bind_protcool
 
 	struct CefMetaType
 	{
-		CefRefPtr<CefValue> pack();
-		bool unPack(const CefRefPtr<CefValue> protocolMsg);
-
 		bool isValid(const CefRefPtr<CefValue> protocolMsg);
 
 		QString typeName;

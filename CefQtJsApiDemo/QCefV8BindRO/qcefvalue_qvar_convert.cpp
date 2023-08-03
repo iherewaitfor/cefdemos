@@ -1,5 +1,4 @@
 ﻿#include "qcefipcvalue.h"
-#include "qcefipcprotocol.h"
 #include "qcefvalue_qvar_convert.h"
 
 #include <QtCore/QTypeInfo>

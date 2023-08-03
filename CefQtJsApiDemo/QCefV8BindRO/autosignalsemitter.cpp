@@ -1,7 +1,6 @@
 #include "autosignalsemitter.h"
 #include "qcefv8bindroapp.h"
 #include "qcefv8bindroapp_p.h"
-#include "qcefipcprotocol.h"
 #include "qcefipcvalue.h"
 #include "qcefv8objecthelper.h"
 
