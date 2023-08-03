@@ -49,7 +49,6 @@ public:
 
 public:
 	void onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, CefRefPtr<CefV8Context> context);
-	void onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRefPtr<CefV8Context> context);
 	void dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& rsp, CefRefPtr<CefV8Context> context);
 
 private:

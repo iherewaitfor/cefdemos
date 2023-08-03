@@ -393,37 +393,6 @@ void QCefV8Handler::sendIPCMessage(CefRefPtr<CefV8Context> context,
 	}
 }
 
-void QCefV8Handler::onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRefPtr<CefV8Context> context)
-{
-	if (m_frame == NULL)
-	{
-		return;
-	}
-	InvokeResp rsp;
-	if (!rsp.unPack(message->GetArgumentList()))
-	{
-		return;
-	}
-	QSharedPointer<AsyncCefMethodCallback> callback = m_asynCallbackMgr->takeAsyncMethodCallback(rsp.callBackId);
-	if (!callback)
-	{
-		return;
-	}
-	if (!rsp.invokeResult)
-	{
-		callback->fail("fail exception");
-		return;
-	}
-	if (context->GetFrame()->GetIdentifier() == callback->frameId()
-		&& context->Enter()
-		)
-	{
-		CefRefPtr<CefV8Value> retV8Value = QCefValueConverter::to(rsp.returnValue);
-		context->Exit();
-		callback->success(retV8Value);
-	}
-}
-
 void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, CefRefPtr<CefV8Context> context)
 {
 	if (m_frame == NULL)
