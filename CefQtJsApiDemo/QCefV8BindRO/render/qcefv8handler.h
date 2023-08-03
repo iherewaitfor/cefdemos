@@ -60,8 +60,6 @@ private:
 		CefString& exception);
 private:
 	CefRefPtr<CefListValue> toProcessMessage(const CefV8ValueList& source);
-	void sendIPCMessage(CefRefPtr<CefV8Context> context,
-		cefv8bind_protcool::PackageBase& ipc_protocol);
 
 private:
     CefRefPtr<CefFrame> m_frame;

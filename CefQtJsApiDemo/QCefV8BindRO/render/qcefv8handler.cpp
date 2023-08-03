@@ -384,15 +384,6 @@ CefRefPtr<CefListValue> QCefV8Handler::toProcessMessage(const CefV8ValueList& so
 	return result;
 }
 
-void QCefV8Handler::sendIPCMessage(CefRefPtr<CefV8Context> context,
-	cefv8bind_protcool::PackageBase& ipcMsg){
-	CEF_REQUIRE_RENDERER_THREAD();
-	if (context->GetFrame())
-	{
-		context->GetFrame()->SendProcessMessage(PID_BROWSER, ipcMsg.makeIPCMessage());
-	}
-}
-
 void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, CefRefPtr<CefV8Context> context)
 {
 	if (m_frame == NULL)

@@ -99,36 +99,6 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::bindV8Objects(const QList<cefv8bind_pr
 	return rootV8;
 }
 
-void QCefV8ObjectHelper::convertQObjectToCefObjects(const QObject *itemObject, const QObject*parentObject, QList<cefv8bind_protcool::CefMetaObject> &cef_metaObjects)
-{
-    if (!itemObject)
-    {
-        return;
-    }
-	CefMetaObject cef_metaObject;
-	if (convertQObjectToCefObject(itemObject, parentObject, cef_metaObject))
-	{
-		cef_metaObjects.append(cef_metaObject);
-	}
-
-	QObjectList lists;
-	QList<QByteArray> propNames = itemObject->dynamicPropertyNames();
-	foreach(QByteArray propName, propNames)
-	{
-		const QVariant var = itemObject->property(propName);
-		if (var.type() == QMetaType::QObjectStar && !var.isNull())
-		{
-			QObject*obj = var.value<QObject*>();
-			lists << obj;
-		}
-	}
-
-	for (int i = 0; i < lists.count(); ++i)
-	{
-		convertQObjectToCefObjects(lists.at(i), itemObject, cef_metaObjects);
-	}
-}
-
 void QCefV8ObjectHelper::convertDynamicClientToCefObjects(QSharedPointer<DynamicClient> itemObject, QSharedPointer<DynamicClient> parentObject, QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects) {
 	if (itemObject.isNull())
 	{

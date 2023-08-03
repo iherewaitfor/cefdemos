@@ -27,7 +27,6 @@ public:
 	virtual ~QCefV8ObjectHelper(void);
 
 	//browser
-	void convertQObjectToCefObjects(const QObject *rootObject, const QObject*parentObject, QList<cefv8bind_protcool::CefMetaObject> &cef_metaObjects);
 	bool convertQObjectToCefObject(const QObject *itemObject, const QObject *parentObject, cefv8bind_protcool::CefMetaObject &cef_metaObject);
 	//for render
 	void convertDynamicClientToCefObjects(QSharedPointer<DynamicClient> dynamicClient, QSharedPointer<DynamicClient> parent,
