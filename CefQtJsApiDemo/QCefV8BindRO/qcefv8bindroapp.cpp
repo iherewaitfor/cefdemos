@@ -16,8 +16,8 @@ void QCefV8BindAppROPrivate::_init()
 		m_browerDelegate = new QCefV8BindBrowserDelegate();
 		QCefCoreApp::getInstance()->regBrowserDelegate(m_browerDelegate.get());
 		// to do init QRemoteObjectRegistryHost and QRemoteObjectHost
-		m_pQRemoteObjectRegistryHost.reset(new QRemoteObjectRegistryHost(QUrl(QStringLiteral("local:registry")))); // create node that hosts registy
-		m_pQRemoteObjectHost.reset(new QRemoteObjectHost(QUrl(QStringLiteral("local:replica")), QUrl(QStringLiteral("local:registry")))); // create node that will host source and connect to registry
+		m_pQRemoteObjectRegistryHost.reset(new QRemoteObjectRegistryHost(QUrl(QStringLiteral("local:QCefRegistry")))); // create node that hosts registy
+		m_pQRemoteObjectHost.reset(new QRemoteObjectHost(QUrl(QStringLiteral("local:QCefReplica")), QUrl(QStringLiteral("local:QCefRegistry")))); // create node that will host source and connect to registry
 
 	}
 	else
@@ -30,7 +30,7 @@ void QCefV8BindAppROPrivate::_init()
 			// to do: create and register the delegate of render process
 			m_renderDelegate = new QCefV8BindRenderDelegate();
 			QCefCoreApp::getInstance()->regRenderDelegate(m_renderDelegate.get());
-			m_pQRemoteObjectNode.reset(new QRemoteObjectNode(QUrl(QStringLiteral("local:registry"))));
+			m_pQRemoteObjectNode.reset(new QRemoteObjectNode(QUrl(QStringLiteral("local:QCefRegistry"))));
 
 			QSharedPointer<QRemoteObjectDynamicReplica> pRep; // shared pointer to hold replica
 
