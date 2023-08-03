@@ -16,7 +16,6 @@ public:
 
 	bool connectSignal(const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception, CefRefPtr<CefV8Handler> v8Handler);
 	bool disConnectSignal(CefRefPtr<CefV8Value> v8Object, CefRefPtr<CefV8Context> context);
-	void emitSignal(const cefv8bind_protcool::EmitSignalMsg& msg, CefRefPtr<CefV8Context> context);
 	void emitRenderSignal(const QString& signalName, CefRefPtr<CefListValue> methordArgs, CefRefPtr<CefV8Context> context);
 
 	void clear();
@@ -51,7 +50,6 @@ public:
 public:
 	void onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, CefRefPtr<CefV8Context> context);
 	void onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRefPtr<CefV8Context> context);
-	void onEmitSignalMsg(CefRefPtr<CefProcessMessage> message);
 	void dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& rsp, CefRefPtr<CefV8Context> context);
 
 private:

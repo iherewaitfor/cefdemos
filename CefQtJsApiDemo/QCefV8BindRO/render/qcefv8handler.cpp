@@ -155,28 +155,6 @@ bool QCefV8SignalManager::disConnectSignal(CefRefPtr<CefV8Value> v8Object, CefRe
 	return true;
 }
 
-void QCefV8SignalManager::emitSignal(const EmitSignalMsg& msg, CefRefPtr<CefV8Context> context)
-{
-	QString key = _getKey(msg.objectId, msg.methodIndex);
-	if (m_slots.contains(key))
-	{
-		QList<CefRefPtr<CefV8Value>> cef_slots = m_slots[key];
-
-		Q_FOREACH(CefRefPtr<CefV8Value> callBack, cef_slots)
-		{
-			V8ContextCaller caller(context);
-			CefV8ValueList arguments_out = _convertToV8Args(msg.methodArgs);
-
-			// Execute the callback.
-			CefRefPtr<CefV8Value> retval = callBack->ExecuteFunctionWithContext(context, nullptr, arguments_out);
-			if (retval.get())
-			{
-				if (retval->IsBool())
-					retval->GetBoolValue();
-			}
-		}
-	}
-}
 void QCefV8SignalManager::dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& msg, CefRefPtr<CefV8Context> context) {
 	QString key = _getKey(msg.objectId, msg.methodIndex);
 	if (m_slots.contains(key))
@@ -445,20 +423,6 @@ void QCefV8Handler::onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRe
 		callback->success(retV8Value);
 	}
 }
-
-void QCefV8Handler::onEmitSignalMsg(CefRefPtr<CefProcessMessage> message)
-{
-	if (m_frame == NULL)
-	{
-		return;
-	}
-	EmitSignalMsg msg;
-	if (msg.unPack(message->GetArgumentList()))
-	{
-		m_v8SignalMgr->emitSignal(msg, m_frame->GetV8Context());
-	}
-}
-
 
 void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, CefRefPtr<CefV8Context> context)
 {
