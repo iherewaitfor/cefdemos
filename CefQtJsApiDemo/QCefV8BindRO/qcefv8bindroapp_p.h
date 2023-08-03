@@ -10,6 +10,7 @@
 #include "qcefipcvalue.h"
 #include "metainvoker.h"
 #include <QtCore>
+#include "autosignalsemitter.h"
 class QCefObjectMgr;
 class QCefV8BindAppRO;
 class QCefV8BindBrowserDelegate;
@@ -70,5 +71,7 @@ private:
 	//replica in render process
 	QScopedPointer<QRemoteObjectNode> m_pQRemoteObjectNode;
 	QScopedPointer<DynamicClientTreeHelper> m_pDynamicClientTreeHelper;
+
+	QMap <QString, AutoSignalsEmitter*> m_signalMap;
 
 };

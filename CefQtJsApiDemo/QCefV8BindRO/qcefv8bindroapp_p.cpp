@@ -63,8 +63,13 @@ void QCefV8BindAppROPrivate::connectReplicaSignal_slot(cefv8bind_protcool::Conne
 	}
 	//to do: same the autoEmitter, and check if the autoEmitter exist. if exist do not new.
 	//to do: connect the signal of the object
+	QString key = QString("%1_%2").arg(req.objctId).arg(req.methodIndex);
+	if (m_signalMap.contains(key)) {
+		return;
+	}
 	AutoSignalsEmitter* autoEmitter = new AutoSignalsEmitter(metaMethod,req.objctId, apiObject);
 	QObject::connect(apiObject, QString("2").append(metaMethod.methodSignature()).toStdString().c_str(),
 		autoEmitter, SLOT(proxySlot()), Qt::DirectConnection);
+	m_signalMap.insert(key, autoEmitter);
 
 }
