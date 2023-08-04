@@ -50,3 +50,7 @@ endif()
 # Copy binary and resource files to the target output directory.
 COPY_FILES("${CEF_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${EXAMPLE_TARGET_OUT_DIR}")
 COPY_FILES("${CEF_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${EXAMPLE_TARGET_OUT_DIR}")
+add_custom_command(TARGET ${PROJECT_NAME}
+  POST_BUILD
+  COMMAND ${Qt5HOMEDIR}/bin/windeployqt.exe  ${EXAMPLE_TARGET_OUT_DIR}/${PROJECT_NAME}.dll
+  )

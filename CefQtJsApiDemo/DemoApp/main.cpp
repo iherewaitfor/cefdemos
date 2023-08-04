@@ -1,8 +1,7 @@
 #include <QtCore>
-#include <QApplication>
+#include <QCoreApplication>
 #include "QtCefBrowser/qcefclient.h"
 #include "QtCefBrowser/qcefcoreapp.h"
-#include <QtWidgets>
 
 #include "numberlogic.h"
 #include "subnumberlogic.h"
@@ -11,7 +10,7 @@
 
 int main(int argc, char** argv )
 {
-    QApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
 
     QCefClient cefClient;
     cefClient.initCef();
