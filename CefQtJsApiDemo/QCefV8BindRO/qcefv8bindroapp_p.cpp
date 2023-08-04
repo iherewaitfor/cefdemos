@@ -1,5 +1,6 @@
 ﻿#include "qcefv8bindroapp_p.h"
 #include "../QtCefBrowser/qcefcoreapp.h"
+#include "qcefv8objecthelper.h"
 //void QCefV8BindAppROPrivate::callReplicaMethod_slot() {
 //	cefv8bind_protcool::PendingcallReq req;
 void QCefV8BindAppROPrivate::callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req) {
@@ -82,7 +83,7 @@ void QCefV8BindAppROPrivate::cefApiWindowCreated_slot(int browserId) {
 		return;
 	}
 	apiWindow->setObjectName(QString("CefWindow%1").arg(browserId));
-	apiWindow->setProperty( "v8Name", "CefWindow");
+	apiWindow->setProperty(KV8ObjectName, "CefWindow");
 	//to do 
 	m_remoteObjectTreeHelper.addRootObject((QObject*)apiWindow);
 	m_remoteObjectTreeHelper.getObjectsList();

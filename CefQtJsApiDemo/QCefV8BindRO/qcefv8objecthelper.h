@@ -11,10 +11,6 @@ extern const char KCefMetaMethod[];
 extern const char KRenderV8Object[];
 extern const char KParentName[];
 
-extern const char KObjectIdRO[];
-extern const char KBrowserFrameIdRO[];
-extern const char KCefMetaMethodIndexRO[];
-
 extern const char ConnectSignal[];
 extern const char DisConnectSignal[];
 extern const char OnInitSdkOKNotify[];

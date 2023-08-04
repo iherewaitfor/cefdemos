@@ -1,4 +1,5 @@
 #include "remoteobjecttreehelper.h"
+#include "qcefv8objecthelper.h"
 
 RemoteObjectTreeHelper::RemoteObjectTreeHelper(QObject*parent)
     : QObject(parent){
@@ -93,7 +94,7 @@ bool RemoteObjectTreeHelper::convertQObjectToRemoteStruct(QObject* itemObject, c
 	if (itemObject->parent()) {
 		parentName = itemObject->parent()->objectName();
 	}
-	QVariant varV8Name = itemObject->property("v8Name");
+	QVariant varV8Name = itemObject->property(KV8ObjectName);
 	if (varV8Name.isValid()) {
 		v8Name = varV8Name.toString();
 	}

@@ -91,7 +91,7 @@ void DynamicClientTreeHelper::pendingCallResult(QRemoteObjectPendingCallWatcher*
             if (v8Name.isEmpty()) {
                 v8Name = objectName;
             }
-            pClient->setProperty("v8Name", v8Name);
+            pClient->setProperty(KV8ObjectName, v8Name);
             
             m_dynamicClientsMap[objectName] = pClient;
             m_dynamicClientsIdMap[objectId] = pClient;

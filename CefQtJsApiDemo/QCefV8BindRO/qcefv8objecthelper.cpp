@@ -13,10 +13,6 @@ const char KCefMetaMethod[] = "CefMetaMethod";
 const char KRenderV8Object[] = "RenderV8Object";
 const char KParentName[] = "KParentName";
 
-const char KObjectIdRO[] = "KObjectIdRO";
-const char KBrowserFrameIdRO[] = "KBrowserFrameIdRO";
-const char KCefMetaMethodIndexRO[] = "KCefMetaMethodIndexRO";
-
 const char ConnectSignal[] = "connectSignal";
 const char DisConnectSignal[] = "disconnect";
 const char OnInitSdkOKNotify[] = "onInitSdkOKSignal"; //signal
@@ -118,7 +114,7 @@ bool QCefV8ObjectHelper::convertDynamicClientToCefObject(
 {
 	const QString objectName = itemObject->objectName();
 	QString v8Name = "";
-	QVariant varV8Name = itemObject->property("v8Name");
+	QVariant varV8Name = itemObject->property(KV8ObjectName);
 	if (varV8Name.isValid()) {
 		v8Name = varV8Name.toString();
 	}
