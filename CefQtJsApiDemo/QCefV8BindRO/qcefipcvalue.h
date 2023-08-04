@@ -27,6 +27,7 @@ namespace cefv8bind_protcool
 	{
 		QString					objectName;
 		QString					className;
+		QString					v8Name;
 		int						objectId;
 		int						parentId;
 		QList<CefMetaMethod>	metaMethods;

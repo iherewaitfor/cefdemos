@@ -121,6 +121,14 @@ bool QCefV8ObjectHelper::convertDynamicClientToCefObject(
 )
 {
 	const QString objectName = itemObject->objectName();
+	QString v8Name = "";
+	QVariant varV8Name = itemObject->property("v8Name");
+	if (varV8Name.isValid()) {
+		v8Name = varV8Name.toString();
+	}
+	if (v8Name.isEmpty()) {
+		v8Name = objectName;
+	}
 
 	bool isNewValue = false;
 	int uniqueId = 0;
@@ -139,6 +147,7 @@ bool QCefV8ObjectHelper::convertDynamicClientToCefObject(
 
 	cef_metaObject.objectName = objectName;
 	cef_metaObject.className = metaObject->className();
+	cef_metaObject.v8Name = v8Name;
 	cef_metaObject.objectId = uniqueId;
 	cef_metaObject.parentId = parentObject ? parentObject->property(KObjectId).toUInt() : 0;
 
@@ -411,7 +420,7 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8Object(const cefv8bind_protcoo
 	{
 		//把创建的对象挂到parentObject上，如果有parent的话。
 		const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
-		parentV8Object->SetValue(cefMetaObject.objectName.toStdString(), v8Object, attributes);
+		parentV8Object->SetValue(cefMetaObject.v8Name.toStdString(), v8Object, attributes);
 	}
 
 	return v8Object;

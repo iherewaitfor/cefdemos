@@ -7,10 +7,12 @@ typedef struct RemoteObjectStruct
 {
     QString objName;
     QString parentName;
+    QString v8Name;
     friend QDataStream& operator << (QDataStream& dataStream, const RemoteObjectStruct& object)
     {
         dataStream << object.objName;
         dataStream << object.parentName;
+        dataStream << object.v8Name;
         return dataStream;
     }
 
@@ -18,6 +20,7 @@ typedef struct RemoteObjectStruct
     {
         dataStream >> object.objName;
         dataStream >> object.parentName;
+        dataStream >> object.v8Name;
         return dataStream;
     }
 }RemoteObjectStruct;

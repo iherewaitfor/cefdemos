@@ -37,6 +37,7 @@ QVariantList RemoteObjectTreeHelper::getObjects() {
 		QVariantList temObj;
 		temObj.append(objStruct.objName);
 		temObj.append(objStruct.parentName);
+		temObj.append(objStruct.v8Name);
 		list.push_back(temObj);
 	}
     return list;
@@ -88,10 +89,16 @@ bool RemoteObjectTreeHelper::convertQObjectToRemoteStruct(QObject* itemObject, c
 
 	const QString objectName = itemObject->objectName();
 	QString parentName = "";
+	QString v8Name = "";
 	if (itemObject->parent()) {
 		parentName = itemObject->parent()->objectName();
 	}
+	QVariant varV8Name = itemObject->property("v8Name");
+	if (varV8Name.isValid()) {
+		v8Name = varV8Name.toString();
+	}
 	remoteObjectStruct.objName = objectName;
 	remoteObjectStruct.parentName = parentName;
+	remoteObjectStruct.v8Name = v8Name;
 	return true;
 }
