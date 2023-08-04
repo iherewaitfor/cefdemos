@@ -98,11 +98,7 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::bindV8Objects(const QList<cefv8bind_pr
 	return rootV8;
 }
 
-void QCefV8ObjectHelper::convertDynamicClientToCefObjects(QSharedPointer<DynamicClient> itemObject, QSharedPointer<DynamicClient> parentObject, QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects) {
-	if (itemObject.isNull())
-	{
-		return;
-	}
+void QCefV8ObjectHelper::convertDynamicClientToCefObjects(QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects) {
 	foreach(QString key, QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().keys()) {
 		QSharedPointer<DynamicClient> object = QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().value(key);
 		QString parentName = object->property(KParentName).toString();

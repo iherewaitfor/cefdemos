@@ -101,12 +101,8 @@ void DynamicClientTreeHelper::pendingCallResult(QRemoteObjectPendingCallWatcher*
 }
 
 void DynamicClientTreeHelper::getMetaObjects(QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects) {
-    //QString objectName = reptr->objectName();
-    //to do , get the objectName of rootObject;
-    QString objectName = "NumberLogic";
-    QSharedPointer<DynamicClient> pClient = m_dynamicClientsMap.value(objectName);
     QCefV8ObjectHelper objectHelper;
-    objectHelper.convertDynamicClientToCefObjects(pClient, QSharedPointer<DynamicClient>(), cef_metaObjects);
+    objectHelper.convertDynamicClientToCefObjects(cef_metaObjects);
 }
 
 //render

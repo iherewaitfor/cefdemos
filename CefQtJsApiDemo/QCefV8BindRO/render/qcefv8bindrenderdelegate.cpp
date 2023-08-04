@@ -21,9 +21,6 @@ void QCefV8BindRenderDelegate::OnContextCreated( CefRefPtr<CefBrowser> browser,
     bool isSame = frameContext->IsSame(context);
     isSame;
 
-    // to do , get replicas and bind.
-    //objectHelper.bindV8ObjectsRO(QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap(), context, handler);
-
     m_frameHandlers.insert(frame->GetIdentifier(), handler);
     //emit signal to bind.
     QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->contextCreated(browser->GetIdentifier(), frame->GetIdentifier());
