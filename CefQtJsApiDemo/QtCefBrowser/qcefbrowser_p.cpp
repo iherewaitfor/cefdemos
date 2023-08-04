@@ -327,8 +327,10 @@ void QCefBrowserPrivate::OnBeforeClose(CefRefPtr<CefBrowser> browser)
     base::AutoLock scopLock(lock);
     m_clientHandler = nullptr;
     m_hookChildWindows.clear();
-    if (m_hostWindow)
+    if (m_hostWindow) {
         m_hostWindow->forceClose();
+        m_hostWindow = nullptr;
+    }
     emit beforeClose(browser->GetIdentifier());
 }
 
@@ -337,6 +339,8 @@ void QCefBrowserPrivate::OnAfterCreatedSlot(int browserId) {
     
     qCefCoreAppPrivate()->addApiWindow(browserId, 
         QSharedPointer<CefApi::Window>(new CefApi::Window(nullptr, QPointer<QCefBrowser>(q_ptr))));
+    //emit the signal cefApiWindowCreated.
+    qCefCoreAppPrivate()->q_ptr->cefApiWindowCreated(browserId);
 }
 
 void QCefBrowserPrivate::OnClosingSlot(int browserId) {

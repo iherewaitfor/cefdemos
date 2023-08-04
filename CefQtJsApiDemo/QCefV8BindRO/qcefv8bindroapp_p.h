@@ -43,8 +43,8 @@ public:
 	CefRefPtr<QCefV8BindRenderDelegate> getRenderDelegate() {
 		return m_renderDelegate;
 	}
-	DynamicClientTreeHelper * getReplicaTreeHelper(){
-		return m_pDynamicClientTreeHelper.data();
+	QSharedPointer<DynamicClientTreeHelper> getReplicaTreeHelper(){
+		return m_pDynamicClientTreeHelper;
 	}
 public Q_SLOTS:
 	void callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req);
@@ -63,13 +63,13 @@ private:
 	QPointer<QCefObjectMgr>	m_objectMgr;
 
 	//source in browser process
-	QScopedPointer<QRemoteObjectRegistryHost> m_pQRemoteObjectRegistryHost;
-	QScopedPointer<QRemoteObjectHost> m_pQRemoteObjectHost;
+	QSharedPointer<QRemoteObjectRegistryHost> m_pQRemoteObjectRegistryHost;
+	QSharedPointer<QRemoteObjectHost> m_pQRemoteObjectHost;
 	RemoteObjectTreeHelper m_remoteObjectTreeHelper;
 
 	//replica in render process
-	QScopedPointer<QRemoteObjectNode> m_pQRemoteObjectNode;
-	QScopedPointer<DynamicClientTreeHelper> m_pDynamicClientTreeHelper;
+	QSharedPointer<QRemoteObjectNode> m_pQRemoteObjectNode;
+	QSharedPointer<DynamicClientTreeHelper> m_pDynamicClientTreeHelper;
 
 	QMap <QString, AutoSignalsEmitter*> m_signalMap;
 

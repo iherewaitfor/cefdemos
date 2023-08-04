@@ -32,6 +32,7 @@ signals:
 	void browserCreated(int cefBrowserId);
 	void browserClosed(int cefBrowserId);
 	void allClosed();
+	void cefApiWindowCreated(int cefBrowserId);
 };
 
 #endif
