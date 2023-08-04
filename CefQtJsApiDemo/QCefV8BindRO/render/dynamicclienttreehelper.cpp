@@ -38,42 +38,17 @@ void DynamicClientTreeHelper::initConnection_slot()
         return;
     }
     m_binitConnection = true;
-    const QMetaObject* meta = reptr->metaObject();
-    for (int i = 0; i < meta->methodCount(); i++) {
-        QMetaMethod method = meta->method(i);
-        //MethodType:
-        //0 plain
-        //1 signal
-        //2 slot
-        //3 constructor
-        qDebug() << " method " << i<< " MethodType" << method.methodType() << " " <<
-            method.returnType()<< QMetaType::typeName(method.returnType()) << " " << method.methodSignature();
-    }
-    qDebug() << " propertyCount: " << meta->propertyCount();
-    for (int i = 0; i < meta->propertyCount(); i++) {
-        QMetaProperty property = meta->property(i);
-        qDebug() << " property " << i << " " <<
-            property.name() << " " << property.typeName();
-    }
-    qDebug() << " propertyCount: " << meta->propertyCount();
-    
-    //replica 不同步对象树的信息。所以以下信息为空。
-    for (int i = 0; i < reptr->children().size(); i++) {
-        QObject* o = reptr->children().at(i);
-        qDebug() << " child   " << i << " objectName " <<
-            o->objectName();
-    }
-    qDebug() << " objcetName: " << reptr->objectName();
-    
 
     QRemoteObjectPendingCall call;
     bool success = QMetaObject::invokeMethod(reptr.data(), "getObjects", Qt::AutoConnection,
         Q_RETURN_ARG(QRemoteObjectPendingCall, call)
     );
-    success;
-    //to do:  how to free?   temply free at slot.
-    QRemoteObjectPendingCallWatcher* callwathcer = new QRemoteObjectPendingCallWatcher(call);
-    QObject::connect(callwathcer, SIGNAL(finished(QRemoteObjectPendingCallWatcher*)), this, SLOT(pendingCallResult(QRemoteObjectPendingCallWatcher*)));
+    ;
+    if (success) {
+        //to do:  how to free?   temply free at slot. 
+        QRemoteObjectPendingCallWatcher* callwathcer = new QRemoteObjectPendingCallWatcher(call);
+        QObject::connect(callwathcer, SIGNAL(finished(QRemoteObjectPendingCallWatcher*)), this, SLOT(pendingCallResult(QRemoteObjectPendingCallWatcher*)));
+    }
 
 
 }
@@ -88,14 +63,11 @@ void DynamicClientTreeHelper::stateChanged_slot(QRemoteObjectReplica::State stat
         //重新连接上了
         // to do 
     }
-    qDebug() << "Replica stateChanged_slot state= " << state << " oldState: oldState=" << oldState;
 }
 
 void DynamicClientTreeHelper::pendingCallResult(QRemoteObjectPendingCallWatcher* call) {
 
     //异步回调结果
-    qDebug() << "pendingCallResult call getObjects size : " << QMetaType::typeName(call->returnValue().type()) << call->returnValue().toList().size();
-    sender()->deleteLater(); // 待优化。若无信号返回，则会造成内存泄漏
     QVariantList reobjList = call->returnValue().toList();
     foreach(QVariant obj, reobjList) {
         QVariantList list = obj.toList();
@@ -116,11 +88,11 @@ void DynamicClientTreeHelper::pendingCallResult(QRemoteObjectPendingCallWatcher*
             pClient->setProperty(KObjectId, objectId);
             pClient->setProperty(KParentName, parentName);
             
-
             m_dynamicClientsMap[objectName] = pClient;
             m_dynamicClientsIdMap[objectId] = pClient;
         }
     }
+    call->deleteLater();// 待优化。若无信号返回，则会造成内存泄漏。可new时存下来，定时删除缓存，及删掉watcher.
 }
 
 void DynamicClientTreeHelper::getMetaObjects(QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects) {

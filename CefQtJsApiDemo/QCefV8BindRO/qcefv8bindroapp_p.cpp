@@ -1,4 +1,5 @@
 ﻿#include "qcefv8bindroapp_p.h"
+#include "../QtCefBrowser/qcefcoreapp.h"
 //void QCefV8BindAppROPrivate::callReplicaMethod_slot() {
 //	cefv8bind_protcool::PendingcallReq req;
 void QCefV8BindAppROPrivate::callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req) {
@@ -71,4 +72,14 @@ void QCefV8BindAppROPrivate::connectReplicaSignal_slot(cefv8bind_protcool::Conne
 		autoEmitter, SLOT(proxySlot()), Qt::DirectConnection);
 	m_signalMap.insert(key, autoEmitter);
 
+}
+
+void QCefV8BindAppROPrivate::cefApiWindowCreated_slot(int browserId) {
+	//browser进程
+	//为id为broserId的browser启动CefAPIWindow  source objcet
+	CefApi::Window* apiWindow = QCefCoreApp::getInstance()->getApiWindow(browserId);
+	if (!apiWindow) {
+		return;
+	}
+	//to do 
 }

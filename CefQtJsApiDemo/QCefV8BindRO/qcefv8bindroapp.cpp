@@ -18,6 +18,9 @@ void QCefV8BindAppROPrivate::_init()
 		// to do init QRemoteObjectRegistryHost and QRemoteObjectHost
 		m_pQRemoteObjectRegistryHost.reset(new QRemoteObjectRegistryHost(QUrl(QStringLiteral("local:QCefRegistry")))); // create node that hosts registy
 		m_pQRemoteObjectHost.reset(new QRemoteObjectHost(QUrl(QStringLiteral("local:QCefReplica")), QUrl(QStringLiteral("local:QCefRegistry")))); // create node that will host source and connect to registry
+		
+		QObject::connect(QCefCoreApp::getInstance(), SIGNAL(cefApiWindowCreated(int)), this,
+			SLOT(cefApiWindowCreated_slot(int)));
 
 	}
 	else

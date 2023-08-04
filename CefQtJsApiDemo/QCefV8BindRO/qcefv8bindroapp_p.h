@@ -47,10 +47,15 @@ public:
 		return m_pDynamicClientTreeHelper;
 	}
 public Q_SLOTS:
+	//browser process
+	void cefApiWindowCreated_slot(int browserId);
+
+	//render process
 	void callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req);
 	void pendingCallResult(QRemoteObjectPendingCallWatcher* call);
 	void connectReplicaSignal_slot(cefv8bind_protcool::ConnectReplicaSignal);
 Q_SIGNALS:
+	//render process
 	void callReplicaMethod(cefv8bind_protcool::PendingcallReq req);
 	void connectReplicaSignal(cefv8bind_protcool::ConnectReplicaSignal);
 private:
