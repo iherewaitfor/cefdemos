@@ -5,7 +5,7 @@
 
 #include "numberlogic.h"
 #include "subnumberlogic.h"
-//#include "QCefV8Bind/qcefv8bindapp.h"
+#include "QCefV8Bind/qcefv8bindapp.h"
 #include "../QCefV8BindRO/qcefv8bindroapp.h"
 
 int main(int argc, char** argv )
@@ -14,6 +14,8 @@ int main(int argc, char** argv )
 
     QCefClient cefClient;
     cefClient.initCef();
+
+    ////use cefipc
     //QCefV8BindApp::getInstance();
     ////testAPI
     //NumberLogic* numberLogic = new NumberLogic();
@@ -21,6 +23,7 @@ int main(int argc, char** argv )
     //subNumberLogic;
     //QCefV8BindApp::getInstance()->setV8RootObject(numberLogic);
 
+    //use QRemotObject.
     QCefV8BindAppRO::getInstance();
     //testAPI
     NumberLogic* numberLogic = new NumberLogic();

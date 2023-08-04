@@ -3,7 +3,7 @@
 #include "include/cef_app.h"
 
 #include "../QtCefBrowser/qcefclient.h"
-//#include "../QCefV8Bind/qcefv8bindapp.h"
+#include "../QCefV8Bind/qcefv8bindapp.h"
 #include "../QCefV8BindRO/qcefv8bindroapp.h"
 #include <QtCore>
 #include <process.h>
@@ -36,10 +36,15 @@ int WINAPI wWinMain(HINSTANCE hInstance,
   }
   int exitcode = 0;
   if (brender) {
+      ////use cefipc
+      //QCefV8BindApp::getInstance();
+      //QCefClient cefClient;
+      //exitcode = cefClient.initCefRender();
+
+      //use QRemoteObject
       int argc = 0;
       char* argv[] = { "abc", "def" };
       QCoreApplication qApplication(argc, argv);
-      //QCefV8BindApp::getInstance();
       QCefV8BindAppRO::getInstance();
       unsigned threadID = 0;
       HANDLE tHandle = NULL;
