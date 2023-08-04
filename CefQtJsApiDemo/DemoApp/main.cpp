@@ -27,7 +27,7 @@ int main(int argc, char** argv )
     NumberLogic* numberLogic = new NumberLogic();
     SubNumberLogic* subNumberLogic = new SubNumberLogic(numberLogic);
     subNumberLogic;
-    QCefV8BindAppRO::getInstance()->setV8RootObject(numberLogic);
+    QCefV8BindAppRO::getInstance()->addV8RootObject(numberLogic);
 
     BrowserWindowOptions options;
     options.url = "https://www.baidu.com";

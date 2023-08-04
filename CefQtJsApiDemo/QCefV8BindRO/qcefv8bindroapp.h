@@ -14,7 +14,7 @@ public:
     QCefV8BindAppRO();
     virtual ~QCefV8BindAppRO(void);
 
-    void setV8RootObject(QPointer<QObject> o);
+    void addV8RootObject(QObject* o);
 
     void enableRemoting(QObject* apiRemotObject);
 

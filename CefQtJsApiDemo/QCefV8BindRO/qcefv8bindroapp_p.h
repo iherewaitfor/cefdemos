@@ -29,10 +29,6 @@ public:
 	{
 	}
 
-	QObject* getRootObject() const
-	{
-		return m_v8RootObject;
-	}
 	QPointer<QCefObjectMgr> getObjectMgr()
 	{
 		return m_objectMgr;
@@ -62,7 +58,6 @@ private:
 	void _init();
 
 private:
-	QPointer<QObject>	m_v8RootObject;
 	CefRefPtr<QCefV8BindBrowserDelegate>	m_browerDelegate;
 	CefRefPtr<QCefV8BindRenderDelegate>	m_renderDelegate;
 	QPointer<QCefObjectMgr>	m_objectMgr;

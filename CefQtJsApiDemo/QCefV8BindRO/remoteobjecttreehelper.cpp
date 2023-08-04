@@ -1,13 +1,17 @@
 #include "remoteobjecttreehelper.h"
 
 RemoteObjectTreeHelper::RemoteObjectTreeHelper(QObject*parent)
-    : QObject(parent), m_rootObject(nullptr){
+    : QObject(parent){
     setObjectName("RemoteObjectTreeHelper");
 }
 
-void RemoteObjectTreeHelper::setRootObject(QObject* rootObject) {
-    m_rootObject = rootObject;
-	convertQObjectToRemoteStructList(m_rootObject, nullptr, m_objectsList);
+void RemoteObjectTreeHelper::addRootObject(QObject* rootObject) {
+	if (m_rootObjectList.contains(rootObject)) {
+		return;
+	}
+	m_rootObjectList.append(rootObject);
+
+//	convertQObjectToRemoteStructList(m_rootObject, nullptr, m_objectsList);
 }
 
 bool RemoteObjectTreeHelper::enableObjectsRemoting(QRemoteObjectHost* sourceNode) {
@@ -39,6 +43,10 @@ QVariantList RemoteObjectTreeHelper::getObjects() {
 }
 
 QList<RemoteObjectStruct> RemoteObjectTreeHelper::getObjectsList() {
+	m_objectsList.clear();
+	foreach(QObject * rootObject, m_rootObjectList) {
+		convertQObjectToRemoteStructList(rootObject, nullptr, m_objectsList);
+	}
 	return m_objectsList;
 }
 

@@ -81,5 +81,9 @@ void QCefV8BindAppROPrivate::cefApiWindowCreated_slot(int browserId) {
 	if (!apiWindow) {
 		return;
 	}
+	apiWindow->setObjectName(QString("CefWindow%1").arg(browserId));
 	//to do 
+	m_remoteObjectTreeHelper.addRootObject((QObject*)apiWindow);
+	m_remoteObjectTreeHelper.getObjectsList();
+	m_remoteObjectTreeHelper.enableObjectsRemoting(m_pQRemoteObjectHost.data());
 }

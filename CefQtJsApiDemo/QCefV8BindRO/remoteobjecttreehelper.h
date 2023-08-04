@@ -11,7 +11,7 @@ class RemoteObjectTreeHelper : public QObject
 public:
     RemoteObjectTreeHelper(QObject*parent = nullptr);
 
-    void setRootObject(QObject* rootObject);
+    void addRootObject(QObject* rootObject);
     bool enableObjectsRemoting(QRemoteObjectHost * sourceNode);
     Q_INVOKABLE QVariantList getObjects();
     QList<RemoteObjectStruct> getObjectsList();
@@ -21,7 +21,7 @@ private:
     bool convertQObjectToRemoteStruct(QObject* itemObject, const QObject* parentObject, RemoteObjectStruct& remoteObjectStruct);
 
 private:
-    QObject* m_rootObject;
+    QList<QObject*> m_rootObjectList;
     QList<RemoteObjectStruct> m_objectsList;
     QMap<QString, QObject*> m_objectMap;
 };
