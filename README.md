@@ -9,8 +9,13 @@
 - [CefQtJsApiDemo--使用Qt集成JavaScript接口](#cefqtjsapidemo--使用qt集成javascript接口)
 
 # cefdemos
+本仓库[https://github.com/iherewaitfor/cefdemos]包含不同的cef展示项目。从cmake配置到各个cef基础功能展示。
+
+每个目录都为一个项目。每个项目都展示一上基础的功能。 其中CefQtJsApiDemo集成功能较多。
+具体请查看各个项目的文档。
+
 # CefCmakeDemo 使用CMake配置CefSimple
-该项目展示了如果使用Cmake配置自己CefSimple顶上。
+该项目展示了如果使用Cmake配置自己CefSimple项目。
 详解请查看[CefCmakeDemo/README.md](https://github.com/iherewaitfor/cefdemos/blob/main/CefCmakeDemo/README.md)
 # CefCmakeCefClient 使用CMake配置CefClient项目
 该项目展示了如果使用Cmake配置CefClient项目。
