@@ -3,14 +3,6 @@
 # can be found in the LICENSE file.
 
 #
-# Source files.
-#
-
-aux_source_directory(. DIR_SRCS)
-list(APPEND DIR_SRCS ./cefsimple.rc)
-# message(NOTICE "DIR_SRCS is ${DIR_SRCS}")
-
-#
 # Shared configuration.
 #
 project(cefsimple)
@@ -18,6 +10,14 @@ project(cefsimple)
 set(CEF_TARGET "cefsimple")
 
 ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
+
+#
+# Source files.
+#
+
+aux_source_directory(. DIR_SRCS)
+list(APPEND DIR_SRCS ./cefsimple.rc)
+# message(NOTICE "DIR_SRCS is ${DIR_SRCS}")
 
 # Determine the target output directory.
 # you can find the macro in ${CEF_ROOT}/cmake/cef_macros.cmake
