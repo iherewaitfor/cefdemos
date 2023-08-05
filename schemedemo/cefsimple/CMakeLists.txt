@@ -2,19 +2,16 @@
 # reserved. Use of this source code is governed by a BSD-style license that
 # can be found in the LICENSE file.
 
+project(cefsimple)
+# Target executable names.
+set(CEF_TARGET "cefsimple")
+
 #
 # Source files.
 #
 aux_source_directory(. DIR_SRCS)
 list(APPEND DIR_SRCS ./cefsimple.rc)
 # message(NOTICE "DIR_SRCS is ${DIR_SRCS}")
-
-#
-# Shared configuration.
-#
-project(cefsimple)
-# Target executable names.
-set(CEF_TARGET "cefsimple")
 
 file (GLOB HEADERS
 		"*.h")
