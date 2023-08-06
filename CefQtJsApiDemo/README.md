@@ -11,7 +11,7 @@
 
 接口实现，只需要写正常的QObject，绑定模块会把这些对象映射成js接口。
 
-其中有两种实现方式
+项目展示了两种实现方式
 - QCefV8Bind:使用cef自带的ipc
   - 接口实现放在browser进程
   - 使用cef自带的ipc，在browser和render进程通信。
