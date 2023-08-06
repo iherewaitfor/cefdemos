@@ -84,7 +84,6 @@ public:
 };
 
 void SimpleAppRender::OnWebKitInitialized() {
-    ::MessageBox(0, 0, 0, 0);
     // Define the extension contents.
     std::string extensionCode =
         "var test;"
