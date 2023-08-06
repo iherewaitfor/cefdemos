@@ -1,6 +1,11 @@
 - [CefQtJspApiDemo Qt实现JS接口Demo](#cefqtjspapidemo-qt实现js接口demo)
 - [How to Run](#how-to-run)
 - [程序结构](#程序结构)
+- [QtCefBrowser](#qtcefbrowser)
+  - [cef应用核心框架](#cef应用核心框架)
+    - [QCefClient--cef初始和关闭](#qcefclient--cef初始和关闭)
+  - [消息循环集成](#消息循环集成)
+  - [本方案中涉及的进程和线程](#本方案中涉及的进程和线程)
 - [QCefV8Bind](#qcefv8bind)
 - [QCefV8BindRO](#qcefv8bindro)
 
@@ -34,5 +39,38 @@
   - Cef的核心应用模块，搭建了程序的基础框架。
 - QtCefRender
   - cef子进程的启动程序。
+# QtCefBrowser
+该模块主要负责描述cef应用的核心流程：
+- 初始化、关闭
+- 关闭回调接口的注册和实现。
+- 浏览器打开、关闭
+## cef应用核心框架
+### QCefClient--cef初始和关闭
+Cef主流程的初始化和关闭。
+核心调用为
+- browser进程的 CefInitialize、CefShutdown
+- render及其他进程的CefExecuteProcess
+
+其中
+```C++
+    CefSettings cefSettings;
+    cefSettings.multi_threaded_message_loop = true;
+```
+## 消息循环集成
+
+
+## 本方案中涉及的进程和线程
+由于本项目中，集成线程时，进行了以下两个设置
+1.  browser进程中cef初始化时，设置了cefSettings.multi_threaded_message_loop = true;
+2.  render进程在单独线程中运行CefExecuteProcess。
+   
+所以进程的主线程和cef的消息循环线程不是同一线程。涉及的线程如下：
+
+- Browser进程
+  - 主线程、Qt线程。Qt消息循环所有线程
+  - CEF的TID_UI线程。CEF消息循环线程。
+- Render进程
+  - 主线线程：Qt线程。Qt消息循环所有线程。
+  - CEF的TID_RENDERER线程。render消息循环线程。
 # QCefV8Bind
 # QCefV8BindRO
