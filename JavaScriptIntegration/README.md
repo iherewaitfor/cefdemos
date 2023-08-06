@@ -1,3 +1,19 @@
+- [JavaScriptIntegration](#javascriptintegration)
+- [How to Run](#how-to-run)
+- [程序结构](#程序结构)
+- [绑定时机](#绑定时机)
+  - [OnWebKitInitialized](#onwebkitinitialized)
+  - [CefRenderProcessHandler::OnContextCreated](#cefrenderprocesshandleroncontextcreated)
+- [注册JS扩展](#注册js扩展)
+- [Basic JS Types](#basic-js-types)
+- [JS Arrays](#js-arrays)
+- [JS Objects](#js-objects)
+- [JS Functions](#js-functions)
+- [Javascript测试代码](#javascript测试代码)
+- [使用chrome进行调试](#使用chrome进行调试)
+- [参考](#参考)
+
+
 # JavaScriptIntegration
 本项目，用于展示如果在cef的render进程添加Javascript接口。
 主要添加
@@ -201,6 +217,24 @@ public:
     IMPLEMENT_REFCOUNTING(MyCefV8Handler);
 };
 ```
+# Javascript测试代码
+绑定对象后，可以在页面上调用。
+```Javascript
+test.myval; //扩展中注册的test对象的myval
+window.myval; // 绑定到window对象的myval
+myObjcet.myval;//绑定到myObject的myval，myObject绑定到window对象
+myObjcet.myfunc();//绑定以myObject的myfunc函数
+```
+# 使用chrome进行调试
+设置调试接口
+```C++
+  // Specify CEF global settings here.
+  CefSettings settings;
+  //设置调试端口
+  //调试方法：在chrome中打开http://localhost:8765
+  settings.remote_debugging_port = 8765;
+```
+程序启动后，直接 在chrome中打开 http://localhost:8765。选择对应的页面，即可进入调试命令窗口了。
 
 # 参考
 1. [https://bitbucket.org/chromiumembedded/cef/wiki/JavaScriptIntegration.md](https://bitbucket.org/chromiumembedded/cef/wiki/JavaScriptIntegration.md)
