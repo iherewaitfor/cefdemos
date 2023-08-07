@@ -13,6 +13,12 @@
   - [本方案中涉及的进程和线程](#本方案中涉及的进程和线程)
 - [QCefV8Bind](#qcefv8bind)
 - [QCefV8BindRO](#qcefv8bindro)
+  - [关于QObjectRemote](#关于qobjectremote)
+  - [构建QObjects树](#构建qobjects树)
+- [关于调试设置](#关于调试设置)
+  - [browser进程调试](#browser进程调试)
+  - [render进程C++调试](#render进程c调试)
+  - [javascript调试](#javascript调试)
 - [参考](#参考)
 
 # CefQtJspApiDemo Qt实现JS接口Demo
@@ -241,7 +247,68 @@ void SimpleHandler::initWindow()
 [https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-threads](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-threads)
 # QCefV8Bind
 # QCefV8BindRO
+该模块的功能是使用QRemoteObjects技术，将QObject对象绑定成Javascript接口。让JS方便地调用各个QObject对象。QObject接口不限于browser进程。
 
+关键步骤：
+
+- QRemoteObjects
+- 构建QObjects树
+- 将QObject转成JS Object 进行绑定
+- 调用QObject接口
+- QOjbect信号
+## 关于QObjectRemote
+关于Qt Remote Objects,可以查看Qt官司文档[[Qt Remote Objects](https://qthub.com/static/doc/qt5/qtremoteobjects/qtremoteobjects-index.html#qt-remote-objects)](https://qthub.com/static/doc/qt5/qtremoteobjects/qtremoteobjects-index.html#qt-remote-objects)
+
+Qt Remot Objects的示例，可以参考本git的[QtROsimpleswitch](https://github.com/iherewaitfor/QtDemos/tree/main/QtROsimpleswitch)。
+
+以下两个项目，分别展示了QRemoteObject的提供服务 和客户端使用服务。
+- [registryconnected_objects_server](https://github.com/iherewaitfor/QtDemos/tree/main/QtROsimpleswitch/registryconnected_objects_server)
+- [registryconnected_objcets_client](https://github.com/iherewaitfor/QtDemos/tree/main/QtROsimpleswitch/registryconnected_objcets_client)
+
+通过QRemoteObject中有几个概念
+- 服务器侧 
+  - QRemoteObjectRegistryHost
+    - 提供注册点，用于注册和查询服务
+  - QRemoteObjectHost
+    - 提供ipc通信
+    - 用于让QObject对象变成服务对象
+  - SourceObject
+    - QObject对象(继承了QObject)，提供的服务。可以让用户远程调用的对象。
+    - Qt元数据系统能处理的属性、Q_INVOKABLE方法、信号、槽等。
+- 客户端侧
+  - QRemoteObjectNode
+    - 提供了ipc通信能力
+    - 用于查询有哪些服务对象
+  - QRemoteObjectDynamicReplica
+    - SourceObject的代理类。
+    - 调用replica就像调用源QObject一样，不过是异步调用。
+## 构建QObjects树
+接口实现提供的QObject对象，可以组织成树形结构。可以有多颗树。
+
+本项目实例中NumberLogic接口结点，SubNumberLogic为孩子结点。该 树型结构直接使用Qt的QObject树结构进行组织。
+其中主要设置了两个事件
+- 根结点的parent为空，非根结点需要设置parent
+  - 如NumberLogic的根结点为空,SubNumberLogic的parent为NumberLogic
+- 把接口的孩子结点，设置为父结点的属性
+```c++
+SubNumberLogic::SubNumberLogic(QObject*parent)
+    : QObject(parent),m_counter(0){
+    if (parent) {
+
+        parent->setProperty("SubNumberLogic", QVariant::fromValue((QObject*)this));
+    }
+    setObjectName("SubNumberLogic");
+}
+```
+
+可以通过QCefV8BindAppRO::addV8RootObject()方法，把接口实现的根结点添加到树上（browser进程提供的接口）。
+通过RemoteObjectTreeHelper::getObjects()提供了接口树数据给render进程。其中RemoteObjectTreeHelper是一个Source Object.render那边可以直接查询得到该服务。
+
+
+# 关于调试设置
+## browser进程调试
+## render进程C++调试
+## javascript调试
 # 参考
 
 [https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md)
