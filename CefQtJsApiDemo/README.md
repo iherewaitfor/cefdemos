@@ -113,10 +113,23 @@ Render进程的CefApp主要实现的回调方法是
 - OnBrowserCreated()
 - OnBrowserDestroyed()
 
-此处也使用代理的方式，cef回调时，都直接使用调用代理。各个功能需要处理这些事件时，注册对应的代理对象过来即可。
+此处也使用代理的方式，cef回调时，都直接使用调用代理。例如：
+
+```C++
+void QCefRenderApp::OnWebKitInitialized() {
+    std::set<client::RenderDelegate*> renderDelegates = qCefCoreAppPrivate()->renderDelegates();
+    Q_FOREACH(client::RenderDelegate * renderDelegate, renderDelegates)
+    {
+        renderDelegate->OnWebKitInitialized();
+    }
+}
+```
+
+
+各个功能需要处理这些事件时，注册对应的代理对象过来即可。
 代理对象接口为
 ```C++
-	class QCEFBROWSER_DECL_EXPORT RenderDelegate
+class QCEFBROWSER_DECL_EXPORT RenderDelegate
     {
 	public:
 		virtual void OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info) {};
@@ -145,9 +158,6 @@ Render进程的CefApp主要实现的回调方法是
 可以通过方法QCefCoreApp::regRenderDelegate(client::RenderDelegate*)进行代理类注册。
 本项目中，QCefV8Bind和QCefV8BindRO分别有注册代理类，用于在render进程中绑定js对象。
 QCefV8BindRO的代理实现类为QCefV8BindRenderDelegate。具体实现看对应模块。
-
-
-
 
 ## Browser消息循环集成
 消息循环主要有两种集成方式：
