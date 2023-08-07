@@ -11,10 +11,12 @@
     - [CefDoMessageLoopWork()方式集成消息循环](#cefdomessageloopwork方式集成消息循环)
     - [multi\_threaded\_message\_loop = true方式集成消息循环（本项目采用）](#multi_threaded_message_loop--true方式集成消息循环本项目采用)
   - [本方案中涉及的进程和线程](#本方案中涉及的进程和线程)
+  - [打开浏览器](#打开浏览器)
 - [QCefV8Bind](#qcefv8bind)
 - [QCefV8BindRO](#qcefv8bindro)
   - [关于QObjectRemote](#关于qobjectremote)
   - [构建QObjects树](#构建qobjects树)
+  - [将QObject转成JS Object 进行绑定](#将qobject转成js-object-进行绑定)
 - [关于调试设置](#关于调试设置)
   - [browser进程调试](#browser进程调试)
   - [render进程C++调试](#render进程c调试)
@@ -245,6 +247,11 @@ void SimpleHandler::initWindow()
 [https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-processes](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-processes)
 
 [https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-threads](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-threads)
+## 打开浏览器
+
+使用QCefCoreApp::createBrowser打开一个浏览器页面。里面核心是调用 Cef的CefBrowserHost::CreateBrowser方法。
+
+
 # QCefV8Bind
 # QCefV8BindRO
 该模块的功能是使用QRemoteObjects技术，将QObject对象绑定成Javascript接口。让JS方便地调用各个QObject对象。QObject接口不限于browser进程。
@@ -283,7 +290,7 @@ Qt Remot Objects的示例，可以参考本git的[QtROsimpleswitch](https://gith
     - SourceObject的代理类。
     - 调用replica就像调用源QObject一样，不过是异步调用。
 ## 构建QObjects树
-接口实现提供的QObject对象，可以组织成树形结构。可以有多颗树。
+接口是通过QObject对象形式提供，可以把多个QObject组件成树形结构。接口可以有多颗树。
 
 本项目实例中NumberLogic接口结点，SubNumberLogic为孩子结点。该 树型结构直接使用Qt的QObject树结构进行组织。
 其中主要设置了两个事件
@@ -303,6 +310,92 @@ SubNumberLogic::SubNumberLogic(QObject*parent)
 
 可以通过QCefV8BindAppRO::addV8RootObject()方法，把接口实现的根结点添加到树上（browser进程提供的接口）。
 通过RemoteObjectTreeHelper::getObjects()提供了接口树数据给render进程。其中RemoteObjectTreeHelper是一个Source Object.render那边可以直接查询得到该服务。
+
+browser进程使用RemoteObjectStruct结构描述一个QObject对象结点。
+```C++
+typedef struct RemoteObjectStruct
+{
+    QString objName;
+    QString parentName;
+    QString v8Name;
+}
+```
+通过以下方法getObjectsList得到所有结点的信息列表。
+```C++
+QList<RemoteObjectStruct> RemoteObjectTreeHelper::getObjectsList() {
+	m_objectsList.clear();
+	foreach(QObject * rootObject, m_rootObjectList) {
+		convertQObjectToRemoteStructList(rootObject, nullptr, m_objectsList);
+	}
+	return m_objectsList;
+}
+```
+最后通过getObjects()，提供给render进程获取，以便在render进程进行接口绑定。
+```C++
+QVariantList RemoteObjectTreeHelper::getObjects() {
+	QVariantList list;
+	foreach(RemoteObjectStruct objStruct, m_objectsList) {
+		QVariantList temObj;
+		temObj.append(objStruct.objName);
+		temObj.append(objStruct.parentName);
+		temObj.append(objStruct.v8Name);
+		list.push_back(temObj);
+	}
+    return list;
+}
+```
+## 将QObject转成JS Object 进行绑定
+browser进程上的RemoteObjectTreeHelper已将QObject树信息构建好，并通过QtRemoteObject技术，把RemoteObjectTreeHelper作为Source Object,名字为"QCefRemoteObjectTreeHelper".提供了getObjects方法获取。
+
+render进程的DynamicClientTreeHelper类，包括一个RemoteObjectTreeHelper的replica。因此可以像访问本地对象一样访问RemoteObjectTreeHelper。DynamicClientTreeHelper获取QObject树信息，并将期绑定到js的window对象上。
+
+DynamicClientTreeHelper的replica在初始化好之后，立即调用getObjects方法获取树信息，然后获取所有SourceObject的replica
+并使用Map存起来。key分别为名字和id。
+```C++
+    QMap<QString, QSharedPointer<DynamicClient>> m_dynamicClientsMap;
+    QMap<int, QSharedPointer<DynamicClient>> m_dynamicClientsIdMap;
+```
+
+因为每个replica包括了QMetaObject（QRemoteObject技术中，source的元信息会自动同步到replica中），因此就可以用这些信息生成绑定所需的信息了。
+
+```C++
+void DynamicClientTreeHelper::getMetaObjects(QList<cefv8bind_protcool::CefMetaObject>& cef_metaObjects) {
+    QCefV8ObjectHelper objectHelper;
+    objectHelper.convertDynamicClientToCefObjects(cef_metaObjects);
+}
+```
+通过DynamicClientTreeHelper::getMetaObjects就获取得到绑定所需的信息。
+```C++
+	struct  CefMetaMethod
+	{
+		QMetaMethod::MethodType methodType;
+		int methodIndex;
+		QString methodName;
+		QStringList parameterTypes;
+		QString	returnTypeName;
+	};
+	struct  CefMetaProperty
+	{
+		int propertyIndex;
+		QString propertyName;
+		QString propertyTypeName;
+		QVariant propertyValue;
+		CefRefPtr<CefValue>	cef_propertyValue;
+	};
+	struct CefMetaObject
+	{
+		QString					objectName;
+		QString					className;
+		QString					v8Name;
+		int						objectId;
+		int						parentId;
+		QList<CefMetaMethod>	metaMethods;
+		QList<CefMetaProperty>  metaProperties;
+	};
+```
+
+
+
 
 
 # 关于调试设置
