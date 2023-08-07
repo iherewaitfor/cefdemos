@@ -17,6 +17,13 @@
   - [关于QObjectRemote](#关于qobjectremote)
   - [构建QObjects树](#构建qobjects树)
   - [将QObject转成JS Object 进行绑定](#将qobject转成js-object-进行绑定)
+    - [](#)
+    - [绑定函数](#绑定函数)
+    - [QCefV8Handler](#qcefv8handler)
+      - [使用JS的Promise对象存储js调用。](#使用js的promise对象存储js调用)
+      - [AsyncCefMethodCallback存储js的调用信息](#asynccefmethodcallback存储js的调用信息)
+      - [调用replica的方法](#调用replica的方法)
+      - [调用replica的方法](#调用replica的方法-1)
 - [关于调试设置](#关于调试设置)
   - [browser进程调试](#browser进程调试)
   - [render进程C++调试](#render进程c调试)
@@ -394,9 +401,283 @@ void DynamicClientTreeHelper::getMetaObjects(QList<cefv8bind_protcool::CefMetaOb
 	};
 ```
 
+使用QCefV8ObjectHelper::bindV8Objects将信息绑定到window上。
+其中对每个对象执行createV8Object，进行具体的绑定
 
+```C++
+CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8Object(const cefv8bind_protcool::CefMetaObject& cefMetaObject, CefRefPtr<CefV8Handler> v8Handler, CefRefPtr<CefV8Context> context
+)
+{
+	CefRefPtr<CefV8Value> rootV8Object = context->GetGlobal();
+	CefRefPtr<CefV8Value> parentV8Object;
+	if (!cefMetaObject.objectName.isEmpty())
+	{
+		parentV8Object = getV8Object(cefMetaObject.parentId, rootV8Object);
+		if (parentV8Object == nullptr)
+		{
+			return nullptr;
+		}
+	}
 
+	CefRefPtr<CefV8Value> v8Object = CefV8Value::CreateObject(nullptr, nullptr);
+	// 把当前QObject接口的信息存储到一个QObject对象上，并把这个QObject对象存放到对应的V8Object的UserData
+	QSharedPointer<QObject> obj = QSharedPointer<QObject>(new QObject());
+	obj->setProperty(KCefMetaObject, QVariant::fromValue<cefv8bind_protcool::CefMetaObject>(cefMetaObject));
+	obj->setProperty(KObjectId, cefMetaObject.objectId);
+	obj->setProperty(KBrowserFrameId, context ? context->GetFrame()->GetIdentifier() : 0);
+	v8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(obj));
 
+	//存当前对象
+	QCefV8BindAppRO::getInstance()->d_func()->getObjectMgr()->insertRender(cefMetaObject.objectId, obj.data());
+
+	foreach(CefMetaMethod metaMethod, cefMetaObject.metaMethods)
+	{
+		QString methodName = metaMethod.methodName;
+
+		CefRefPtr<CefV8Value>  methodV8Object;
+		if (metaMethod.methodType == QMetaMethod::Method)
+		{
+			methodV8Object = CefV8Value::CreateFunction(methodName.toStdString(), v8Handler);
+		}
+		else if (metaMethod.methodType == QMetaMethod::Signal)
+		{
+			methodV8Object = CefV8Value::CreateObject(nullptr, nullptr);
+		}
+		//存储方法的元数据，方便后续调用时获取。
+		QSharedPointer<QObject> objMethod = QSharedPointer<QObject>(new QObject());
+		objMethod->setProperty(KCefMetaMethod, QVariant::fromValue<cefv8bind_protcool::CefMetaMethod>(metaMethod));
+		objMethod->setProperty(KObjectId, cefMetaObject.objectId);
+
+		methodV8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(objMethod));
+		v8Object->SetValue(methodName.toStdString(), methodV8Object, V8_PROPERTY_ATTRIBUTE_NONE);
+	}
+
+	foreach(CefMetaProperty metaProperty, cefMetaObject.metaProperties)
+	{
+		QString propertyName = metaProperty.propertyName;
+		CefRefPtr<CefValue> cef_value = metaProperty.cef_propertyValue;
+
+		if (cef_value && cef_value->IsValid())
+		{
+			
+			CefRefPtr<CefV8Value> propV8Object = QCefValueConverter::to(cef_value);
+			if (propV8Object->IsValid())
+			{
+				v8Object->SetValue(QCefValueConverter::to(propertyName), propV8Object, V8_PROPERTY_ATTRIBUTE_READONLY);
+			}
+		}
+	}
+	if (parentV8Object)
+	{
+		//把创建的对象挂到parentObject上，如果有parent的话。
+		const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
+		parentV8Object->SetValue(cefMetaObject.v8Name.toStdString(), v8Object, attributes);
+	}
+
+	return v8Object;
+}
+```
+###
+绑定对象。
+使用CefV8Value::CreateObject创建对象。
+
+特别的，使用CefV8Value::SetUserData方法存在QObject相关信息，如OjbectId，FrameId等。
+```C++
+	CefRefPtr<CefV8Value> v8Object = CefV8Value::CreateObject(nullptr, nullptr);
+	// 把当前QObject接口的信息存储到一个QObject对象上，并把这个QObject对象存放到对应的V8Object的UserData
+	QSharedPointer<QObject> obj = QSharedPointer<QObject>(new QObject());
+	obj->setProperty(KCefMetaObject, QVariant::fromValue<cefv8bind_protcool::CefMetaObject>(cefMetaObject));
+	obj->setProperty(KObjectId, cefMetaObject.objectId);
+	obj->setProperty(KBrowserFrameId, context ? context->GetFrame()->GetIdentifier() : 0);
+	v8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(obj));
+```
+### 绑定函数
+绑定函数、使用CreateFunction创建创建函数。并注意把对应的QObject信息存储起来。到时回调时需要用到。
+```C++
+CefV8Value::CreateFunction(methodName.toStdString(), v8Handler);
+
+//存储方法的元数据，方便后续调用时获取。
+QSharedPointer<QObject> objMethod = QSharedPointer<QObject>(new QObject());
+objMethod->setProperty(KCefMetaMethod, QVariant::fromValue<cefv8bind_protcool::CefMetaMethod>(metaMethod));
+objMethod->setProperty(KObjectId, cefMetaObject.objectId);
+
+methodV8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(objMethod));
+v8Object->SetValue(methodName.toStdString(), methodV8Object, V8_PROPERTY_ATTRIBUTE_NONE);
+```
+创建函数时传入QCefV8Handler对象，用于处理js的函数调用 。
+### QCefV8Handler
+
+#### 使用JS的Promise对象存储js调用。
+在OnWebKitInitialized时就注册好扩展。该扩展用于创建JS的Promise，用于返回js调用异步结果。
+```C++
+void QCefV8BindRenderDelegate::OnWebKitInitialized(){
+    CefRegisterExtension(CefString(L"qcef/promisecreator"), KPromiseCreatorScript, nullptr);
+}
+```
+```C++
+const char KPromiseCreatorFunction[] = "qCreatePromise";
+const char KPromiseCreatorScript[] = ""
+"function qCreatePromise() {"
+"   var result = {};"
+"   var promise = new Promise(function(resolve, reject) {"
+"       result.resolve = resolve; result.reject = reject;"
+"   });"
+"   result.p = promise;"
+"   return result;"
+"}";
+```
+#### AsyncCefMethodCallback存储js的调用信息
+
+```C++
+class AsyncCefMethodCallback
+{
+public:
+    AsyncCefMethodCallback(CefRefPtr<CefV8Context> context, const CefRefPtr<CefV8Value>& res, const CefRefPtr<CefV8Value>& rej, int64_t frameId, const CefString& sName);
+    ~AsyncCefMethodCallback();
+
+    void success(const CefRefPtr<CefV8Value>& result);
+    void fail(const CefString& exception);
+
+    int64_t frameId() const { return _frameId; };
+    const CefString& name() const { return _sName; }
+    uint64_t callTime() const { return _callTime; }
+    void setTimeOutTime(uint64_t t) { m_timeOutTime = t; }
+    uint64_t getTimeOutTime() {return m_timeOutTime;}
+
+private:
+    CefRefPtr<CefV8Context> _context;
+    CefRefPtr<CefV8Value> _resolve;
+    CefRefPtr<CefV8Value> _reject;
+    int64_t _frameId;
+    CefString _sName;
+    uint64_t _callTime;
+    uint64_t m_timeOutTime; //3s
+};
+```
+#### 调用replica的方法
+在回调函数
+```C++
+bool QCefV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value> v8Object, const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception)
+
+```
+中，通过v8Object->GetUserData()获取到之前绑定时存储的QObject及该方法的信息。（即该方法的相关元信息）
+
+```C++
+CefRefPtr<CefBaseRefCounted> userData = v8Object->GetUserData();
+			cefv8bind_protcool::PendingcallReq req;
+			req.objctId = metaObj->property(KObjectId).toInt();
+			req.methodName = name;
+			req.methodIndex = methodIndex;
+			req.callBackId = callbackId;
+			req.methodArgs = toProcessMessage(arguments);
+			req.frameId = m_frame->GetIdentifier();
+			//emit signal
+			QCefV8BindAppRO::getInstance()->d_func()->callReplicaMethod(req);
+```
+
+取得元信息后，就可以通过这些信息，明确需要调用哪个replica，及其只个方法了。
+主要通过 objectId、methodIndox确定。
+
+由于调用完replica的方法后，还需要给回怎么js，所以还需要存在 对应的callBackId、frameId。
+
+由于该调用是在Render的TID_RENDERER线程，此处使用了Qt的信号 callReplicaMethod，将对replica的方法调用 放到Qt的消息循环线程（主线程）执行。
+
+#### 调用replica的方法
+通过QMetaMethod的invoke进行方法调用 。传入对应的QObject及参数。
+```C++
+void QCefV8BindAppROPrivate::callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req) {
+
+	if (!m_pDynamicClientTreeHelper->getObjectsIdMap().contains(req.objctId)) {
+		return;
+	}
+	QSharedPointer<DynamicClient> pDynamicClient = m_pDynamicClientTreeHelper->getObjectsIdMap().value(req.objctId);
+	if (pDynamicClient.isNull()) {
+		return;;
+	}
+	QObject* apiObject = pDynamicClient->getReplica().data();
+	if (!apiObject) {
+		return;
+	}
+	QMetaMethod metaMethod = apiObject->metaObject()->method(req.methodIndex);
+	MetaInvoker metaInvoker;
+	metaInvoker.object = apiObject;
+	metaInvoker.metaMethod = metaMethod;
+	metaInvoker.callbackId = req.callBackId;
+	metaInvoker.frameId = req.frameId;
+
+	CefRefPtr<CefValue> args = CefValue::Create();
+	args->SetList(req.methodArgs);
+	metaInvoker.args = QCefValueConverter::convertFromCefListToVariantList(args);
+
+	metaInvoker.run();
+}
+```
+
+```C++
+bool MetaInvoker::run() {
+	QList<QGenericArgument> tempArgs;
+	for (int i = 0; i < args.size(); i++) {
+        QVariant& arg = args[i];
+        QGenericArgument gArg(QMetaType::typeName(arg.userType()),
+            const_cast<void*>(arg.constData())
+        );
+        tempArgs << gArg;
+	}
+    if (metaMethod.returnType() != QMetaType::Void) {
+        QRemoteObjectPendingCall call;
+        ok = metaMethod.invoke(
+            object,
+            Qt::AutoConnection,
+            Q_RETURN_ARG(QRemoteObjectPendingCall, call),
+            tempArgs.value(0),
+            tempArgs.value(1),
+            tempArgs.value(2),
+            tempArgs.value(3),
+            tempArgs.value(4),
+            tempArgs.value(5),
+            tempArgs.value(6),
+            tempArgs.value(7),
+            tempArgs.value(8),
+            tempArgs.value(9)
+        );
+        QRemoteObjectPendingCallWatcher* callwathcer = new QRemoteObjectPendingCallWatcher(call);
+        callwathcer->setProperty("callbackId", callbackId);
+        callwathcer->setProperty("frameId", frameId);
+        QObject::connect(callwathcer, SIGNAL(finished(QRemoteObjectPendingCallWatcher*)), 
+            QCefV8BindAppRO::getInstance()->d_func(), SLOT(pendingCallResult(QRemoteObjectPendingCallWatcher*)));
+        //to do . can save pointer callwathcer, and free at some time later (ex:120 secondes),
+        // if the finished signal not emited.(the source remote object perhaps has crashed.)
+    }
+    else {
+     ok = metaMethod.invoke(
+            object,
+            Qt::AutoConnection,
+            tempArgs.value(0),
+            tempArgs.value(1),
+            tempArgs.value(2),
+            tempArgs.value(3),
+            tempArgs.value(4),
+            tempArgs.value(5),
+            tempArgs.value(6),
+            tempArgs.value(7),
+            tempArgs.value(8),
+            tempArgs.value(9)
+        );
+    }
+    return ok;
+}
+```
+
+其中注意返回类型使用QRemoteObjectPendingCall，使用QRemoteObjectPendingCallWatcher监听sourceObject的调用返回。
+```C++
+ QRemoteObjectPendingCallWatcher* callwathcer = new QRemoteObjectPendingCallWatcher(call);
+        callwathcer->setProperty("callbackId", callbackId);
+        callwathcer->setProperty("frameId", frameId);
+        QObject::connect(callwathcer, SIGNAL(finished(QRemoteObjectPendingCallWatcher*)), 
+            QCefV8BindAppRO::getInstance()->d_func(), SLOT(pendingCallResult(QRemoteObjectPendingCallWatcher*)));
+```
+
+关于QRemoteObjectPendingCall可以查看[关于qobjectremote](https://github.com/iherewaitfor/cefdemos/tree/main/CefQtJsApiDemo#%E5%85%B3%E4%BA%8Eqobjectremote)，对应的示例，有展示如果使用QRemoteObjectPendingCall。
 
 # 关于调试设置
 ## browser进程调试
