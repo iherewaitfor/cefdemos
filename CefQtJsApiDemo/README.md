@@ -6,6 +6,7 @@
     - [QCefClient--cef初始和关闭](#qcefclient--cef初始和关闭)
     - [Browser进程的CefApp之QCefBrowserApp](#browser进程的cefapp之qcefbrowserapp)
     - [Render进程的CefApp之QCefRenderApp](#render进程的cefapp之qcefrenderapp)
+    - [Render进程之CefRenderProcessHandler](#render进程之cefrenderprocesshandler)
   - [Browser消息循环集成](#browser消息循环集成)
     - [CefDoMessageLoopWork()方式集成消息循环](#cefdomessageloopwork方式集成消息循环)
     - [multi\_threaded\_message\_loop = true方式集成消息循环（本项目采用）](#multi_threaded_message_loop--true方式集成消息循环本项目采用)
@@ -75,11 +76,79 @@ Cef主流程的初始化和关闭。
     - OnContextCreated()
     - OnContextReleased()
     - OnProcessMessageReceived()
-### Browser进程的CefApp之QCefBrowserApp
-
-### Render进程的CefApp之QCefRenderApp
 
 关于Cef最核心的启动和关闭流程，可以参考[https://github.com/iherewaitfor/cefdemos/tree/main/CefCmakeDemo](https://github.com/iherewaitfor/cefdemos/tree/main/CefCmakeDemo)
+### Browser进程的CefApp之QCefBrowserApp
+涉及的回调方法，
+- OnBeforeCommandLineProcessing（）
+- GetBrowserProcessHandler()
+
+具体的CefApp的回调方法，可以参考[cef_app.h](https://bitbucket.org/chromiumembedded/cef/src/master/include/cef_app.h)。
+
+在处理回调时，使用了代理的方式，代理接口为QCefBrowserApp::Delegate。代理的实现类QClientBrowserDelegate。
+
+
+本项目中，QClientBrowserDelegate主要处理了命令行的参数处理。
+添加了renderer-process-limit=1，限制renderer进程个数为1个，方便调试render进程。
+```C++
+void QClientBrowserDelegate::OnBeforeCommandLineProcessing(
+    CefRefPtr<QCefBrowserApp> app,
+    CefRefPtr<CefCommandLine> command_line) {
+    if (!command_line->HasSwitch("renderer-process-limit")) {
+        command_line->AppendSwitchWithValue("renderer-process-limit", "1");
+    }
+}
+```
+
+
+### Render进程的CefApp之QCefRenderApp
+Render进程的CefApp主要实现的回调方法是
+- GetRenderProcessHandler()
+
+### Render进程之CefRenderProcessHandler
+主要涉及的回调方法
+- OnWebKitInitialized()
+- OnContextCreated()
+- OnContextReleased()
+- OnBrowserCreated()
+- OnBrowserDestroyed()
+
+此处也使用代理的方式，cef回调时，都直接使用调用代理。各个功能需要处理这些事件时，注册对应的代理对象过来即可。
+代理对象接口为
+```C++
+	class QCEFBROWSER_DECL_EXPORT RenderDelegate
+    {
+	public:
+		virtual void OnRenderThreadCreated(CefRefPtr<CefListValue> extra_info) {};
+		virtual void OnWebKitInitialized() {}
+		virtual void OnBrowserCreated(CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefDictionaryValue> extra_info) {}
+		virtual void OnBrowserDestroyed(CefRefPtr<CefBrowser> browser) {}
+		virtual void OnContextCreated(
+			CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefFrame> frame,
+			CefRefPtr<CefV8Context> context) {}
+		virtual void OnContextReleased(
+			CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefFrame> frame,
+			CefRefPtr<CefV8Context> context) {}
+		virtual bool OnProcessMessageReceived(
+			CefRefPtr<CefBrowser> browser,
+			CefRefPtr<CefFrame> frame,
+			CefProcessId source_process,
+			CefRefPtr<CefProcessMessage> message) {
+				return false;
+		}
+	};
+```
+
+可以通过方法QCefCoreApp::regRenderDelegate(client::RenderDelegate*)进行代理类注册。
+本项目中，QCefV8Bind和QCefV8BindRO分别有注册代理类，用于在render进程中绑定js对象。
+QCefV8BindRO的代理实现类为QCefV8BindRenderDelegate。具体实现看对应模块。
+
+
+
+
 ## Browser消息循环集成
 消息循环主要有两种集成方式：
 Cef和Qt都有各自己的消息消息。如何进行集成。
