@@ -20,6 +20,11 @@
   - [将QObject树映射成JS Ojbects树，进行绑定](#将qobject树映射成js-ojbects树进行绑定)
     - [函数调用绑定QCefV8Handler](#函数调用绑定qcefv8handler)
     - [实际调用QObject的方法](#实际调用qobject的方法)
+      - [返回结果给JS](#返回结果给js)
+    - [绑定Qt信号](#绑定qt信号)
+      - [连接信号](#连接信号)
+      - [browser进程的信号发送](#browser进程的信号发送)
+      - [render进程处理信号回调函数](#render进程处理信号回调函数)
 - [QCefV8BindRO](#qcefv8bindro)
   - [关于QObjectRemote](#关于qobjectremote)
   - [构建QObjects树](#构建qobjects树-1)
@@ -31,7 +36,7 @@
       - [AsyncCefMethodCallback存储js的调用信息](#asynccefmethodcallback存储js的调用信息)
       - [在render线程 发出信号：调用replica的方法](#在render线程-发出信号调用replica的方法)
       - [在主线程：调用replica的方法](#在主线程调用replica的方法)
-    - [返回结果给js](#返回结果给js)
+    - [返回结果给js](#返回结果给js-1)
     - [绑定信号](#绑定信号)
       - [JS连接对象](#js连接对象)
       - [](#)
@@ -556,6 +561,7 @@ bool MetaInvoker::run() {
 ```
 执行获得结果后，把执行结果通过 ipc消息InvokeResp发回到render进程。
 
+#### 返回结果给JS
 render进程收到InvokeResp消息后，找到对应的handler，执行以下方法，把结果返回给js.
 ```C++
 void QCefV8Handler::onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRefPtr<CefV8Context> context)
@@ -589,6 +595,186 @@ void QCefV8Handler::onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRe
 	}
 }
 ```
+### 绑定Qt信号
+Qt的信号，基本也是一个方法。在Qt的元方法的类型为QMetaMethod::Signal。
+将信号绑定成JS 的一个Object。使用CefV8Value::CreateObject创建一个对象。并通过SetUserData方法把objectId和MetaMethod等信号存储到该对象。方便后面连接信号使用。
+```C++
+	foreach(CefMetaMethod metaMethod, cefMetaObject.metaMethods)
+	{
+		QString methodName = metaMethod.methodName;
+
+		CefRefPtr<CefV8Value>  methodV8Object;
+		if (metaMethod.methodType == QMetaMethod::Method)
+		{
+			methodV8Object = CefV8Value::CreateFunction(methodName.toStdString(), v8Handler);
+		}
+		else if (metaMethod.methodType == QMetaMethod::Signal)
+		{
+			methodV8Object = CefV8Value::CreateObject(nullptr, nullptr);
+		}
+		//存储方法的元数据，方便后续调用时获取。
+		QSharedPointer<QObject> objMethod = QSharedPointer<QObject>(new QObject());
+		objMethod->setProperty(KCefMetaMethod, QVariant::fromValue<cefv8bind_protcool::CefMetaMethod>(metaMethod));
+		objMethod->setProperty(KObjectId, cefMetaObject.objectId);
+
+		methodV8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(objMethod));
+		v8Object->SetValue(methodName.toStdString(), methodV8Object, V8_PROPERTY_ATTRIBUTE_NONE);
+	}
+```
+
+
+#### 连接信号
+JS通过之前注册到window上的connectSignal方法 连接信号，js传入监听回调函数。 此时，需要把信号的key（如对象id和信号方法id组成）和对应的回调函数存储起来，后面有信号发生成时，可以通过信号key，找到所有监听的函数，进行回调。
+
+```C++
+bool QCefV8SignalManager::connectSignal(const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception, CefRefPtr<CefV8Handler> v8Handler)
+{
+	if (arguments.size() < 2)
+	{
+		return false;
+	}
+	CefRefPtr<CefV8Value> signal = arguments[0];
+	CefRefPtr<CefV8Value> slot = arguments[1];
+	if (!slot->IsFunction())
+	{
+		return false;
+	}
+	if (!signal->IsObject())
+	{
+		return false;
+	}
+	QSharedPointer<QObject>	metaObj;
+	CefRefPtr<CefBaseRefCounted> userData = signal->GetUserData();
+	if (userData)
+	{
+		metaObj = static_cast<QCefV8ObjectHolder<QSharedPointer<QObject>>*>(userData.get())->wrapObject();
+	}
+	if (metaObj == NULL)
+	{
+		return false;
+	}
+	QString key;
+	if (metaObj->property(KRenderV8Object).toBool() && !metaObj->objectName().isEmpty())
+	{
+		key = _getRenderSignalKey(metaObj->objectName());
+	}
+	else
+	{
+		const cefv8bind_protcool::CefMetaMethod  cefMetaMethord = metaObj->property(KCefMetaMethod).value<cefv8bind_protcool::CefMetaMethod>();
+
+		quint32 methodIndex = cefMetaMethord.methodIndex;
+		quint32 methodType = cefMetaMethord.methodType;
+		quint32 objectId = metaObj->property(KObjectId).toUInt();
+		if (methodType != QMetaMethod::Signal)
+		{
+			return false;
+		}
+		key = _getKey(objectId, methodIndex);
+	}
+	if (!m_slots.contains(key))
+	{
+		QList<CefRefPtr<CefV8Value>> list;
+		list << slot;
+		m_slots.insert(key, list);
+		retval = _createDisConnectV8Object(key, slot, v8Handler);
+	}
+	else
+	{
+		QList<CefRefPtr<CefV8Value>> cef_slots = m_slots[key];
+		bool isExist = false;
+		foreach(CefRefPtr<CefV8Value> cef_slot, cef_slots)
+		{
+			if (cef_slot->IsSame(slot))
+			{
+				isExist = true;
+				break;
+			}
+		}
+
+		if (!isExist)
+		{
+			cef_slots << slot;
+			m_slots[key] = cef_slots;
+			retval = _createDisConnectV8Object(key, slot, v8Handler);
+		}
+	}
+
+	return true;
+}
+```
+#### browser进程的信号发送
+
+browser进程，在从QObject取元信息时，
+```C++
+bool QCefV8ObjectHelper::convertQObjectToCefObject(
+	const QObject *itemObject, 
+	const QObject *parentObject,
+	cefv8bind_protcool::CefMetaObject &cef_metaObject
+	)
+```
+已通过AutoSignalsEmitter
+```C++
+    //to do: connect the signal of the object
+    AutoSignalsEmitter* autoEmitter = new AutoSignalsEmitter(method, const_cast<QObject*>(itemObject));
+    QObject::connect(itemObject, QString("2").append(method.methodSignature()).toStdString().c_str(),
+        autoEmitter, SLOT(proxySlot()), Qt::DirectConnection);
+```
+连接了该对象的所有信号。AutoSignalsEmitter::proxySignalEmit方法，将信号通过IPC发送EmitSignalMsg消息到PID_RENDERER进程。
+
+```C++
+void AutoSignalsEmitter::proxySignalEmit(void** _a)
+{
+    QVariantList args;
+    int i = 0;
+    foreach(QByteArray typeName, m_signalMetaMethod.parameterTypes())
+    {
+        int type = QMetaType::type(typeName.constData());
+        // preincrement: start with 1
+        QVariant arg(type, _a[++i]);
+        // (_a[0] is return value)
+        args << arg;
+    }
+    if (QCefV8BindApp::getInstance()->d_func()->getBrowserDelegate()) {
+        QObject* obj = sender();
+        cefv8bind_protcool::EmitSignalMsg msg;
+        msg.objectId= obj->property(KObjectId).toUInt();
+        msg.methodName = QCefValueConverter::to(QString(m_signalMetaMethod.name()));
+        msg.methodIndex = m_signalMetaMethod.methodIndex();
+        msg.methodArgs = QCefValueConverter::to(args)->GetList();
+       QCefV8BindApp::getInstance()->d_func()->getBrowserDelegate()->sendProcessMessage(PID_RENDERER, msg.makeIPCMessage());
+    }
+}
+```
+#### render进程处理信号回调函数
+render进程收到EmitSignalMsg消息后，回调所有的js监听函数。
+
+```C++
+void QCefV8SignalManager::emitSignal(const EmitSignalMsg& msg, CefRefPtr<CefV8Context> context)
+{
+	QString key = _getKey(msg.objectId, msg.methodIndex);
+	if (m_slots.contains(key))
+	{
+		QList<CefRefPtr<CefV8Value>> cef_slots = m_slots[key];
+
+		Q_FOREACH(CefRefPtr<CefV8Value> callBack, cef_slots)
+		{
+			V8ContextCaller caller(context);
+			CefV8ValueList arguments_out = _convertToV8Args(msg.methodArgs);
+
+			// Execute the callback.
+			CefRefPtr<CefV8Value> retval = callBack->ExecuteFunctionWithContext(context, nullptr, arguments_out);
+			if (retval.get())
+			{
+				if (retval->IsBool())
+					retval->GetBoolValue();
+			}
+		}
+	}
+}
+```
+
+
+
 # QCefV8BindRO
 该模块的功能是使用QRemoteObjects技术，将QObject对象绑定成Javascript接口。让JS方便地调用各个QObject对象。QObject接口不限于browser进程。
 
