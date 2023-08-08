@@ -1449,11 +1449,118 @@ void QCefV8SignalManager::dispatchReplicaSignaToJs(const cefv8bind_protcool::Dis
 ```
 
 # DemoApp
-主要是展示如何
+主要是展示如何将QObject对象注册为js可以访问的接口。然后打开浏览器页面。
+为了展示，特意加了两个QObject的子类NumberLogic和SubNumberLogic。其中SubNumberLogic为NumberLogic的孩子结点。
+
+可以直接阅读源码即可理解。
+
+```C++
+int main(int argc, char** argv )
+{
+    QCoreApplication app(argc, argv);
+
+    QCefClient cefClient;
+    cefClient.initCef();
+
+    ////use cefipc
+    //QCefV8BindApp::getInstance();
+    ////testAPI
+    //NumberLogic* numberLogic = new NumberLogic();
+    //SubNumberLogic* subNumberLogic = new SubNumberLogic(numberLogic);
+    //subNumberLogic;
+    //QCefV8BindApp::getInstance()->setV8RootObject(numberLogic);
+
+    //use QRemotObject.
+    QCefV8BindAppRO::getInstance();
+    //testAPI
+    NumberLogic* numberLogic = new NumberLogic();
+    SubNumberLogic* subNumberLogic = new SubNumberLogic(numberLogic);
+    subNumberLogic;
+    QCefV8BindAppRO::getInstance()->addV8RootObject(numberLogic);
+
+    BrowserWindowOptions options;
+    options.url = "https://www.baidu.com";
+    options.width = 1200;
+    options.height = 900;
+    options.minWidth = 300;
+    options.minHeight = 300;
+    options.showInTaskbar = true;
+    options.visible = true;
+    options.frameless = false;
+    std::vector<RECT> capVector;
+    RECT rect = { 0, 0, 1200, 100 };
+    capVector.push_back(rect);
+    options.captionAreas = capVector;
+    QCefCoreApp::getInstance()->createBrowser(options);
+    QObject::connect(QCefCoreApp::getInstance(), SIGNAL(allClosed()), &cefClient, SLOT(shutDownCef()));
+    QObject::connect(&cefClient, SIGNAL(shutdown()), &app, SLOT(quit()));
+	
+    app.exec();
+    return 0;
+}
+```
+
 # 关于调试设置
 ## browser进程调试
+browser进程的启动入口为DemoApp.exe，以其为启动项，即可调试。
 ## render进程C++调试
+为了方便调，在QCefRender的main.cpp中，使用宏RENDER_DEUGB判断是否启动VS进行调试。
+```C++
+        //#define RENDER_DEUGB
+        #ifdef   RENDER_DEUGB
+                  char szBuf[MAX_PATH] = { 0 };
+                  sprintf(szBuf, "C:\\Windows\\System32\\VSJitDebugger.exe -p %d", GetCurrentProcessId());
+                  WinExec(szBuf, SW_SHOW);
+        #endif
+```
+
+若要调试render，只需要在QCefRender定额外定义一个RENDER_DEUGB即可。
+Visual Studio的操作路如下：
+
+右键QCefRender-->属性-->C/C++-->预处理器-->预处理器定义。
+
+在预处理器定义那里添加RENDER_DEUGB即可。
+
+项目中，已设置了render进程个数只为1个。renderer-process-limit=1
+
+若你只启动一个Visual Studio实例，则可以不调试browser进程，可以在命令行启动DemoApp.exe，然后等弹窗提醒render进程需要启动哪个vs进程调试时，选择你的visual studio即可。
+
 ## javascript调试
+在初始化cef时，已设置了cef的调试端口为8765。打开了页面后，只需要在chrome浏览器上输入http://localhost:8765，点击对应的链接即可以进入到调试控制台。
+```C++
+    cefSettings.remote_debugging_port = 8765;
+```
+调试调用方法示例
+```javascript
+window.NumberLogic.addCount(3).then((result)=>{console.log("addCount(3)=" + result)});
+```
+运行情况
+```javascript
+window.NumberLogic.addCount(3).then((result)=>{console.log("addCount(3)=" + result)});
+Promise {<pending>}
+addCount(3)=3
+```
+
+连接信号 和断开连接。连接信号后，可以保证返回的对象，用于断开信号连接。
+```javascript
+disconnectobject = connectSignal(window.NumberLogic.counterChanged, (counter)=>{console.log("the new counter is " + counter)});
+
+disconnectobject.disconnect()
+```
+运行情况
+```javascript
+disconnectobject = connectSignal(window.NumberLogic.counterChanged, (counter)=>{console.log("the new counter is " + counter)});
+{disconnect: ƒ}
+window.NumberLogic.addCount(3).then((result)=>{console.log("addCount(3)=" + result)});
+Promise {<pending>}
+the new counter is 6
+1 addCount(3)=6
+disconnectobject.disconnect()
+true
+window.NumberLogic.addCount(3).then((result)=>{console.log("addCount(3)=" + result)});
+Promise {<pending>}
+addCount(3)=9
+```
 # 参考
 
 [https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md)
