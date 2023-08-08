@@ -18,6 +18,8 @@
     - [Render进程收发消息](#render进程收发消息)
   - [构建QObjects树](#构建qobjects树)
   - [将QObject树映射成JS Ojbects树，进行绑定](#将qobject树映射成js-ojbects树进行绑定)
+    - [函数调用绑定QCefV8Handler](#函数调用绑定qcefv8handler)
+    - [实际调用QObject的方法](#实际调用qobject的方法)
 - [QCefV8BindRO](#qcefv8bindro)
   - [关于QObjectRemote](#关于qobjectremote)
   - [构建QObjects树](#构建qobjects树-1)
@@ -424,9 +426,135 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8Object(const cefv8bind_protcoo
 ```
 
 依次创建对象，方法、信号、属性等。
+### 函数调用绑定QCefV8Handler
+创建js函数绑定时，关键是要传入CefV8Handler对象，用于处理函数调用逻辑。这里使用的是QCefV8Handler
+```C++
+	foreach(CefMetaMethod metaMethod, cefMetaObject.metaMethods)
+	{
+		QString methodName = metaMethod.methodName;
 
+		CefRefPtr<CefV8Value>  methodV8Object;
+		if (metaMethod.methodType == QMetaMethod::Method)
+		{
+			methodV8Object = CefV8Value::CreateFunction(methodName.toStdString(), v8Handler);
+		}
+		else if (metaMethod.methodType == QMetaMethod::Signal)
+		{
+			methodV8Object = CefV8Value::CreateObject(nullptr, nullptr);
+		}
+		//存储方法的元数据，方便后续调用时获取。
+		QSharedPointer<QObject> objMethod = QSharedPointer<QObject>(new QObject());
+		objMethod->setProperty(KCefMetaMethod, QVariant::fromValue<cefv8bind_protcool::CefMetaMethod>(metaMethod));
+		objMethod->setProperty(KObjectId, cefMetaObject.objectId);
 
+		methodV8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(objMethod));
+		v8Object->SetValue(methodName.toStdString(), methodV8Object, V8_PROPERTY_ATTRIBUTE_NONE);
+	}
+```
+另外存储好对应的ObjectId和MethodIndex，方便后续执行调用函数时使用。
 
+JS调用后，handler把相关的调用信息，生成callbackid记录下来。将将要调用的函数信息，发ipc到browser进程，进行实际的QObject对象对应的方法调用 。
+
+```C++
+			CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
+
+			quint64  callbackId = 0;
+			if (!cefMetaMethord.returnTypeName.isEmpty() && cefMetaMethord.returnTypeName != "void")
+			{
+				CefRefPtr<CefV8Value> window = context->GetGlobal();
+				CefRefPtr<CefV8Value> createPromise = window->GetValue(KPromiseCreatorFunction);
+				CefRefPtr<CefV8Value> promiseWrapper = createPromise->ExecuteFunctionWithContext(context, nullptr, CefV8ValueList());
+
+				retval = promiseWrapper->GetValue("p");
+
+				CefRefPtr<CefV8Value> resolve = promiseWrapper->GetValue("resolve");
+				CefRefPtr<CefV8Value> reject = promiseWrapper->GetValue("reject");
+
+				QSharedPointer<AsyncCefMethodCallback> asyncCallback = QSharedPointer<AsyncCefMethodCallback>(
+					new AsyncCefMethodCallback(context, resolve, reject, context->GetFrame()->GetIdentifier(), name)
+					);
+				callbackId = m_asynCallbackMgr->saveAsyncMethodCallback(asyncCallback);
+			}
+			else
+			{
+				retval = CefV8Value::CreateInt(0);
+			}
+			cefv8bind_protcool::InvokeReq req;
+			req.objctId = metaObj->property(KObjectId).toInt();
+			req.methodName = name;
+			req.methodIndex = methodIndex;
+			req.callBackId = callbackId;
+			req.methodArgs = toProcessMessage(arguments);
+
+			sendIPCMessage(context, req);
+```
+### 实际调用QObject的方法
+browser进程收到 InvokeReq消息后，执行对应的方法调用 。
+```C++
+    cefv8bind_protcool::InvokeReq req;
+    if (req.unPack(message->GetArgumentList()))
+    {
+        QVariant retVar;
+
+        QObject* apiObject = QCefV8BindApp::getInstance()->d_func()->getObjectMgr()->findBrowserObject(req.objctId);
+        if (apiObject) {
+            QMetaMethod metaMethod = apiObject->metaObject()->method(req.methodIndex);
+            MetaInvoker metaInvoker;
+            metaInvoker.object = apiObject;
+            metaInvoker.metaMethod = metaMethod;
+            
+            CefRefPtr<CefValue> args = CefValue::Create();
+            args->SetList(req.methodArgs);
+            metaInvoker.args = QCefValueConverter::convertFromCefListToVariantList(args);
+            metaInvoker.run();
+            if (metaMethod.returnType() != QMetaType::Void) {
+                cefv8bind_protcool::InvokeResp rsp;
+                rsp.callBackId = req.callBackId;
+                rsp.invokeResult = metaInvoker.ok;
+                rsp.objctId = req.objctId;
+                rsp.methodIndex = req.methodIndex;
+                rsp.methodName = req.methodName;
+                rsp.returnValue = QCefValueConverter::to(metaInvoker.result);
+                frame->SendProcessMessage(PID_RENDERER, rsp.makeIPCMessage());
+            }
+        }
+    }
+
+```
+调用QObject的方法使用辅助调用类MetaInvoker。最终调用 的是QmetaMethod::invoke。
+```C++
+bool MetaInvoker::run() {
+	QList<QGenericArgument> tempArgs;
+	for (int i = 0; i < args.size(); i++) {
+        QVariant& arg = args[i];
+        QGenericArgument gArg(QMetaType::typeName(arg.userType()),
+            const_cast<void*>(arg.constData())
+        );
+        tempArgs << gArg;
+	}
+    const int retTypeId = metaMethod.returnType();
+    void* retVal = QMetaType::create(retTypeId);
+    QGenericReturnArgument returnArg( QMetaType::typeName(retTypeId), retVal);
+    ok = metaMethod.invoke(
+        object,
+        Qt::DirectConnection,
+        returnArg,
+        tempArgs.value(0),
+        tempArgs.value(1),
+        tempArgs.value(2),
+        tempArgs.value(3),
+        tempArgs.value(4),
+        tempArgs.value(5),
+        tempArgs.value(6),
+        tempArgs.value(7),
+        tempArgs.value(8),
+        tempArgs.value(9)
+    );
+    result = QVariant(retTypeId, retVal);
+    return ok;
+}
+```
+执行获得结果后，把执行结果通过 ipc消息InvokeResp发回到render进程。
 # QCefV8BindRO
 该模块的功能是使用QRemoteObjects技术，将QObject对象绑定成Javascript接口。让JS方便地调用各个QObject对象。QObject接口不限于browser进程。
 
