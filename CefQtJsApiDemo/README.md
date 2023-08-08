@@ -24,6 +24,7 @@
       - [AsyncCefMethodCallback存储js的调用信息](#asynccefmethodcallback存储js的调用信息)
       - [调用replica的方法](#调用replica的方法)
       - [调用replica的方法](#调用replica的方法-1)
+    - [返回结果给js](#返回结果给js)
 - [关于调试设置](#关于调试设置)
   - [browser进程调试](#browser进程调试)
   - [render进程C++调试](#render进程c调试)
@@ -679,6 +680,65 @@ bool MetaInvoker::run() {
 
 关于QRemoteObjectPendingCall可以查看[关于qobjectremote](https://github.com/iherewaitfor/cefdemos/tree/main/CefQtJsApiDemo#%E5%85%B3%E4%BA%8Eqobjectremote)，对应的示例，有展示如果使用QRemoteObjectPendingCall。
 
+### 返回结果给js
+```C++
+void QCefV8BindAppROPrivate::pendingCallResult(QRemoteObjectPendingCallWatcher* call) {
+	qint64 callbackId = call->property("callbackId").toLongLong();
+	qint64 frameId = call->property("frameId").toLongLong();
+	cefv8bind_protcool::PendingcallResp resp;
+	resp.callBackId = callbackId;
+	resp.frameId = frameId;
+	resp.invokeResult = (call->error() == QRemoteObjectPendingCall::NoError);
+	resp.returnValue = QCefValueConverter::to(call->returnValue());
+	m_renderDelegate->onPendingcallResp(resp, frameId);
+	call->deleteLater(); //释放对象。
+}
+```
+通过 CefPostTask(TID_RENDERER, base::BindOnce(&QCefV8BindRenderDelegate::onPendingcallResp, this, rsp, frameId))将返回逻辑切到TID_RENDERER线程。
+```C++
+void QCefV8BindRenderDelegate::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, int64 frameId) {
+    if (!CefCurrentlyOn(TID_RENDERER)) {
+        CefPostTask(TID_RENDERER, base::BindOnce(&QCefV8BindRenderDelegate::onPendingcallResp, this, rsp, frameId));
+        return;
+    }
+    if (!m_frameHandlers.contains(frameId)) {
+        return;
+    }
+    CefRefPtr<QCefV8Handler> v8Handler = m_frameHandlers.value(frameId);
+    CefRefPtr<CefV8Context> context = v8Handler->getFrame()->GetV8Context();
+    v8Handler->onPendingcallResp(rsp, context);
+}
+```
+
+
+具体执行js的结果返回。通过callBackId找到调用的上下文。
+```C++
+void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, CefRefPtr<CefV8Context> context)
+{
+	if (m_frame == NULL)
+	{
+		return;
+	}
+	QSharedPointer<AsyncCefMethodCallback> callback = m_asynCallbackMgr->takeAsyncMethodCallback(rsp.callBackId);
+	if (!callback)
+	{
+		return;
+	}
+	if (!rsp.invokeResult)
+	{
+		callback->fail("fail exception");
+		return;
+	}
+	if (context->GetFrame()->GetIdentifier() == callback->frameId()
+		&& context->Enter()
+		)
+	{
+		CefRefPtr<CefV8Value> retV8Value = QCefValueConverter::to(rsp.returnValue);
+		context->Exit();
+		callback->success(retV8Value);
+	}
+}
+```
 # 关于调试设置
 ## browser进程调试
 ## render进程C++调试
