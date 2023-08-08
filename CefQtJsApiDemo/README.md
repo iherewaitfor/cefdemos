@@ -555,6 +555,40 @@ bool MetaInvoker::run() {
 }
 ```
 执行获得结果后，把执行结果通过 ipc消息InvokeResp发回到render进程。
+
+render进程收到InvokeResp消息后，找到对应的handler，执行以下方法，把结果返回给js.
+```C++
+void QCefV8Handler::onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRefPtr<CefV8Context> context)
+{
+	if (m_frame == NULL)
+	{
+		return;
+	}
+	InvokeResp rsp;
+	if (!rsp.unPack(message->GetArgumentList()))
+	{
+		return;
+	}
+	QSharedPointer<AsyncCefMethodCallback> callback = m_asynCallbackMgr->takeAsyncMethodCallback(rsp.callBackId);
+	if (!callback)
+	{
+		return;
+	}
+	if (!rsp.invokeResult)
+	{
+		callback->fail("fail exception");
+		return;
+	}
+	if (context->GetFrame()->GetIdentifier() == callback->frameId()
+		&& context->Enter()
+		)
+	{
+		CefRefPtr<CefV8Value> retV8Value = QCefValueConverter::to(rsp.returnValue);
+		context->Exit();
+		callback->success(retV8Value);
+	}
+}
+```
 # QCefV8BindRO
 该模块的功能是使用QRemoteObjects技术，将QObject对象绑定成Javascript接口。让JS方便地调用各个QObject对象。QObject接口不限于browser进程。
 
