@@ -25,6 +25,9 @@
       - [在render线程 发出信号：调用replica的方法](#在render线程-发出信号调用replica的方法)
       - [在主线程：调用replica的方法](#在主线程调用replica的方法)
     - [返回结果给js](#返回结果给js)
+    - [绑定信号](#绑定信号)
+      - [JS连接对象](#js连接对象)
+      - [](#)
 - [关于调试设置](#关于调试设置)
   - [browser进程调试](#browser进程调试)
   - [render进程C++调试](#render进程c调试)
@@ -738,7 +741,165 @@ void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, C
 	}
 }
 ```
+### 绑定信号
+信号的绑定，以一个js Object的方式绑定到js对象上。并在js对象上存在 对应的KobejctId及方法相关信息。使用CefV8Value::SetUserData存储到对应的js 对象上。
+```C++
+	foreach(CefMetaMethod metaMethod, cefMetaObject.metaMethods)
+	{
+		QString methodName = metaMethod.methodName;
 
+		CefRefPtr<CefV8Value>  methodV8Object;
+		if (metaMethod.methodType == QMetaMethod::Method)
+		{
+			methodV8Object = CefV8Value::CreateFunction(methodName.toStdString(), v8Handler);
+		}
+		else if (metaMethod.methodType == QMetaMethod::Signal)
+		{
+			methodV8Object = CefV8Value::CreateObject(nullptr, nullptr);
+		}
+
+		QSharedPointer<QObject> obj = QSharedPointer<QObject>(new QObject());
+		obj->setProperty(KCefMetaMethod, QVariant::fromValue<cefv8bind_protcool::CefMetaMethod>(metaMethod));
+		obj->setProperty(KObjectId, cefMetaObject.objectId);
+
+		methodV8Object->SetUserData(new QCefV8ObjectHolder<QSharedPointer<QObject>>(obj));
+		v8Object->SetValue(methodName.toStdString(), methodV8Object, V8_PROPERTY_ATTRIBUTE_NONE);
+	}
+```
+
+#### JS连接对象
+在OnContextCreated的时机，绑定好公共的Connect和disconnectSignal方法。
+
+```C++
+void QCefV8ObjectHelper::bindGlobalFunctions(CefRefPtr<CefV8Value> window, CefRefPtr<CefV8Handler> v8Handler)
+{
+	QStringList globalFuncs;
+	globalFuncs.append(ConnectSignal);
+	globalFuncs.append(DisConnectSignal);
+
+	foreach(QString functionName, globalFuncs)
+	{
+		CefRefPtr<CefV8Value> v8Value = CefV8Value::CreateFunction(QCefValueConverter::to(functionName), v8Handler);
+		const CefV8Value::PropertyAttribute attributes = static_cast<CefV8Value::PropertyAttribute>(V8_PROPERTY_ATTRIBUTE_READONLY | V8_PROPERTY_ATTRIBUTE_DONTENUM | V8_PROPERTY_ATTRIBUTE_DONTDELETE);
+		window->SetValue(QCefValueConverter::to(functionName), v8Value, attributes);
+	}
+}
+```
+
+在v8handler中，发是连接信号函数时，使用QCefV8SignalManager::connectSignal处理连接逻辑。
+
+主要是记录连接信号的ObjectId及methodIndex.
+以下时机需要这些信息
+
+- 去连接replica的信号
+- 分发信号到js
+
+处理原生连接的逻辑:
+
+发出连接信号，切回主线程处理。
+```C++
+cefv8bind_protcool::ConnectReplicaSignal connectMsg;
+		connectMsg.methodIndex = methodIndex;
+		connectMsg.objctId = objectId;
+		QCefV8BindAppRO::getInstance()->d_func()->connectReplicaSignal(connectMsg);
+```
+
+具体执行连接逻辑。使用AutoSignalsEmitter连接replica的信号 。AutoSignalsEmitter在收到replica信号时，会将其转发到js。
+```C++
+void QCefV8BindAppROPrivate::connectReplicaSignal_slot(cefv8bind_protcool::ConnectReplicaSignal req) {
+
+	if (!m_pDynamicClientTreeHelper->getObjectsIdMap().contains(req.objctId)) {
+		return;
+	}
+	QSharedPointer<DynamicClient> pDynamicClient = m_pDynamicClientTreeHelper->getObjectsIdMap().value(req.objctId);
+	if (pDynamicClient.isNull()) {
+		return;;
+	}
+	QObject* apiObject = pDynamicClient->getReplica().data();
+	if (!apiObject) {
+		return;
+	}
+	QMetaMethod metaMethod = apiObject->metaObject()->method(req.methodIndex);
+	if (metaMethod.methodType() != QMetaMethod::Signal) {
+		return;
+	}
+	//to do: same the autoEmitter, and check if the autoEmitter exist. if exist do not new.
+	//to do: connect the signal of the object
+	QString key = QString("%1_%2").arg(req.objctId).arg(req.methodIndex);
+	if (m_signalMap.contains(key)) {
+		return;
+	}
+	AutoSignalsEmitter* autoEmitter = new AutoSignalsEmitter(metaMethod,req.objctId, apiObject);
+	QObject::connect(apiObject, QString("2").append(metaMethod.methodSignature()).toStdString().c_str(),
+		autoEmitter, SLOT(proxySlot()), Qt::DirectConnection);
+	m_signalMap.insert(key, autoEmitter);
+
+}
+```
+
+转发逻辑：使用CefPostTask切换线程，运行所有v8Handler->dispatchReplicaSignaToJs(rsp, context);给每个页面分发。
+```C++
+void AutoSignalsEmitter::proxySignalEmit(void** _a)
+{
+    QVariantList args;
+    int i = 0;
+    foreach(QByteArray typeName, m_signalMetaMethod.parameterTypes())
+    {
+        int type = QMetaType::type(typeName.constData());
+
+        // preincrement: start with 1
+        QVariant arg(type, _a[++i]);
+        // (_a[0] is return value)
+        args << arg;
+    }
+    if (QCefV8BindAppRO::getInstance()->d_func()->getRenderDelegate()) {
+        QObject* obj = sender();
+        QString objName = obj->objectName();
+        if (!QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().contains(objName)) {
+            return;
+        }
+        QSharedPointer<DynamicClient> dClient = QCefV8BindAppRO::getInstance()->d_func()->getReplicaTreeHelper()->getObjectsMap().value(objName);
+        
+        cefv8bind_protcool::DispatchReplicaSignaToJs msg;
+        msg.objectId = dClient->property(KObjectId).toInt();
+        
+        //QString signature = m_signalMetaMethod.methodSignature();
+        //QString name = m_signalMetaMethod.name();
+        //signature;
+        //name;
+        msg.methodName = QCefValueConverter::to(QString(m_signalMetaMethod.name()));
+        msg.methodIndex = m_signalMetaMethod.methodIndex();
+        msg.methodArgs = QCefValueConverter::to(args)->GetList();
+        QCefV8BindAppRO::getInstance()->d_func()->getRenderDelegate()->dispatchReplicaSignaToJs(msg);
+    }
+}
+```
+
+最终执行js监听信号的回调函数，返回信号给js。
+```C++
+void QCefV8SignalManager::dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& msg, CefRefPtr<CefV8Context> context) {
+	QString key = _getKey(msg.objectId, msg.methodIndex);
+	if (m_slots.contains(key))
+	{
+		QList<CefRefPtr<CefV8Value>> cef_slots = m_slots[key];
+
+		Q_FOREACH(CefRefPtr<CefV8Value> callBack, cef_slots)
+		{
+			V8ContextCaller caller(context);
+			CefV8ValueList arguments_out = _convertToV8Args(msg.methodArgs);
+
+			// Execute the callback.
+			CefRefPtr<CefV8Value> retval = callBack->ExecuteFunctionWithContext(context, nullptr, arguments_out);
+			if (retval.get())
+			{
+				if (retval->IsBool())
+					retval->GetBoolValue();
+			}
+		}
+	}
+}
+```
+####
 # 关于调试设置
 ## browser进程调试
 ## render进程C++调试
