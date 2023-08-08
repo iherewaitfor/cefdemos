@@ -17,13 +17,13 @@
   - [关于QObjectRemote](#关于qobjectremote)
   - [构建QObjects树](#构建qobjects树)
   - [将QObject转成JS Object 进行绑定](#将qobject转成js-object-进行绑定)
-    - [](#)
+    - [绑定对象。](#绑定对象)
     - [绑定函数](#绑定函数)
     - [QCefV8Handler](#qcefv8handler)
       - [使用JS的Promise对象存储js调用。](#使用js的promise对象存储js调用)
       - [AsyncCefMethodCallback存储js的调用信息](#asynccefmethodcallback存储js的调用信息)
-      - [调用replica的方法](#调用replica的方法)
-      - [调用replica的方法](#调用replica的方法-1)
+      - [在render线程 发出信号：调用replica的方法](#在render线程-发出信号调用replica的方法)
+      - [在主线程：调用replica的方法](#在主线程调用replica的方法)
     - [返回结果给js](#返回结果给js)
 - [关于调试设置](#关于调试设置)
   - [browser进程调试](#browser进程调试)
@@ -478,8 +478,7 @@ CefRefPtr<CefV8Value> QCefV8ObjectHelper::createV8Object(const cefv8bind_protcoo
 	return v8Object;
 }
 ```
-###
-绑定对象。
+### 绑定对象。
 使用CefV8Value::CreateObject创建对象。
 
 特别的，使用CefV8Value::SetUserData方法存在QObject相关信息，如OjbectId，FrameId等。
@@ -555,7 +554,7 @@ private:
     uint64_t m_timeOutTime; //3s
 };
 ```
-#### 调用replica的方法
+#### 在render线程 发出信号：调用replica的方法
 在回调函数
 ```C++
 bool QCefV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value> v8Object, const CefV8ValueList& arguments, CefRefPtr<CefV8Value>& retval, CefString& exception)
@@ -583,7 +582,7 @@ CefRefPtr<CefBaseRefCounted> userData = v8Object->GetUserData();
 
 由于该调用是在Render的TID_RENDERER线程，此处使用了Qt的信号 callReplicaMethod，将对replica的方法调用 放到Qt的消息循环线程（主线程）执行。
 
-#### 调用replica的方法
+#### 在主线程：调用replica的方法
 通过QMetaMethod的invoke进行方法调用 。传入对应的QObject及参数。
 ```C++
 void QCefV8BindAppROPrivate::callReplicaMethod_slot(cefv8bind_protcool::PendingcallReq req) {
@@ -739,6 +738,7 @@ void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, C
 	}
 }
 ```
+
 # 关于调试设置
 ## browser进程调试
 ## render进程C++调试
