@@ -25,6 +25,7 @@
       - [连接信号](#连接信号)
       - [browser进程的信号发送](#browser进程的信号发送)
       - [render进程处理信号回调函数](#render进程处理信号回调函数)
+  - [如何启用QCefV8Bind](#如何启用qcefv8bind)
 - [QCefV8BindRO](#qcefv8bindro)
   - [关于QObjectRemote](#关于qobjectremote)
   - [构建QObjects树](#构建qobjects树-1)
@@ -39,7 +40,7 @@
     - [返回结果给js](#返回结果给js-1)
     - [绑定信号](#绑定信号)
       - [JS连接对象](#js连接对象)
-      - [](#)
+- [DemoApp](#demoapp)
 - [关于调试设置](#关于调试设置)
   - [browser进程调试](#browser进程调试)
   - [render进程C++调试](#render进程c调试)
@@ -773,7 +774,43 @@ void QCefV8SignalManager::emitSignal(const EmitSignalMsg& msg, CefRefPtr<CefV8Co
 }
 ```
 
+## 如何启用QCefV8Bind
+本项目代码默认启用的QCefV8BindRO的，其使用的是QRemoteObjects技术绑定方式。若要使用启用QCefV8Bind,需要修改两个地方
+- DemoAPP的main.cpp，将原文部分，修改成如下。
+```C++
+    //use cefipc
+    QCefV8BindApp::getInstance();
+    //testAPI
+    NumberLogic* numberLogic = new NumberLogic();
+    SubNumberLogic* subNumberLogic = new SubNumberLogic(numberLogic);
+    subNumberLogic;
+    QCefV8BindApp::getInstance()->setV8RootObject(numberLogic);
 
+    // //use QRemotObject.
+    // QCefV8BindAppRO::getInstance();
+    // //testAPI
+    // NumberLogic* numberLogic = new NumberLogic();
+    // SubNumberLogic* subNumberLogic = new SubNumberLogic(numberLogic);
+    // subNumberLogic;
+    // QCefV8BindAppRO::getInstance()->addV8RootObject(numberLogic);
+```
+- QtCefRender的main.cpp文件，将原文部分，修改成如下。
+```C++
+      //use cefipc
+      QCefV8BindApp::getInstance();
+      QCefClient cefClient;
+      exitcode = cefClient.initCefRender();
+
+    //   //use QRemoteObject
+    //   int argc = 0;
+    //   char* argv[] = { "abc", "def" };
+    //   QCoreApplication qApplication(argc, argv);
+    //   QCefV8BindAppRO::getInstance();
+    //   unsigned threadID = 0;
+    //   HANDLE tHandle = NULL;
+    //   tHandle = (HANDLE)_beginthreadex(NULL, 0, &ThreaCefRender, NULL, 0, &threadID);
+    //   exitcode = qApplication.exec();
+```
 
 # QCefV8BindRO
 该模块的功能是使用QRemoteObjects技术，将QObject对象绑定成Javascript接口。让JS方便地调用各个QObject对象。QObject接口不限于browser进程。
@@ -1410,7 +1447,9 @@ void QCefV8SignalManager::dispatchReplicaSignaToJs(const cefv8bind_protcool::Dis
 	}
 }
 ```
-####
+
+# DemoApp
+主要是展示如何
 # 关于调试设置
 ## browser进程调试
 ## render进程C++调试
