@@ -34,6 +34,7 @@ else()
 endif()
 ```
 ## 编译运行
+在源码目标上新建build文件夹，然后在build目录下运行以下命令。
 ```
 cmake .. -G "Visual Studio 16 2019" -A Win32
 ```
