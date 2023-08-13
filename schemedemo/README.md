@@ -7,6 +7,8 @@
       - [命中的处理逻辑CefStreamResourceHandler](#命中的处理逻辑cefstreamresourcehandler)
       - [CefResourceManager::Request](#cefresourcemanagerrequest)
 - [scheme handler](#scheme-handler)
+  - [OnRegisterCustomSchemes](#onregistercustomschemes)
+  - [CefRegisterSchemeHandlerFactory](#cefregisterschemehandlerfactory)
 - [参考](#参考)
 
 
@@ -30,7 +32,8 @@
 用户可以根据自己的逻辑需要命中哪些url，然后自己提供对应url的资源。而不需要走网络。
 
 ## CefClient::GetRequestHandler()
-需要实现自己的RequestHandler.
+需要实现自己的RequestHandler. 主要重写GetResourceRequestHandler()。
+而实现CefResourceRequestHandler，主要是重写GetResourceHandler()和重写OnBeforeResourceLoad()方法。
 - CefClient::GetRequestHandler()
 - CefRequestHandler::GetResourceRequestHandler()
 - CefResourceRequestHandler
@@ -183,6 +186,79 @@ CefResourceManager::Request对象调用Continue方法，进行资源的获取。
 至此，cef就可以用用户定义的资源获取handler，获得资源了。
 
 # scheme handler
+
+相关方法和接口类
+- CefApp::OnRegisterCustomSchemes
+  - 每个进程的CefApp都需要实现
+    - browser
+    - render
+    - other(gpu、utility等)
+- CefRegisterSchemeHandlerFactory()
+- CefSchemeHandlerFactory（需实现）
+  - Create
+    - 返回CefResourceHandler
+- CefResourceHandler（需实现）
+  - Open()
+  - GetResponseHeaders()
+  - ReadResponse()
+
+## OnRegisterCustomSchemes
+要添加对应的scheme，cef每个进程的CefApp都需要实现回调函数
+- CefApp::OnRegisterCustomSchemes
+如
+- browser进程
+- render进程
+- 其他进程（gpu、utility等）
+
+在实现该方法时，调用
+```C++
+CefSchemeRegistrar::AddCustomScheme
+```
+相关常量:
+```C++
+namespace scheme_handler {
+
+const char kScheme[] = "client";
+const char kDomain[] = "tests";
+const char kFileName[] = "scheme_test.html";
+
+const int kSchemeRegistrationOptions =
+    CEF_SCHEME_OPTION_STANDARD | CEF_SCHEME_OPTION_SECURE |
+    CEF_SCHEME_OPTION_CORS_ENABLED | CEF_SCHEME_OPTION_FETCH_ENABLED;
+
+}  // namespace scheme_handler
+```
+如browser进程的CefApp
+```C++
+void SimpleApp::OnRegisterCustomSchemes(
+    CefRawPtr<CefSchemeRegistrar> registrar) {
+	registrar->AddCustomScheme(scheme_handler::kScheme, scheme_handler::kSchemeRegistrationOptions);
+}
+```
+
+render进程的CefApp
+
+```C++
+  void SimpleAppRender::OnRegisterCustomSchemes(
+      CefRawPtr<CefSchemeRegistrar> registrar) override {
+      // Register the custom scheme as standard and secure.
+      // Must be the same implementation in all processes.
+      registrar->AddCustomScheme(scheme_handler::kScheme, scheme_handler::kSchemeRegistrationOptions);
+  }
+```
+
+其中进程的Cefapp
+```C++
+  void SubprocessApp::OnRegisterCustomSchemes(
+      CefRawPtr<CefSchemeRegistrar> registrar) override {
+    // Register the custom scheme as standard and secure.
+    // Must be the same implementation in all processes.
+    registrar->AddCustomScheme(kScheme, kSchemeRegistrationOptions);
+  }
+```
+
+## CefRegisterSchemeHandlerFactory
+
 
 
 # 参考
