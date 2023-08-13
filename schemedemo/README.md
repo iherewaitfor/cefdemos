@@ -9,6 +9,11 @@
 - [scheme handler](#scheme-handler)
   - [OnRegisterCustomSchemes](#onregistercustomschemes)
   - [CefRegisterSchemeHandlerFactory](#cefregisterschemehandlerfactory)
+    - [注册时机OnContextInitialized](#注册时机oncontextinitialized)
+  - [CefSchemeHandlerFactory](#cefschemehandlerfactory)
+    - [CefResourceHandler](#cefresourcehandler)
+      - [Open](#open)
+      - [ReadResponse](#readresponse)
 - [参考](#参考)
 
 
@@ -193,6 +198,8 @@ CefResourceManager::Request对象调用Continue方法，进行资源的获取。
     - browser
     - render
     - other(gpu、utility等)
+- CefApp::OnContextInitialized()
+  - browser进程
 - CefRegisterSchemeHandlerFactory()
 - CefSchemeHandlerFactory（需实现）
   - Create
@@ -256,9 +263,137 @@ render进程的CefApp
     registrar->AddCustomScheme(kScheme, kSchemeRegistrationOptions);
   }
 ```
-
 ## CefRegisterSchemeHandlerFactory
 
+### 注册时机OnContextInitialized
+在browser进程的CefApp的OnContextInitialized()回调函数中，就调用 CefRegisterSchemeHandlerFactory()
+
+```C++
+void SimpleApp::OnContextInitialized() {
+  CEF_REQUIRE_UI_THREAD();
+  scheme_handler::RegisterSchemeHandlerFactory();
+  //...
+}
+```
+实际调用CefRegisterSchemeHandlerFactory
+
+```C++
+void RegisterSchemeHandlerFactory() {
+  CefRegisterSchemeHandlerFactory(kScheme, kDomain,
+                                  new ClientSchemeHandlerFactory());
+}
+```
+## CefSchemeHandlerFactory
+
+主要是实现以下方法。用来提供一个CefResourceHandler。处理对应的scheme的资源请求。
+```C++
+  virtual CefRefPtr<CefResourceHandler> Create(
+      CefRefPtr<CefBrowser> browser,
+      CefRefPtr<CefFrame> frame,
+      const CefString& scheme_name,
+      CefRefPtr<CefRequest> request) = 0;
+```
+
+### CefResourceHandler
+实现该接口类，用于实际处理该scheme下的资源请求。
+- CefResourceHandler（需实现）
+  - Open()
+    - 为了兼容：当返回false且handle_request=false,则ProcessRequest会被调用。
+  - ProcessRequest()已过时
+    - 注意官方标注：该方法已过时，请实现Open方法代替。
+  - GetResponseHeaders()
+  - ReadResponse()
+
+
+#### Open
+有对应的scheme的请求时，会调用到该Open函数。比如请求
+
+“client://tests/scheme_test.html”
+
+```C++
+  bool Open(CefRefPtr<CefRequest> request,
+      bool& handle_request,
+      CefRefPtr<CefCallback> callback) {
+      handle_request = false;
+
+      std::string url = request->GetURL();
+      if (strstr(url.c_str(), kFileName) != nullptr) {
+          // Load the response html.
+          std::wstring relativePath = L"scheme_test.html";
+          if (!readFromFile(relativePath, data_)) {
+              return false;
+          }
+          handle_request = true;
+          mime_type_ = "text/html";
+      }
+      else if (strstr(url.c_str(), "logo.png") != nullptr) {
+          // Load the response image.
+          std::wstring relativePath = L"logo.png";
+          if (!readFromFile(relativePath, data_)) {
+              return false;
+          }
+          handle_request = true;
+          mime_type_ = "image/png";
+      }
+
+      if (handle_request) {
+          // Indicate that the headers are available.
+          callback->Continue();
+          return true;
+      }
+      return false;
+  }
+```
+
+而这里的
+```C++
+      std::string url = request->GetURL();
+```
+中的url的值为
+
+“client://tests/scheme_test.html”
+
+这样在这个Open方法里，进行该scheme的资源返回。
+
+本项目中，简单地展示了，如果命中以下文件时
+- scheme_test.html
+- logo.png
+
+直接从磁盘里读对应文件到缓存。然后示意cef已经找到资源了，请继续执行。
+```C++
+      if (handle_request) {
+          // Indicate that the headers are available.
+          callback->Continue();
+          return true;
+      }
+```
+#### ReadResponse
+当Cef需要读取对应的资源时调用
+
+```C++
+  bool ReadResponse(void* data_out,
+                    int bytes_to_read,
+                    int& bytes_read,
+                    CefRefPtr<CefCallback> callback) override {
+    CEF_REQUIRE_IO_THREAD();
+
+    bool has_data = false;
+    bytes_read = 0;
+
+    if (offset_ < data_.length()) {
+      // Copy the next block of data into the buffer.
+      int transfer_size =
+          std::min(bytes_to_read, static_cast<int>(data_.length() - offset_));
+      memcpy(data_out, data_.c_str() + offset_, transfer_size);
+      offset_ += transfer_size;
+
+      bytes_read = transfer_size;
+      has_data = true;
+    }
+
+    return has_data;
+  }
+```
 
 
 # 参考
