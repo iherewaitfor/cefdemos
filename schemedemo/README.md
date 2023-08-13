@@ -25,8 +25,98 @@
 - CefResourceRequestHandler
   - OnBeforeResourceLoad()
   - GetResourceHandler()
+## new 一个CefResourceManager
+Browser进程里，
+在SimpleHandler(CefClient)中new一个CefResourceManager。
+通过AddProvider方法添加新的Provider。提供资源内容。
+```C++
+// Add example Providers to the CefResourceManager.
+void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
+    if (!CefCurrentlyOn(TID_IO)) {
+        // Execute on the browser IO thread.
+        CefPostTask(TID_IO, base::BindOnce(SetupResourceManager, resource_manager));
+        return;
+    }
+    resource_manager->AddProvider(
+        new BinaryResourceProvider(test_host), 100, std::string());
+}
+```
+
+通过 CefPostTask，将逻辑切到TID_IO线程执行。
+
+## 资源提供者BinaryResourceProvider
+
+- CefResourceManager::Provider
+  - 新建自定义类BinaryResourceProvider继承Provider类
+  - 核心方法OnRequest
+    - CefResourceManager::Request
+      - request->Continue(handler)
+      - CefStreamReader
+      - CefStreamReader::CreateForFile
+    - 返回true表示已处理完，已拿到资源。
+    - 返回false，交回经cef处理
+
+新扩展一个类
+
+```C++
+////////////////////////////////////////////////////////////
+
+const std::string& test_host = "https://myjstest.com/";
 
 
+// Provider implementation for loading BINARY resources from the current
+// executable.
+class BinaryResourceProvider : public CefResourceManager::Provider {
+public:
+    explicit BinaryResourceProvider(const std::string& root_url)
+        : root_url_(root_url) {
+        DCHECK(!root_url.empty());
+    }
+
+    bool OnRequest(scoped_refptr<CefResourceManager::Request> request) override {
+        CEF_REQUIRE_IO_THREAD();
+
+        const std::string& url = request->url();
+        if (url.find(root_url_) != 0L) {
+            // Not handled by this provider.
+            return false;
+        }
+
+        CefRefPtr<CefResourceHandler> handler;
+
+        const std::string& relative_path = url.substr(root_url_.length());
+
+#ifndef UNICODE
+        std::string strPath;
+#else
+        std::wstring strPath;
+#endif // !UNICODE
+        TCHAR path[MAX_PATH];
+        ::GetModuleFileName(NULL, path, MAX_PATH);
+        strPath = path;
+
+        size_t index = strPath.rfind(TEXT("\\"));
+        strPath = strPath.substr(0, index);
+        strPath = (TCHAR*)strPath.append(TEXT("\\index.html")).c_str();
+        if (relative_path == "index.html") {
+            //"D:\\srccode\\cefdemos\\JavaScriptIntegration\\build\\cefsimple\\Debug\\index.html"
+            CefRefPtr<CefStreamReader> stream = CefStreamReader::CreateForFile(strPath);
+            if (stream.get()) {
+                handler = new CefStreamResourceHandler(
+                    request->mime_type_resolver().Run(url), stream);
+            }
+        }
+
+        request->Continue(handler);
+        return true;
+    }
+
+private:
+    std::string root_url_;
+
+    DISALLOW_COPY_AND_ASSIGN(BinaryResourceProvider);
+};
+```
 
 
 # scheme handler
