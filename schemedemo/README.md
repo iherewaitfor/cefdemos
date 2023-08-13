@@ -299,10 +299,13 @@ void RegisterSchemeHandlerFactory() {
 - CefResourceHandler（需实现）
   - Open()
     - 为了兼容：当返回false且handle_request=false,则ProcessRequest会被调用。
+    - - 该方法运行在ThreadPoolForegroupWorker线程
   - ProcessRequest()已过时
     - 注意官方标注：该方法已过时，请实现Open方法代替。
+    - 该方法运行在TID_IO线程
   - GetResponseHeaders()
   - ReadResponse()
+    - - 该方法运行在TID_IO线程
 
 
 #### Open
