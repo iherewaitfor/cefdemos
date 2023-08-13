@@ -64,37 +64,41 @@ class ClientSchemeHandler : public CefResourceHandler {
   bool ProcessRequest(CefRefPtr<CefRequest> request,
                       CefRefPtr<CefCallback> callback) override {
     CEF_REQUIRE_IO_THREAD();
-
-    bool handled = false;
-
-    std::string url = request->GetURL();
-    if (strstr(url.c_str(), kFileName) != nullptr) {
-      // Load the response html.
-        std::wstring relativePath = L"scheme_test.html";
-        if (!readFromFile(relativePath, data_)) {
-            return false;
-        }
-        handled = true;
-        mime_type_ = "text/html";
-    } else if (strstr(url.c_str(), "logo.png") != nullptr) {
-      // Load the response image.
-        std::wstring relativePath = L"logo.png";
-        if (!readFromFile(relativePath, data_)) {
-            return false;
-        }
-      handled = true;
-      mime_type_ = "image/png";
-    }
-
-    if (handled) {
-      // Indicate that the headers are available.
-      callback->Continue();
-      return true;
-    }
-
     return false;
   }
 
+  bool Open(CefRefPtr<CefRequest> request,
+      bool& handle_request,
+      CefRefPtr<CefCallback> callback) {
+      handle_request = false;
+
+      std::string url = request->GetURL();
+      if (strstr(url.c_str(), kFileName) != nullptr) {
+          // Load the response html.
+          std::wstring relativePath = L"scheme_test.html";
+          if (!readFromFile(relativePath, data_)) {
+              return false;
+          }
+          handle_request = true;
+          mime_type_ = "text/html";
+      }
+      else if (strstr(url.c_str(), "logo.png") != nullptr) {
+          // Load the response image.
+          std::wstring relativePath = L"logo.png";
+          if (!readFromFile(relativePath, data_)) {
+              return false;
+          }
+          handle_request = true;
+          mime_type_ = "image/png";
+      }
+
+      if (handle_request) {
+          // Indicate that the headers are available.
+          callback->Continue();
+          return true;
+      }
+      return false;
+  }
   void GetResponseHeaders(CefRefPtr<CefResponse> response,
                           int64& response_length,
                           CefString& redirectUrl) override {
