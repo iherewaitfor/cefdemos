@@ -204,10 +204,12 @@ CefResourceManager::Request对象调用Continue方法，进行资源的获取。
 - CefSchemeHandlerFactory（需实现）
   - Create
     - 返回CefResourceHandler
+    - 每个请求都创建一个CefResourceHandler对象处理该请求
 - CefResourceHandler（需实现）
   - Open()
   - GetResponseHeaders()
   - ReadResponse()
+  - 处理理单个请求。
 
 ## OnRegisterCustomSchemes
 要添加对应的scheme，cef每个进程的CefApp都需要实现回调函数
@@ -295,7 +297,7 @@ void RegisterSchemeHandlerFactory() {
 ```
 
 ### CefResourceHandler
-实现该接口类，用于实际处理该scheme下的资源请求。
+实现该接口类，用于实际处理该scheme下的资源请求。每个请求，都会由上面的CefSchemeHandlerFactory类创建一个CefResourceHandler对象，用来处理该请求。
 - CefResourceHandler（需实现）
   - Open()
     - 为了兼容：当返回false且handle_request=false,则ProcessRequest会被调用。
