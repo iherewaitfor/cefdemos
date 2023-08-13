@@ -2,6 +2,7 @@
 - [通用资源管理](#通用资源管理)
   - [CefClient::GetRequestHandler()](#cefclientgetrequesthandler)
   - [new 一个CefResourceManager](#new-一个cefresourcemanager)
+    - [AddDirectoryProvider](#adddirectoryprovider)
   - [资源提供者BinaryResourceProvider](#资源提供者binaryresourceprovider)
     - [重写OnRequest()处理资源加载逻辑](#重写onrequest处理资源加载逻辑)
       - [命中的处理逻辑CefStreamResourceHandler](#命中的处理逻辑cefstreamresourcehandler)
@@ -50,6 +51,16 @@
 Browser进程里，
 在SimpleHandler(CefClient)中new一个CefResourceManager。
 通过AddProvider方法添加新的Provider。提供资源内容。
+
+- AddProvider
+  - 提供自定义的Provier提供资源。
+  - 本项目有实现示例。
+- AddDirectoryProvider
+  - 把某个url和本地目录对应，访问前缀为该对应的url时，直接从本地目录读取。
+  - 本项目有实现示例。
+- AddArchiveProvider
+  - 提供一个url和压缩文件对应。
+  - 本项目未实现示例。
 ```C++
 // Add example Providers to the CefResourceManager.
 void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
@@ -60,6 +71,13 @@ void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
     }
     resource_manager->AddProvider(
         new BinaryResourceProvider(test_host), 100, std::string());
+
+    //"D:\\srccode\\cefdemos\\schemedemo\\build\\cefsimple\\Debug"
+    std::string dirPath = getCurentDllPath();
+    resource_manager->AddDirectoryProvider("https://mytestdir.com/",
+        dirPath,
+        201,
+        "directoryprovider");
 }
 ```
 通过 CefPostTask，将逻辑切到TID_IO线程执行。
@@ -67,6 +85,14 @@ void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
 官方文档有说明：Provider对象可以放在任意线程new。但方法回调，和对象销毁，都会是在TID_IO线程。
 本项目中，全部放在了TID_IO线程执行。
 
+### AddDirectoryProvider
+```C++
+  void AddDirectoryProvider(const std::string& url_path,
+                            const std::string& directory_path,
+                            int order,
+                            const std::string& identifier);
+```
+将"https://mytestdir.com/",和本dll所有的目录进行映射。当访问前缀为"https://mytestdir.com/"的url时，直接从本地目录进行读取。
 
 ## 资源提供者BinaryResourceProvider
 
