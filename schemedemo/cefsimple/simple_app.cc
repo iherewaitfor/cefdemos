@@ -110,8 +110,10 @@ void SimpleApp::OnContextInitialized() {
   url = command_line->GetSwitchValue("url");
   if (url.empty()) {
       //url = "http://www.google.com";
-      //url = "https://myjstest.com/index.html";
-      url = "client://tests/scheme_test.html";
+      //url = "https://myjstest.com/index.html"; // test for AddProvider
+      url = "https://mytestdir.com/index.html";  // test for AddDirectoryProvider
+  
+      //url = "client://tests/scheme_test.html"; // test for custome scheme.
   }
 
   if (use_views) {

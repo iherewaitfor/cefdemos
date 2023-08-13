@@ -34,6 +34,17 @@ std::string GetDataURI(const std::string& data, const std::string& mime_type) {
 
 const std::string& test_host = "https://myjstest.com/";
 
+//utility method.
+std::string getCurentDllPath() {
+    std::string strPath;
+    CHAR path[MAX_PATH];
+    ::GetModuleFileNameA(NULL, path, MAX_PATH);
+    strPath = path;
+
+    size_t index = strPath.rfind("\\");
+    strPath = strPath.substr(0, index);
+    return strPath;
+}
 
 // Provider implementation for loading BINARY resources from the current
 // executable.
@@ -97,6 +108,13 @@ void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
     }
     resource_manager->AddProvider(
         new BinaryResourceProvider(test_host), 100, std::string());
+
+    //"D:\\srccode\\cefdemos\\schemedemo\\build\\cefsimple\\Debug"
+    std::string dirPath = getCurentDllPath();
+    resource_manager->AddDirectoryProvider("https://mytestdir.com/",
+        dirPath,
+        201,
+        "directoryprovider");
 
 }
 ////////////////////////////////////////////////////////////
