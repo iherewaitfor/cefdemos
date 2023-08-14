@@ -111,7 +111,8 @@ void SimpleApp::OnContextInitialized() {
   if (url.empty()) {
       //url = "http://www.google.com";
       //url = "https://myjstest.com/index.html"; // test for AddProvider
-      url = "https://mytestdir.com/index.html";  // test for AddDirectoryProvider
+      //url = "https://mytestdir.com/index.html";  // test for AddDirectoryProvider
+      url = "https://myzipdir.com/index.html";     // test for AddArchiveProvider
   
       //url = "client://tests/scheme_test.html"; // test for custome scheme.
   }
