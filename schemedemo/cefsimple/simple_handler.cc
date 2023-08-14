@@ -121,8 +121,8 @@ void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
     resource_manager->AddArchiveProvider("https://myzipdir.com/",
         zipFilePath,
         "", //password
-        201,
-        "directoryprovider");
+        202,
+        "archiveprovider");
 
 }
 ////////////////////////////////////////////////////////////
