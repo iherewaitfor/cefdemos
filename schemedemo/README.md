@@ -3,6 +3,7 @@
   - [CefClient::GetRequestHandler()](#cefclientgetrequesthandler)
   - [new 一个CefResourceManager](#new-一个cefresourcemanager)
     - [AddDirectoryProvider](#adddirectoryprovider)
+    - [AddArchiveProvider](#addarchiveprovider)
   - [资源提供者BinaryResourceProvider](#资源提供者binaryresourceprovider)
     - [重写OnRequest()处理资源加载逻辑](#重写onrequest处理资源加载逻辑)
       - [命中的处理逻辑CefStreamResourceHandler](#命中的处理逻辑cefstreamresourcehandler)
@@ -59,8 +60,8 @@ Browser进程里，
   - 把某个url和本地目录对应，访问前缀为该对应的url时，直接从本地目录读取。
   - 本项目有实现示例。
 - AddArchiveProvider
-  - 提供一个url和压缩文件对应。
-  - 本项目未实现示例。
+  - 映射url和压缩文件。
+  - 本项目有实现示例。
 ```C++
 // Add example Providers to the CefResourceManager.
 void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
@@ -72,10 +73,11 @@ void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
     resource_manager->AddProvider(
         new BinaryResourceProvider(test_host), 100, std::string());
 
-    //"D:\\srccode\\cefdemos\\schemedemo\\build\\cefsimple\\Debug"
-    std::string dirPath = getCurentDllPath();
-    resource_manager->AddDirectoryProvider("https://mytestdir.com/",
-        dirPath,
+    //"D:\\srccode\\cefdemos\\schemedemo\\build\\cefsimple\\Debug/index.zip"
+    std::string zipFilePath = dirPath + "/index.zip";
+    resource_manager->AddArchiveProvider("https://myzipdir.com/",
+        zipFilePath,
+        "", //password
         201,
         "directoryprovider");
 }
@@ -93,6 +95,30 @@ void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
                             const std::string& identifier);
 ```
 将"https://mytestdir.com/",和本dll所有的目录进行映射。当访问前缀为"https://mytestdir.com/"的url时，直接从本地目录进行读取。
+
+
+### AddArchiveProvider
+将url_path 与zipFilePath进行映射。
+```C++
+void CefResourceManager::AddArchiveProvider(const std::string& url_path,
+                                            const std::string& archive_path,
+                                            const std::string& password,
+                                            int order,
+                                            const std::string& identifier)
+```
+
+```C++
+    //"D:\\srccode\\cefdemos\\schemedemo\\build\\cefsimple\\Debug/index.zip"
+    std::string zipFilePath = dirPath + "/index.zip";
+    resource_manager->AddArchiveProvider("https://myzipdir.com/",
+        zipFilePath,
+        "", //password
+        201,
+        "directoryprovider");
+```
+
+比如访问https://myzipdir.com/映射到index.zip文件，
+访问https://myzipdir.com/index.html，会从index.zip压缩包中获取index.html.
 
 ## 资源提供者BinaryResourceProvider
 

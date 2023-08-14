@@ -116,9 +116,11 @@ void SetupResourceManager(CefRefPtr<CefResourceManager> resource_manager) {
         201,
         "directoryprovider");
 
+    //"D:\\srccode\\cefdemos\\schemedemo\\build\\cefsimple\\Debug/index.zip"
+    std::string zipFilePath = dirPath + "/index.zip";
     resource_manager->AddArchiveProvider("https://myzipdir.com/",
-        dirPath + "\\index.zip",
-        "",
+        zipFilePath,
+        "", //password
         201,
         "directoryprovider");
 
