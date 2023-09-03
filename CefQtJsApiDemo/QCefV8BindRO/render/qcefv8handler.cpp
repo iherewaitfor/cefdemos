@@ -405,8 +405,8 @@ void QCefV8Handler::onPendingcallResp(cefv8bind_protcool::PendingcallResp rsp, C
 		)
 	{
 		CefRefPtr<CefV8Value> retV8Value = QCefValueConverter::to(rsp.returnValue);
-		context->Exit();
 		callback->success(retV8Value);
+		context->Exit();
 	}
 }
 

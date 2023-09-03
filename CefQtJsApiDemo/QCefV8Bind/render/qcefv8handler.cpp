@@ -443,8 +443,8 @@ void QCefV8Handler::onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRe
 		)
 	{
 		CefRefPtr<CefV8Value> retV8Value = QCefValueConverter::to(rsp.returnValue);
-		context->Exit();
 		callback->success(retV8Value);
+		context->Exit();
 	}
 }
 
