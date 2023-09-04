@@ -213,12 +213,20 @@ cef官方集成示例代码可以参考[CefCmakeCefClient/cefclient/cefclient_wi
 ### CefDoMessageLoopWork()方式集成消息循环
 若使用CefDoMessageLoopWork方式集成Cef消息循环。可以这样操作
 - 在程序主线程启动Qt消息循环。
-- 然后使用定时器，不断地Qt主消息循环中调用 CefDoMessageLoopWork()，以处理Cef的消息。
+- 处理回调CefBrowserProcessHandler::OnScheduleMessagePumpWork(int64 delay_ms)
+  - 该回调告诉宿主何时需要处理cef消息
+  - 收到该回调到可以调用
+  - 可以参考CefClient项目的[client_app_browser.cc文件ClientAppBrowser::OnScheduleMessagePumpWork(int64 delay)](https://github.com/iherewaitfor/cefdemos/blob/main/CefCmakeCefClient/shared/browser/client_app_browser.cc)
+    - 可以PostMessage一个消息到主消息循环，然后在主消息循环里主里
+    - 注册一个窗口，在窗口过程里，专门处理这个消息。具体可以参考CefClient项目的[main_message_loop_external_pump_win.cc](https://github.com/iherewaitfor/cefdemos/blob/main/CefCmakeCefClient/shared/browser/main_message_loop_external_pump_win.cc)
+  - 注意该回调可能会在任何的线程被调用
+- 如果delay_ms为0，立即调用CefDoMessageLoopWork
+- 如果delay_ms>0，可以启用定时器，定时到了 CefDoMessageLoopWork()，以处理Cef的消息。
 
 优点：
 该种方式，Cef的Browser的UI线程和主线程为同一线程。Qt和Cef的回调不需要使用线程同步技术。写业务上比较方便。
 
-缺点: 要控制好调用CefDoMessageLoopWork()的调用频率，频率太高了cpu消息比较大，频率太低了，cef的消息处理可能不及时。
+缺点: 会和宿主主线程相互影响，卡了就都卡了。
 
 ### multi_threaded_message_loop = true方式集成消息循环（本项目采用）
 CefSettings.multi_threaded_message_loop = true 集成的方式中，在主线启动Qt的消息循环。
