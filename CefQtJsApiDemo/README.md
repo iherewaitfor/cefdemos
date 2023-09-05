@@ -329,7 +329,7 @@ bool QCefV8BindRenderDelegate::OnProcessMessageReceived(CefRefPtr<CefBrowser> br
     CefProcessId source_process,
     CefRefPtr<CefProcessMessage> message)
 ```
-由于render进程的消息循环用的是cef自己的，主线程跑的消息循环，回调都跑在主线程。  render进程中，不需要用到Qt的信号与槽。
+由于render进程的消息循环用的是cef自己的，主线程跑的消息循环，回调都跑在主线程。  render进程中，不需要用到Qt的信号与槽。本方式下render进程没有启动Qt消息循环。
 
 
 发送消息，同样是通过
