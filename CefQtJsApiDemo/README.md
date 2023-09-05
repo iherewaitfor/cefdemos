@@ -221,7 +221,7 @@ cef官方集成示例代码可以参考[CefCmakeCefClient/cefclient/cefclient_wi
     - 注册一个窗口，在窗口过程里，专门处理这个消息。具体可以参考CefClient项目的[main_message_loop_external_pump_win.cc](https://github.com/iherewaitfor/cefdemos/blob/main/CefCmakeCefClient/shared/browser/main_message_loop_external_pump_win.cc)
   - 注意该回调可能会在任何的线程被调用
 - 如果delay_ms为0，立即调用CefDoMessageLoopWork
-- 如果delay_ms>0，可以启用定时器，定时到了 CefDoMessageLoopWork()，以处理Cef的消息。
+- 如果delay_ms>0，可以启用定时器，定时到了就调用 CefDoMessageLoopWork()，以处理Cef的消息。
 
 优点：
 该种方式，Cef的Browser的UI线程和主线程为同一线程。Qt和Cef的回调不需要使用线程同步技术。写业务上比较方便。
