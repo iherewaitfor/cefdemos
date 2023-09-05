@@ -783,7 +783,7 @@ void QCefV8SignalManager::emitSignal(const EmitSignalMsg& msg, CefRefPtr<CefV8Co
 ```
 
 ## 如何启用QCefV8Bind
-本项目代码默认启用的QCefV8BindRO的，其使用的是QRemoteObjects技术绑定方式。若要使用启用QCefV8Bind,需要修改两个地方
+本项目代码默认启用的是QCefV8BindRO，其使用的是QRemoteObjects技术绑定方式。若要使用启用QCefV8Bind,需要修改两个地方
 - DemoAPP的main.cpp，将原文部分，修改成如下。
 ```C++
     //use cefipc
