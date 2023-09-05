@@ -217,7 +217,7 @@ cef官方集成示例代码可以参考[CefCmakeCefClient/cefclient/cefclient_wi
   - 该回调告诉宿主何时需要处理cef消息
   - 收到该回调到可以调用
   - 可以参考CefClient项目的[client_app_browser.cc文件ClientAppBrowser::OnScheduleMessagePumpWork(int64 delay)](https://github.com/iherewaitfor/cefdemos/blob/main/CefCmakeCefClient/shared/browser/client_app_browser.cc)
-    - 可以PostMessage一个消息到主消息循环，然后在主消息循环里主里
+    - 可以PostMessage一个消息到主消息循环，然后在主消息循环里处理如何调用 CefDoMessageLoopWork的逻辑。
     - 注册一个窗口，在窗口过程里，专门处理这个消息。具体可以参考CefClient项目的[main_message_loop_external_pump_win.cc](https://github.com/iherewaitfor/cefdemos/blob/main/CefCmakeCefClient/shared/browser/main_message_loop_external_pump_win.cc)
   - 注意该回调可能会在任何的线程被调用
 - 如果delay_ms为0，立即调用CefDoMessageLoopWork
