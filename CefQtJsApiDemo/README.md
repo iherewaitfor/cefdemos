@@ -606,7 +606,7 @@ void QCefV8Handler::onInvokeResponse(CefRefPtr<CefProcessMessage> message, CefRe
 ```
 ### 绑定Qt信号
 Qt的信号，基实也是一个方法。在Qt的元方法的类型为QMetaMethod::Signal。
-将信号绑定成JS 的一个Object。使用CefV8Value::CreateObject创建一个对象。并通过SetUserData方法把objectId和MetaMethod等信号存储到该对象。方便后面连接信号使用。
+将信号绑定成JS 的一个Object。使用CefV8Value::CreateObject创建一个对象。并通过SetUserData方法把objectId和MetaMethod等信息存储到该对象。方便后面连接信号使用。
 ```C++
 	foreach(CefMetaMethod metaMethod, cefMetaObject.metaMethods)
 	{
