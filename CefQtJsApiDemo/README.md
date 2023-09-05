@@ -1430,6 +1430,29 @@ void AutoSignalsEmitter::proxySignalEmit(void** _a)
     }
 }
 ```
+```C++
+void QCefV8BindRenderDelegate::dispatchReplicaSignaToJs(cefv8bind_protcool::DispatchReplicaSignaToJs rsp) {
+    if (!CefCurrentlyOn(TID_RENDERER)) {
+        CefPostTask(TID_RENDERER, base::BindOnce(&QCefV8BindRenderDelegate::dispatchReplicaSignaToJs, this, rsp));
+        return;
+    }
+    foreach(int64 frameId, m_frameHandlers.keys()) {
+        CefRefPtr<QCefV8Handler> v8Handler = m_frameHandlers.value(frameId);
+        CefRefPtr<CefV8Context> context = v8Handler->getFrame()->GetV8Context();
+        v8Handler->dispatchReplicaSignaToJs(rsp, context);
+    }
+}
+```
+```C++
+void QCefV8Handler::dispatchReplicaSignaToJs(const cefv8bind_protcool::DispatchReplicaSignaToJs& msg, CefRefPtr<CefV8Context> context)
+{
+	if (m_frame == NULL)
+	{
+		return;
+	}
+	m_v8SignalMgr->dispatchReplicaSignaToJs(msg, m_frame->GetV8Context());
+}
+```
 
 最终执行js监听信号的回调函数，返回信号给js。
 ```C++
