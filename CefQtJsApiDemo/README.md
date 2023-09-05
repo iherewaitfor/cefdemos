@@ -263,14 +263,14 @@ void SimpleHandler::initWindow()
 ## 本方案中涉及的进程和线程
 由于本项目中，集成线程时，进行了以下两个设置
 1.  browser进程中cef初始化时，设置了cefSettings.multi_threaded_message_loop = true;
-2.  render进程在单独线程中运行CefExecuteProcess。
+2.  render进程在单独线程中运行CefExecuteProcess。(QcefV8BindRO方式下)
    
 所以进程的主线程和cef的消息循环线程不是同一线程。涉及的线程如下：
 
 - Browser进程
-  - 主线程、Qt线程。Qt消息循环所有线程
+  - 主线程、Qt线程。Qt消息循环所在线程
   - CEF的TID_UI线程。CEF消息循环线程。
-- Render进程
+- Render进程(QcefV8BindRO方式下)
   - 主线线程：Qt线程。Qt消息循环所有线程。
   - CEF的TID_RENDERER线程。render消息循环线程。
 
