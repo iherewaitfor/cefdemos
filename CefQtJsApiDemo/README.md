@@ -831,7 +831,7 @@ void QCefV8SignalManager::emitSignal(const EmitSignalMsg& msg, CefRefPtr<CefV8Co
 - 调用QObject接口
 - QOjbect信号
 ## 关于QObjectRemote
-关于Qt Remote Objects,可以查看Qt官司文档[[Qt Remote Objects](https://qthub.com/static/doc/qt5/qtremoteobjects/qtremoteobjects-index.html#qt-remote-objects)](https://qthub.com/static/doc/qt5/qtremoteobjects/qtremoteobjects-index.html#qt-remote-objects)
+关于Qt Remote Objects,可以查看Qt官方文档[[Qt Remote Objects](https://qthub.com/static/doc/qt5/qtremoteobjects/qtremoteobjects-index.html#qt-remote-objects)](https://qthub.com/static/doc/qt5/qtremoteobjects/qtremoteobjects-index.html#qt-remote-objects)
 
 Qt Remot Objects的示例，可以参考本git的[QtROsimpleswitch](https://github.com/iherewaitfor/QtDemos/tree/main/QtROsimpleswitch)。
 
