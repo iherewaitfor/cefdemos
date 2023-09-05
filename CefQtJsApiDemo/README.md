@@ -296,7 +296,7 @@ void SimpleHandler::initWindow()
 - 信号处理
 ## Cef自带的IPC
 ### Browser进程收发消息
-Browser进程收消息。在QCefV8BindBrowserDelegate::OnProcessMessageReceived回调方法里收消息，主要要是重载了BrowserDelegate::OnProcessMessageReceived。
+Browser进程收消息。在QCefV8BindBrowserDelegate::OnProcessMessageReceived回调方法里收消息，主要要是重写了BrowserDelegate::OnProcessMessageReceived。
 
 本方法回调是在cef的TID_UI线程的，通过Qt的信号，将算是消息逻辑切到主线程处理。
 ```C++
