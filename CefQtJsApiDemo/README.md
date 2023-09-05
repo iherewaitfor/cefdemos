@@ -230,7 +230,7 @@ cef官方集成示例代码可以参考[CefCmakeCefClient/cefclient/cefclient_wi
 
 ### multi_threaded_message_loop = true方式集成消息循环（本项目采用）
 CefSettings.multi_threaded_message_loop = true 集成的方式中，在主线启动Qt的消息循环。
-Cef会单独自己启动另外一个线程执行其消息循环。此时不需要调用CefDoMessageLoopWork() 或 CefRunMessageLoop()。需要在主线程调用 CefInitialize初始始；退出时，在主线程调用 CefShutdown()。
+Cef会单独自己启动另外一个线程执行其消息循环。此时不需要调用CefDoMessageLoopWork() 或 CefRunMessageLoop()。需要在主线程调用 CefInitialize初始化；退出时，在主线程调用 CefShutdown()。
 
 关键代码[qcefclient.cpp](https://github.com/iherewaitfor/cefdemos/blob/main/CefQtJsApiDemo/QtCefBrowser/qcefclient.cpp)
 ```C++
