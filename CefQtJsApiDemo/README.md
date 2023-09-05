@@ -860,7 +860,7 @@ QRemoteObject中几个基本概念
 接口是通过QObject对象形式提供，可以把多个QObject组件成树形结构。接口可以有多颗树。
 
 本项目实例中NumberLogic接口结点，SubNumberLogic为孩子结点。该 树型结构直接使用Qt的QObject树结构进行组织。
-其中主要设置了两个事件
+其中主要设置了两个事项
 - 根结点的parent为空，非根结点需要设置parent
   - 如NumberLogic的根结点为空,SubNumberLogic的parent为NumberLogic
 - 把接口的孩子结点，设置为父结点的属性
