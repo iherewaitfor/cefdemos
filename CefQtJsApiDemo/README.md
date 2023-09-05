@@ -839,7 +839,7 @@ Qt Remot Objects的示例，可以参考本git的[QtROsimpleswitch](https://gith
 - [registryconnected_objects_server](https://github.com/iherewaitfor/QtDemos/tree/main/QtROsimpleswitch/registryconnected_objects_server)
 - [registryconnected_objcets_client](https://github.com/iherewaitfor/QtDemos/tree/main/QtROsimpleswitch/registryconnected_objcets_client)
 
-通过QRemoteObject中有几个概念
+QRemoteObject中几个基本概念
 - 服务器侧 
   - QRemoteObjectRegistryHost
     - 提供注册点，用于注册和查询服务
