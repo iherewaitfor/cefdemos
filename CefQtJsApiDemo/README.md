@@ -193,7 +193,7 @@ QCefV8BindRO的代理实现类为QCefV8BindRenderDelegate。具体实现看对�
 
 ## Browser消息循环集成
 消息循环主要有两种集成方式：
-Cef和Qt都有各自己的消息消息。如何进行集成。
+Cef和Qt都有各自的消息循环。如何进行集成。
 
 可以参考Cef官方文档的消息循环集成部分
 [https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-message-loop-integration](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-message-loop-integration)，以了解消息循环集成概念。
