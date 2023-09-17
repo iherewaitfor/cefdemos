@@ -132,6 +132,7 @@ void QClientBrowserDelegate::OnBeforeCommandLineProcessing(
 }
 ```
 
+其他命令行参数处理，可以参考[https://peter.sh/experiments/chromium-command-line-switches/](https://peter.sh/experiments/chromium-command-line-switches/)。chrome关于命令行的说明，可以参考[https://www.chromium.org/developers/how-tos/run-chromium-with-flags/](https://www.chromium.org/developers/how-tos/run-chromium-with-flags/)。
 
 ### Render进程的CefApp之QCefRenderApp
 Render进程的CefApp主要实现的回调方法是
