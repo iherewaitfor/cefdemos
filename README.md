@@ -11,7 +11,7 @@
 # cefdemos
 本仓库[https://github.com/iherewaitfor/cefdemos]包含不同的cef展示项目。从cmake配置到各个cef基础功能展示。
 
-每个目录一个项目。每个项目都展示一个以上基础的功能。 其中CefQtJsApiDemo集成功能较多。
+每个目录一个项目。每个项目都展示一个以上基础的功能。 其中**CefQtJsApiDemo集成功能较多**。
 具体请查看各个项目的文档。
 
 # CefCmakeDemo 使用CMake配置CefSimple
