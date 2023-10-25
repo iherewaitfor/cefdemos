@@ -321,7 +321,7 @@ bool QCefV8BindBrowserDelegate::OnProcessMessageReceived(CefRefPtr<CefBrowser> b
 void CefFrame::SendProcessMessage(CefProcessId target_process,
                                   CefRefPtr<CefProcessMessage> message) = 0;
 ```
-传入的目标CefProcessId为PID_BROWSER。
+传入的目标CefProcessId为PID_RENDERER。（从PID_BROWSER发到PID_RENDERER）。
 ### Render进程收发消息
 Render进程收消息是在
 ```C++
@@ -339,7 +339,7 @@ void CefFrame::SendProcessMessage(CefProcessId target_process,
                                   CefRefPtr<CefProcessMessage> message) = 0;
 ```
 
-不过传入的目标CefProcessId为PID_RENDERER。
+不过传入的目标CefProcessId为PPID_BROWSER。
 ## 构建QObjects树
 render进程在onContextCreated回调中请求browser进程把QObject相关信息。
 browser进程收到请求后，进行QObject树信息构建。
