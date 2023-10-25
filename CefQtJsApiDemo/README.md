@@ -339,7 +339,7 @@ void CefFrame::SendProcessMessage(CefProcessId target_process,
                                   CefRefPtr<CefProcessMessage> message) = 0;
 ```
 
-不过传入的目标CefProcessId为PPID_BROWSER。
+不过传入的目标CefProcessId为PID_BROWSER。
 ## 构建QObjects树
 render进程在onContextCreated回调中请求browser进程把QObject相关信息。
 browser进程收到请求后，进行QObject树信息构建。
