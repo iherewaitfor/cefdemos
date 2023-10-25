@@ -272,7 +272,7 @@ void SimpleHandler::initWindow()
   - 主线程、Qt线程。Qt消息循环所在线程
   - CEF的TID_UI线程。CEF消息循环线程。
 - Render进程(QcefV8BindRO方式下)
-  - 主线线程：Qt线程。Qt消息循环所有线程。
+  - 主线线程：Qt线程。Qt消息循环所在线程。
   - CEF的TID_RENDERER线程。render消息循环线程。
 
 关于进程和线程的概念，可以参考以下cef官方文档
